@@ -3,6 +3,7 @@
 import { Box, Button, TextField } from '@mui/material'
 import createDiary from '@/actions/diary/createDiary'
 import { useQuill } from 'react-quilljs'
+import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import Row from '@/components/flexBox/row'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
@@ -178,7 +179,7 @@ const CreateDiary = () => {
             </Button>
           </Column>
         </Row>
-        <Row fullWidth>
+        <Row fullWidth className={'mt-10'}>
           <TextField
             fullWidth
             value={title}
@@ -198,12 +199,16 @@ const CreateDiary = () => {
         >
           <Box
             ref={quillRef}
+            autoCorrect={'off'}
             sx={{
               minHeight: '500px',
               border: 'solid 0px #444 !important',
               '& img': {
                 maxHeight: '300px',
                 objectFit: 'cover'
+              },
+              '& p': {
+                fontSize: '16px'
               }
             }}
           />

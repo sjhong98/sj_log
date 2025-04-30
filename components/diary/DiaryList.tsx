@@ -79,7 +79,7 @@ export default function DiaryList({ list }: any) {
 
   const handleClickModify = useCallback(() => {
     router.push(`/diary/update/${selectedDiary?.pk}`)
-  }, [])
+  }, [selectedDiary])
 
   const handleClickDelete = useCallback(() => {
     //   delete logic
