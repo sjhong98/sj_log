@@ -30,7 +30,6 @@ export default async function getMonthlyLogs(
     .set('month', month - 1)
     .add(1, 'month')
     .startOf('month')
-    .subtract(1, 'day')
     .toDate()
     .toISOString()
 

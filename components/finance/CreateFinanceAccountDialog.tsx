@@ -72,6 +72,15 @@ export default function CreateFinanceAccountDialog({
       toast.success('Created Account successfully!')
       refreshData()
 
+      setSubmitButtonDisabled(false)
+      setFormData({
+        title: '',
+        category: '',
+        term: '',
+        amount: 0,
+        note: ''
+      })
+
       const end = Date.now() + 500 // 3 seconds
       const colors = ['#a786ff', '#fd8bbc', '#eca184', '#f8deb1']
 
