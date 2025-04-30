@@ -21,7 +21,6 @@ import { toast } from 'react-toastify'
 import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 import createFinanceAccount from '@/actions/finance/account/createFinanceAccount'
 import FinanceAccountCategories from '@/types/finance/account/FinanceAccountCategories'
-import actionConfetti from '@/hooks/confetti'
 import confetti from 'canvas-confetti'
 
 // const CreateFinanceLogDialog = forwardRef(function Page(props, ref) )
@@ -38,6 +37,7 @@ export default function CreateFinanceAccountDialog({
 
   const [open, setOpen] = useState<boolean>(false)
   const [pickerOpen, setPickerOpen] = useState<boolean>(false)
+  const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false)
   const [formData, setFormData] = useState<FinanceAccountType>({
     title: '',
     category: '',
@@ -65,6 +65,7 @@ export default function CreateFinanceAccountDialog({
   }, [])
 
   const handleSubmit = useCallback(async () => {
+    setSubmitButtonDisabled(true)
     const rowCount = await createFinanceAccount(formData)
     if (rowCount) {
       setOpen(false)
@@ -212,8 +213,9 @@ export default function CreateFinanceAccountDialog({
                   formData.category !== '' &&
                   formData.title !== '' && (
                     <Button
+                      disabled={submitButtonDisabled}
                       variant={'outline'}
-                      className={'cursor-pointer'}
+                      className={'cursor-pointer z-[10]'}
                       onClick={handleSubmit}
                     >
                       SUBMIT
