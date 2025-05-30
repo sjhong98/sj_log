@@ -33,8 +33,7 @@ import getMonthlyLogs from '@/actions/finance/log/getMonthlyLogs'
 let currentGetMonthLogRequestId = 0
 
 export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
-  const getMonthLogRequestId = ++currentGetMonthLogRequestId
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [logs, setLogs] = useState<FinanceLogType[]>([])
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
@@ -44,7 +43,6 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   const [totalIncomes, setTotalIncomes] = useState<number>(0)
   const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [options, setOptions] = useState<any>()
-  const [getMonthFunctionStack, setGetMonthFunctionStack] = useState<any[]>([])
 
   useEffect(() => {
     refreshData()
@@ -62,7 +60,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setTotalExpenses(_totalExpenses)
   }, [logs])
 
-  const handleSubtractMonth = useCallback(async () => {
+  const handleSubtractMonth = async () => {
     let changedMonth = month
     let changedYear = year
 
@@ -76,16 +74,18 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setYear(changedYear)
     setTrend(-1)
 
-    if (getMonthLogRequestId !== currentGetMonthLogRequestId) return
-    const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
-    if (monthlyLogs) setLogs(monthlyLogs)
-  }, [month, options])
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(async () => {
+      const monthlyLogs = await getMonthlyLogs(
+        changedYear,
+        changedMonth,
+        options
+      )
+      if (monthlyLogs) setLogs(monthlyLogs)
+    }, 300)
+  }
 
-  const handleAddMonth = useCallback(async () => {
-    if (abortControllerRef && abortControllerRef.current) {
-      abortControllerRef.current.abort()
-    }
-
+  const handleAddMonth = async () => {
     let changedMonth = month
     let changedYear = year
 
@@ -99,10 +99,16 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setYear(changedYear)
     setTrend(1)
 
-    if (getMonthLogRequestId !== currentGetMonthLogRequestId) return
-    const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
-    if (monthlyLogs) setLogs(monthlyLogs)
-  }, [month, options])
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(async () => {
+      const monthlyLogs = await getMonthlyLogs(
+        changedYear,
+        changedMonth,
+        options
+      )
+      if (monthlyLogs) setLogs(monthlyLogs)
+    }, 300)
+  }
 
   const handleChangeFilter = useCallback(
     async (idx?: number) => {
