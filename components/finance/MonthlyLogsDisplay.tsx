@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState
 } from 'react'
 import FinanceLogType from '@/types/finance/FinanceLogType'
@@ -29,7 +30,11 @@ import financeCategories from '@/types/finance/FinanceCategories'
 import { formatInputNumber } from '@/utils/math'
 import getMonthlyLogs from '@/actions/finance/log/getMonthlyLogs'
 
+let currentGetMonthLogRequestId = 0
+
 export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
+  const getMonthLogRequestId = ++currentGetMonthLogRequestId
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [logs, setLogs] = useState<FinanceLogType[]>([])
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
@@ -39,6 +44,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   const [totalIncomes, setTotalIncomes] = useState<number>(0)
   const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [options, setOptions] = useState<any>()
+  const [getMonthFunctionStack, setGetMonthFunctionStack] = useState<any[]>([])
 
   useEffect(() => {
     refreshData()
@@ -70,11 +76,16 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setYear(changedYear)
     setTrend(-1)
 
+    if (getMonthLogRequestId !== currentGetMonthLogRequestId) return
     const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
     if (monthlyLogs) setLogs(monthlyLogs)
   }, [month, options])
 
   const handleAddMonth = useCallback(async () => {
+    if (abortControllerRef && abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
     let changedMonth = month
     let changedYear = year
 
@@ -88,6 +99,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setYear(changedYear)
     setTrend(1)
 
+    if (getMonthLogRequestId !== currentGetMonthLogRequestId) return
     const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
     if (monthlyLogs) setLogs(monthlyLogs)
   }, [month, options])
@@ -102,6 +114,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
       }
       let newOptions = { ...options, filter: idx }
       setOptions(newOptions)
+
       const monthlyLogs = await getMonthlyLogs(year, month, newOptions)
       if (monthlyLogs) setLogs(monthlyLogs)
     },
@@ -208,9 +221,11 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
       >
         <Column gap={1}>
           <Row fullWidth gap={1} className={'justify-center items-center'}>
+            {/*  previous month  */}
             <IconButton onClick={handleSubtractMonth}>
               <IconChevronLeft />
             </IconButton>
+            {/*  current month display  */}
             <Row
               className={'justify-center items-center w-[120px] gap-[2px] mt-1'}
             >
@@ -238,6 +253,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                 />
               </Row>
             </Row>
+            {/*  next month  */}
             <IconButton onClick={handleAddMonth}>
               <IconChevronRight />
             </IconButton>
