@@ -12,5 +12,5 @@ jobs:
       - name: Send request
         run: |
           curl 'https://hydhqrohhpgwybhlhwun.supabase.co/rest/v1/diary?select=pk' \
-          -H "apikey: $SUPABASE_KEY" \
-          -H "Authorization: Bearer $SUPABASE_KEY"
+          -H "apikey: ${{secrets.SUPABASE_KEY}}" \
+          -H "Authorization: Bearer ${{secrets.SUPABASE_KEY}}"
