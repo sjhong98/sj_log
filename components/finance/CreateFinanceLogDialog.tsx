@@ -26,8 +26,6 @@ import { toast } from 'react-toastify'
 import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 import { useRouter } from 'next/navigation'
 
-// const CreateFinanceLogDialog = forwardRef(function Page(props, ref) )
-
 export default function CreateFinanceLogDialog({
   ref,
   accounts,
@@ -52,7 +50,8 @@ export default function CreateFinanceLogDialog({
     note: '',
     paymentMethod: '',
     financeAccountPk: null,
-    date: new Date()
+    date: new Date(),
+    title: ''
   })
 
   const handleChange = (e: any) => {
@@ -126,15 +125,60 @@ export default function CreateFinanceLogDialog({
                   />
                 </Grid>
                 <Grid size={{ xs: 12, md: 12 }}>
-                  <CustomRadio
-                    name={'category'}
-                    list={financeCategories}
-                    onChange={handleChange}
-                    onlyIcon
-                    wrap
-                    etc
-                    onEtcChange={handleChange}
-                  />
+                  {formData.type === 'income' ? (
+                    <Row
+                      className={
+                        'relative w-[97%] rounded-md border-[2px] border-[#222] px-4 py-2 focus-within:border-[#dadada] duration-75'
+                      }
+                    >
+                      <input
+                        name={'category'}
+                        placeholder={'Category'}
+                        className={
+                          'w-full outline-none !text-2xl text-end mr-1'
+                        }
+                        value={formData?.category ?? ''}
+                        onChange={e => {
+                          setFormData(prev => ({
+                            ...prev,
+                            category: e.target.value
+                          }))
+                        }}
+                        autoComplete='off'
+                      />
+                    </Row>
+                  ) : (
+                    <CustomRadio
+                      name={'category'}
+                      list={financeCategories}
+                      onChange={handleChange}
+                      onlyIcon
+                      wrap
+                      etc
+                      onEtcChange={handleChange}
+                    />
+                  )}
+                </Grid>
+                <Grid size={{ xs: 12, md: 12 }} className={'pl-2 mt-2'}>
+                  <Row
+                    className={
+                      'relative w-[97%] rounded-md border-[2px] border-[#222] px-4 py-2 focus-within:border-[#dadada] duration-75'
+                    }
+                  >
+                    <input
+                      name={'title'}
+                      placeholder={'Title'}
+                      className={'w-full outline-none !text-2xl text-end mr-1'}
+                      value={formData.title}
+                      onChange={e => {
+                        setFormData(prev => ({
+                          ...prev,
+                          title: e.target.value
+                        }))
+                      }}
+                      autoComplete='off'
+                    />
+                  </Row>
                 </Grid>
                 <Grid size={{ xs: 12, md: 12 }} className={'pl-2 mt-2'}>
                   <Row

@@ -10,4 +10,5 @@ export default interface FinanceLogType {
   createdAt?: any
   isNewDay?: boolean
   financeAccountPk?: null | number
+  title?: string
 }
