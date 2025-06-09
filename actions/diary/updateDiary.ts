@@ -64,47 +64,51 @@ export default async function updateDiary(diaryData: DiaryType) {
 
   await Promise.all(
     sources.map(async (source: any, i: number) => {
-      if (source.startsWith('https://')) {
-        sources[i] = {
-          source,
-          url: source
+      try {
+        if (source.startsWith('https://')) {
+          sources[i] = {
+            source,
+            url: source
+          }
+        } else {
+          // create random string
+          const chars =
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+          let result = ''
+          for (let i = 0; i < 10; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length))
+          }
+
+          const newBlob = base64ToBlob(source)
+          const { data, error } = await supabase.storage
+            .from('sjlog')
+            .upload(
+              `/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`,
+              newBlob
+            )
+
+          if (error) {
+            console.log(error)
+            return
+          }
+
+          const { path, id, fullPath } = data
+
+          const getPublicUrlResult = await supabase.storage
+            .from('sjlog')
+            .getPublicUrl(`${path}`)
+
+          sources[i] = {
+            source,
+            url: getPublicUrlResult.data.publicUrl
+          }
+
+          sources.forEach((s: any) => {
+            console.log(s.url)
+          })
         }
-      } else {
-        // create random string
-        const chars =
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        let result = ''
-        for (let i = 0; i < 10; i++) {
-          result += chars.charAt(Math.floor(Math.random() * chars.length))
-        }
-
-        const newBlob = base64ToBlob(source)
-        const { data, error } = await supabase.storage
-          .from('sjlog')
-          .upload(
-            `/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`,
-            newBlob
-          )
-
-        if (error) {
-          console.log(error)
-          return
-        }
-
-        const { path, id, fullPath } = data
-
-        const getPublicUrlResult = await supabase.storage
-          .from('sjlog')
-          .getPublicUrl(`${path}`)
-
-        sources[i] = {
-          source,
-          url: getPublicUrlResult.data.publicUrl
-        }
-
-        sources.forEach((s: any) => {
-          console.log(s.url)
-        })
+      } catch (e) {
+        throw new Error(`일기 생성 실패 : ${e}`)
       }
     })
   )

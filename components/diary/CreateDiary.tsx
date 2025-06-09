@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Button, TextField } from '@mui/material'
+import { Box, Button, CircularProgress, TextField } from '@mui/material'
 import createDiary from '@/actions/diary/createDiary'
 import { useQuill } from 'react-quilljs'
 import Quill from 'quill'
@@ -55,6 +55,7 @@ const CreateDiary = () => {
     setTitle(e.target.value)
   }, [])
 
+  // Create Diary
   const handleUploadDiary = async () => {
     setIsUploading(true)
 
@@ -110,6 +111,7 @@ const CreateDiary = () => {
     }
   }
 
+  // Update Diary
   const handleUpdateDiary = async () => {
     setIsUploading(true)
 
@@ -167,16 +169,20 @@ const CreateDiary = () => {
             </DemoContainer>
           </LocalizationProvider>
           <Column className={'justify-end'}>
-            <Button
-              variant={'outlined'}
-              className={'h-[80%]'}
-              onClick={() => {
-                !diaryPk ? handleUploadDiary() : handleUpdateDiary()
-              }}
-              disabled={isUploading || content === '' || title === ''}
-            >
-              {!diaryPk ? 'upload' : 'update'}
-            </Button>
+            {isUploading || content === '' || title === '' ? (
+              <CircularProgress />
+            ) : (
+              <Button
+                variant={'outlined'}
+                className={'h-[80%]'}
+                onClick={() => {
+                  !diaryPk ? handleUploadDiary() : handleUpdateDiary()
+                }}
+                disabled={isUploading || content === '' || title === ''}
+              >
+                {!diaryPk ? 'upload' : 'update'}
+              </Button>
+            )}
           </Column>
         </Row>
         <Row fullWidth className={'mt-10'}>
