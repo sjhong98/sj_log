@@ -73,6 +73,7 @@ const CreateDiary = () => {
     const rowCount = await createDiary(diaryData)
 
     if (rowCount) {
+      router.push('/diary')
       toast.success('일기 생성 완료')
       const end = Date.now() + 5 // 3 seconds
       const colors = ['#a786ff', '#fd8bbc', '#eca184', '#f8deb1']
@@ -81,7 +82,7 @@ const CreateDiary = () => {
         if (Date.now() > end) return
 
         confetti({
-          particleCount: 2,
+          particleCount: 10,
           angle: 60,
           spread: 55,
           startVelocity: 60,
@@ -90,7 +91,7 @@ const CreateDiary = () => {
           zIndex: 9999
         })
         confetti({
-          particleCount: 2,
+          particleCount: 10,
           angle: 120,
           spread: 55,
           startVelocity: 60,
@@ -98,13 +99,10 @@ const CreateDiary = () => {
           colors: colors,
           zIndex: 9999
         })
-
         requestAnimationFrame(frame)
       }
 
       frame()
-
-      router.push('/diary')
     } else {
       toast.error('일기 생성 실패')
       setIsUploading(false)
