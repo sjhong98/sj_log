@@ -3,13 +3,12 @@
 import { Box, Button, CircularProgress, TextField } from '@mui/material'
 import createDiary from '@/actions/diary/createDiary'
 import { useQuill } from 'react-quilljs'
-import Quill from 'quill'
+import { EmitterSource } from 'quill'
 import 'quill/dist/quill.snow.css'
 import Row from '@/components/flexBox/row'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
-import { EmitterSource } from 'quill'
 import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import Column from '@/components/flexBox/column'
 import Delta from 'quill-delta'
@@ -33,6 +32,10 @@ const CreateDiary = () => {
   const [content, setContent] = useState<string>('')
   const [contentText, setContentText] = useState<string>('')
   const [isUploading, setIsUploading] = useState<boolean>(false)
+
+  useEffect(() => {
+    router.prefetch('/diary')
+  }, [])
 
   useEffect(() => {
     if (!diaryPk || !quill) return
@@ -82,7 +85,7 @@ const CreateDiary = () => {
         if (Date.now() > end) return
 
         confetti({
-          particleCount: 10,
+          particleCount: 50,
           angle: 60,
           spread: 55,
           startVelocity: 60,
@@ -91,7 +94,7 @@ const CreateDiary = () => {
           zIndex: 9999
         })
         confetti({
-          particleCount: 10,
+          particleCount: 50,
           angle: 120,
           spread: 55,
           startVelocity: 60,
@@ -167,7 +170,7 @@ const CreateDiary = () => {
             </DemoContainer>
           </LocalizationProvider>
           <Column className={'justify-end'}>
-            {isUploading || content === '' || title === '' ? (
+            {isUploading ? (
               <CircularProgress />
             ) : (
               <Button
@@ -176,7 +179,7 @@ const CreateDiary = () => {
                 onClick={() => {
                   !diaryPk ? handleUploadDiary() : handleUpdateDiary()
                 }}
-                disabled={isUploading || content === '' || title === ''}
+                disabled={content === '' || title === ''}
               >
                 {!diaryPk ? 'upload' : 'update'}
               </Button>
