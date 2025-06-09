@@ -50,7 +50,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${dune.variable} ${font2.variable} antialiased`}
       >
-        <div className={'w-screen min-h-screen flex flex-col relative'}>
+        <div
+          className={
+            'w-screen min-h-screen flex flex-col relative bg-[var(--color-background)]'
+          }
+        >
           <ToastContainer />
           <Providers>{children}</Providers>
         </div>
