@@ -45,6 +45,8 @@ export default function Page() {
                 {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
               </Typography>
             </Box>
+            {/*  form 태그로 감싸고 onSubmit 이벤트 핸들러로 받기 */}
+            {/*  -> 엔터 입력 등 이벤트를 모두 받을 수 있음  */}
             <Column
               component={'form'}
               gap={2}
