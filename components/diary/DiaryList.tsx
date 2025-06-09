@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Skeleton,
   TextField,
   Typography,
   useMediaQuery,
@@ -42,6 +43,7 @@ export default function DiaryList({ list }: any) {
   const [selectedDiary, setSelectedDiary] = useState<any>(null)
   const [comments, setComments] = useState<any>([])
   const [comment, setComment] = useState<string>('')
+  const [loadingContent, setLoadingContent] = useState(false)
   const [selectedComment, setSelectedComment] = useState<CommentType | null>(
     null
   )
@@ -59,23 +61,43 @@ export default function DiaryList({ list }: any) {
     router.push('/diary/create')
   }, [])
 
-  const handleClickDiary = useCallback(async (diaryPk: number) => {
-    const diary = await getDiaryOne(diaryPk)
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(diary?.content ?? '', 'text/html')
-    const images = doc.querySelectorAll('img')
-    images.forEach(img => {
-      img.style.maxHeight = '300px'
-      img.style.objectFit = 'cover'
-    })
-    const modifiedHtml = doc.body.innerHTML
-    setSelectedDiary({
-      ...diary,
-      content: modifiedHtml
-    })
-    setComments(diary?.comments)
-    setComment('')
-  }, [])
+  const getTitleAndDate = useCallback(
+    (diaryPk: number) => {
+      const currentDiary = list.find((d: any) => d.pk === diaryPk)
+      if (!currentDiary) return
+      setSelectedDiary({
+        date: currentDiary.date,
+        title: currentDiary.title
+      })
+      setLoadingContent(true)
+    },
+    [list]
+  )
+
+  const handleClickDiary = useCallback(
+    async (diaryPk: number) => {
+      getTitleAndDate(diaryPk)
+
+      getDiaryOne(diaryPk).then((diary: any) => {
+        const parser = new DOMParser()
+        const doc = parser.parseFromString(diary?.content ?? '', 'text/html')
+        const images = doc.querySelectorAll('img')
+        images.forEach(img => {
+          img.style.maxHeight = '300px'
+          img.style.objectFit = 'cover'
+        })
+        const modifiedHtml = doc.body.innerHTML
+        setSelectedDiary({
+          ...diary,
+          content: modifiedHtml
+        })
+        setComments(diary?.comments)
+        setComment('')
+        setLoadingContent(false)
+      })
+    },
+    [list]
+  )
 
   const handleClickModify = useCallback(() => {
     router.push(`/diary/update/${selectedDiary?.pk}`)
@@ -279,11 +301,37 @@ export default function DiaryList({ list }: any) {
                     handleClickModify={handleClickModify}
                   />
                 </Row>
-                {renderedContent}
+                {
+                  renderedContent ? renderedContent : <></>
+                  //   TODO: skeleton
+                }
               </Column>
             </Column>
           )}
-          {selectedDiary && (
+          {loadingContent ? (
+            <Column gap={1} fullWidth className={'mt-[-50px]'}>
+              <Skeleton
+                variant='rounded'
+                className={'w-[95%] mr-[5%] min-h-[20px]'}
+              />
+              <Skeleton
+                variant='rounded'
+                className={'w-[90%] ml-[10%] min-h-[20px]'}
+              />
+              <Skeleton
+                variant='rounded'
+                className={'w-[90%] ml-[5%] mr-[5%] min-h-[20px]'}
+              />
+              <Skeleton
+                variant='rounded'
+                className={'w-[90%] min-h-[20px] mr-[10%]'}
+              />
+              <Skeleton
+                variant='rounded'
+                className={'w-[90%] ml-[5%] mr-[5%] min-h-[20px]'}
+              />
+            </Column>
+          ) : (
             <Row fullWidth className={'relative'}>
               <TextField
                 fullWidth

@@ -3,8 +3,7 @@
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
 import { comment, diary } from '@/supabase/schema'
-import { eq, and, desc } from 'drizzle-orm'
-import { refreshSession } from '@/actions/session/refreshSession'
+import { and, desc, eq } from 'drizzle-orm'
 
 export default async function getDiaryOne(pk: number) {
   const user = await getUser()
