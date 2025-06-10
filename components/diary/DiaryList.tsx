@@ -316,11 +316,11 @@ export default function DiaryList({ list }: any) {
               />
               <Skeleton
                 variant='rounded'
-                className={'w-[90%] ml-[10%] min-h-[20px]'}
+                className={'w-[95%] ml-[5%] min-h-[20px]'}
               />
               <Skeleton
                 variant='rounded'
-                className={'w-[90%] ml-[5%] mr-[5%] min-h-[20px]'}
+                className={'w-[85%] ml-[10%] mr-[5%] min-h-[20px]'}
               />
               <Skeleton
                 variant='rounded'
