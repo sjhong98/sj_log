@@ -59,6 +59,26 @@ export default function DiaryList({ list }: any) {
     null
   )
 
+  const formatDiaryList = useCallback((list: any[]) => {
+    let _diaryList: any = [...list]
+    _diaryList.forEach((_: any, i: number) => {
+      if (i > 0) {
+        _diaryList[i].isNewYear = !dayjs(_diaryList[i - 1].date).isSame(
+          dayjs(_diaryList[i].date),
+          'year'
+        )
+        _diaryList[i].isNewMonth = !dayjs(_diaryList[i - 1].date).isSame(
+          dayjs(_diaryList[i].date),
+          'month'
+        )
+      } else {
+        _diaryList[i].isNewYear = true
+        _diaryList[i].isNewMonth = true
+      }
+    })
+    return _diaryList
+  }, [])
+
   useEffect(() => {
     if (!list?.[0]) return
 
@@ -125,7 +145,7 @@ export default function DiaryList({ list }: any) {
       _diaryList.splice(idx, 1)
       if (_diaryList[0].pk !== undefined) handleClickDiary(_diaryList[0].pk)
       setConfirmDeleteDiaryModalOpen(false)
-      setDiaryList(_diaryList)
+      setDiaryList(formatDiaryList(_diaryList))
     }
   }, [selectedDiary, diaryList])
 
