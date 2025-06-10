@@ -229,3 +229,11 @@ input[type=number] {
 .opacity-up-appear {
     animation: opacity-up-appear 0.2s ease-in-out forwards;
 }
+
+h1 {
+    font-size: 30px;
+}
+
+h2 {
+    font-size: 20px;
+}
