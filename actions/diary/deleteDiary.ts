@@ -9,17 +9,11 @@ import { diary } from '@/supabase/schema'
 
 function extractImageSrcFromHtml(content: string) {
   let sources: string[] = []
-  while (true) {
-    const str1 = content.split(
-      '<img src="https://hydhqrohhpgwybhlhwun.supabase.co/storage/v1/object/public/sjlog/'
-    )
-    if (!str1?.[1]) return []
-    const str2 = str1[1].split('"')
-    const src = str2[0]
+  const regex = /<img[^>]+src="([^">]+)"/g
+  let match: RegExpExecArray | null
 
-    sources.push(src)
-
-    if (!str2[1].includes('<img src="')) break
+  while ((match = regex.exec(content ?? '')) !== null) {
+    sources.push(match[1])
   }
   return sources
 }

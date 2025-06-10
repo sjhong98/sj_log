@@ -125,6 +125,7 @@ export default function DiaryList({ list }: any) {
       _diaryList.splice(idx, 1)
       if (_diaryList[0].pk !== undefined) handleClickDiary(_diaryList[0].pk)
       setConfirmDeleteDiaryModalOpen(false)
+      setDiaryList(_diaryList)
     }
   }, [selectedDiary, diaryList])
 

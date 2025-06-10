@@ -73,7 +73,13 @@ const CreateDiary = () => {
       date
     }
 
-    const rowCount = await createDiary(diaryData)
+    let rowCount: any = 0
+    try {
+      rowCount = await createDiary(diaryData)
+    } catch (e) {
+      // @ts-ignore
+      toast.error(e)
+    }
 
     if (rowCount) {
       router.push('/diary')
@@ -145,11 +151,7 @@ const CreateDiary = () => {
     quill.on(
       'text-change',
       (delta: Delta, oldDelta: Delta, source: EmitterSource) => {
-        // console.log('\n\n\nTEXT CHANGED : ')
-        // console.log(quill.getText()) // Get text only
         setContentText(quill.getText())
-        // console.log(quill.getContents()) // Get delta contents
-        // console.log(quill.root.innerHTML) // Get innerHTML using quill
         setContent(quill.root.innerHTML)
       }
     )

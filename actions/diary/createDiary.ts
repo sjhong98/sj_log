@@ -61,41 +61,50 @@ export default async function createDiary(diaryData: DiaryType) {
     sources.push(match[1])
   }
 
-  await Promise.all(
-    sources.map(async (source: any, i: number) => {
-      // create random string
-      const chars =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-      let result = ''
-      for (let i = 0; i < 10; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length))
-      }
+  try {
+    await Promise.all(
+      sources.map(async (source: any, i: number) => {
+        // create random string
+        const chars =
+          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        let result = ''
+        for (let i = 0; i < 10; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
 
-      const newBlob = base64ToBlob(source)
-      const { data, error } = await supabase.storage
-        .from('sjlog')
-        .upload(
-          `/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`,
-          newBlob
-        )
+        const newBlob = base64ToBlob(source)
+        const MAX_SIZE = 5 * 1024 * 1024
+        if (newBlob.size > MAX_SIZE) {
+          throw new Error('파일이 5MB를 초과했습니다.')
+        }
+        const { data, error } = await supabase.storage
+          .from('sjlog')
+          .upload(
+            `/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`,
+            newBlob
+          )
 
-      if (error) {
-        console.log(error)
-        return
-      }
+        if (error) {
+          console.log('\n\n\n에러발생 \n\n\n')
+          throw new Error(`${error}`)
+        }
 
-      const { path, id, fullPath } = data
+        const { path, id, fullPath } = data
 
-      const getPublicUrlResult = await supabase.storage
-        .from('sjlog')
-        .getPublicUrl(`${path}`)
+        const getPublicUrlResult = await supabase.storage
+          .from('sjlog')
+          .getPublicUrl(`${path}`)
 
-      sources[i] = {
-        source,
-        url: getPublicUrlResult.data.publicUrl
-      }
-    })
-  )
+        sources[i] = {
+          source,
+          url: getPublicUrlResult.data.publicUrl
+        }
+      })
+    )
+  } catch (e) {
+    console.log('\n\n\n에러발생\n\n\n')
+    console.error(e)
+  }
 
   let replacedContent = replaceBase64Images(content ?? '', sources)
 
