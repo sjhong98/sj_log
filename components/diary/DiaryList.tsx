@@ -4,6 +4,10 @@ import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
 import {
   Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Drawer,
   IconButton,
   List,
@@ -31,6 +35,7 @@ import Image from 'next/image'
 import ModifyPopper from '@/components/popper/ModifyPopper'
 import modifyComment from '@/actions/diary/comment/modifyComment'
 import deleteComment from '@/actions/diary/comment/deleteComment'
+import deleteDiary from '@/actions/diary/deleteDiary'
 
 const drawerWidth = 250
 
@@ -39,11 +44,14 @@ export default function DiaryList({ list }: any) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
+  const [diaryList, setDiaryList] = useState<DiaryType[]>(list)
   const [diaryListDrawerOpen, setDiaryListDrawerOpen] = useState<boolean>(false)
   const [selectedDiary, setSelectedDiary] = useState<any>(null)
   const [comments, setComments] = useState<any>([])
   const [comment, setComment] = useState<string>('')
   const [loadingContent, setLoadingContent] = useState(false)
+  const [confirmDeleteDiaryModalOpen, setConfirmDeleteDiaryModalOpen] =
+    useState(false)
   const [selectedComment, setSelectedComment] = useState<CommentType | null>(
     null
   )
@@ -63,7 +71,7 @@ export default function DiaryList({ list }: any) {
 
   const getTitleAndDate = useCallback(
     (diaryPk: number) => {
-      const currentDiary = list.find((d: any) => d.pk === diaryPk)
+      const currentDiary = diaryList.find((d: any) => d.pk === diaryPk)
       if (!currentDiary) return
       setSelectedDiary({
         date: currentDiary.date,
@@ -71,7 +79,7 @@ export default function DiaryList({ list }: any) {
       })
       setLoadingContent(true)
     },
-    [list]
+    [diaryList]
   )
 
   const handleClickDiary = useCallback(
@@ -96,16 +104,29 @@ export default function DiaryList({ list }: any) {
         setLoadingContent(false)
       })
     },
-    [list]
+    [diaryList]
   )
 
   const handleClickModify = useCallback(() => {
     router.push(`/diary/update/${selectedDiary?.pk}`)
   }, [selectedDiary])
 
-  const handleClickDelete = useCallback(() => {
-    //   delete logic
-  }, [selectedDiary])
+  const handleClickDelete = useCallback(async () => {
+    const rowCount = await deleteDiary(selectedDiary)
+    if (!rowCount) {
+      toast.error('게시물 삭제 실패')
+      return
+    } else toast.success('게시물 삭제 성공')
+    let _diaryList = [...diaryList]
+    const idx = _diaryList.findIndex(
+      (item: DiaryType) => item.pk === selectedDiary.pk
+    )
+    if (idx !== -1) {
+      _diaryList.splice(idx, 1)
+      if (_diaryList[0].pk !== undefined) handleClickDiary(_diaryList[0].pk)
+      setConfirmDeleteDiaryModalOpen(false)
+    }
+  }, [selectedDiary, diaryList])
 
   const handleChangeComment = useCallback((e: any) => {
     setComment(e.target.value)
@@ -163,7 +184,7 @@ export default function DiaryList({ list }: any) {
   }, [selectedDiary?.content])
 
   const renderedDiaryList = useMemo(() => {
-    if (!list || !Array.isArray(list)) return
+    if (!diaryList || !Array.isArray(diaryList)) return
 
     return (
       <>
@@ -202,7 +223,7 @@ export default function DiaryList({ list }: any) {
                   options={{ wheelPropagation: false, suppressScrollX: true }}
                   className={'w-full max-h-screen pb-10'}
                 >
-                  {list.map((diary: DiaryType, index: number) => (
+                  {diaryList.map((diary: DiaryType, index: number) => (
                     <Fragment key={index}>
                       {diary.isNewMonth && (
                         <Column
@@ -275,7 +296,7 @@ export default function DiaryList({ list }: any) {
         </Drawer>
       </>
     )
-  }, [list, diaryListDrawerOpen])
+  }, [diaryList, diaryListDrawerOpen])
 
   return (
     <>
@@ -297,7 +318,9 @@ export default function DiaryList({ list }: any) {
                 <Row className={'justify-between'}>
                   <Typography variant={'h5'}>{selectedDiary.title}</Typography>
                   <ModifyPopper
-                    handleClickDelete={handleClickDelete}
+                    handleClickDelete={() =>
+                      setConfirmDeleteDiaryModalOpen(true)
+                    }
                     handleClickModify={handleClickModify}
                   />
                 </Row>
@@ -387,6 +410,33 @@ export default function DiaryList({ list }: any) {
           </Column>
         </Column>
       </Box>
+
+      <Dialog
+        open={confirmDeleteDiaryModalOpen}
+        onClose={() => setConfirmDeleteDiaryModalOpen(false)}
+      >
+        <DialogTitle>Diary를 삭제하시겠습니까?</DialogTitle>
+        <DialogContent>
+          <Row gap={2} fullWidth>
+            <Button
+              variant={'outlined'}
+              color={'info'}
+              className={'flex-[2]'}
+              onClick={() => setConfirmDeleteDiaryModalOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              variant={'contained'}
+              color={'error'}
+              className={'flex-[1]'}
+              onClick={handleClickDelete}
+            >
+              삭제
+            </Button>
+          </Row>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

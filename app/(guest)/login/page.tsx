@@ -59,16 +59,6 @@ export default function Page() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 fullWidth
-                sx={
-                  {
-                    // '& .MuiFormLabel-root': {
-                    //   fontFamily: 'var(--font-font2) !important'
-                    // },
-                    // '& .MuiInputBase-input': {
-                    //   fontFamily: 'var(--font-dune) !important'
-                    // }
-                  }
-                }
                 autoComplete='off'
               />
               <TextField
@@ -78,13 +68,6 @@ export default function Page() {
                 onChange={e => setPassword(e.target.value)}
                 fullWidth
                 type={'password'}
-                sx={
-                  {
-                    // '& .MuiFormLabel-root': {
-                    //   fontFamily: 'var(--font-dune) !important'
-                    // }
-                  }
-                }
                 autoComplete='off'
               />
               <Button
@@ -92,6 +75,7 @@ export default function Page() {
                 variant={'outlined'}
                 fullWidth
                 type={'submit'}
+                color={'inherit'}
               >
                 Sign In
               </Button>
