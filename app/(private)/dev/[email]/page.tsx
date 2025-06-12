@@ -1,18 +1,21 @@
+'use server'
+
 import { getUser } from '@/actions/session/getUser'
-import Get from '@/actions/commonMethods/get'
-import { devLog } from '@/supabase/schema'
-import DevLogList from '@/components/dev/DevLogList'
+import DevLogView from '@/components/dev/DevLogView'
 import { devLogType } from '@/types/schemaType'
+import getTopGroupAndPosts from '@/actions/dev/group/getTopGroupAndPosts'
+import BoardType from '@/types/dev/BoardType'
 
 export default async function Page() {
   let user: any = await getUser()
   if (!user) return
 
-  const devLogList: devLogType[] = await (await Get(devLog))?.list()
+  const boardList: BoardType | undefined = await getTopGroupAndPosts()
 
+  if (!boardList) return
   return (
     <>
-      <DevLogList devLogList={devLogList} />
+      <DevLogView list={boardList} />
     </>
   )
 }

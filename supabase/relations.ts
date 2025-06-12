@@ -33,7 +33,8 @@ export const usersInAuthRelations = relations(usersInAuth, ({ many }) => ({
   comments: many(comment),
   financeLogs: many(financeLog),
   financeAccounts: many(financeAccount),
-  users: many(user)
+  users: many(user),
+  devLogGroups: many(devLogGroup)
 }))
 
 export const financeLogRelations = relations(financeLog, ({ one }) => ({
@@ -91,6 +92,10 @@ export const devLogTagRelations = relations(devLogTag, ({ many }) => ({
   devLogTagRelations: many(devLogTagRelation)
 }))
 
-export const devLogGroupRelations = relations(devLogGroup, ({ many }) => ({
-  devLogs: many(devLog)
+export const devLogGroupRelations = relations(devLogGroup, ({ one, many }) => ({
+  devLogs: many(devLog),
+  usersInAuth: one(usersInAuth, {
+    fields: [devLogGroup.uid],
+    references: [usersInAuth.id]
+  })
 }))
