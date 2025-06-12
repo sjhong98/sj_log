@@ -24,7 +24,7 @@ import dayjs from 'dayjs'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { IconList, IconPencil, IconPlus } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
-import getDiaryOne from '@/actions/diary/getDiaryOne'
+import getDiaryDetail from '@/actions/diary/getDiaryDetail'
 import 'react-perfect-scrollbar/dist/css/styles.css'
 import CommentType from '@/types/CommentType'
 import createComment from '@/actions/diary/comment/createComment'
@@ -106,7 +106,7 @@ export default function DiaryList({ list }: any) {
     async (diaryPk: number) => {
       getTitleAndDate(diaryPk)
 
-      getDiaryOne(diaryPk).then((diary: any) => {
+      getDiaryDetail(diaryPk).then((diary: any) => {
         const parser = new DOMParser()
         const doc = parser.parseFromString(diary?.content ?? '', 'text/html')
         const images = doc.querySelectorAll('img')

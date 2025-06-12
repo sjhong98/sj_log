@@ -58,7 +58,7 @@ export default function Header({ user }: { user: User }) {
 
   return (
     <Row className={'w-full h-[50px] relative justify-center'}>
-      <Typography variant={'h5'} className={'dune'}>
+      <Typography variant={'h5'} className={'dune text-shadow-xl'}>
         {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
       </Typography>
       <Row className={'absolute right-10'}>

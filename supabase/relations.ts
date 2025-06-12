@@ -2,26 +2,38 @@
 
 import { relations } from 'drizzle-orm/relations'
 import {
+  diary,
+  comment,
   usersInAuth,
-  user,
   financeAccount,
   financeLog,
-  diary,
-  comment
+  user,
+  devLog,
+  devLogTagRelation,
+  devLogTag,
+  devLogGroup
 } from './schema'
 
-export const userRelations = relations(user, ({ one }) => ({
+export const commentRelations = relations(comment, ({ one }) => ({
+  diary: one(diary, {
+    fields: [comment.diaryPk],
+    references: [diary.pk]
+  }),
   usersInAuth: one(usersInAuth, {
-    fields: [user.uid],
+    fields: [comment.uid],
     references: [usersInAuth.id]
   })
 }))
 
+export const diaryRelations = relations(diary, ({ many }) => ({
+  comments: many(comment)
+}))
+
 export const usersInAuthRelations = relations(usersInAuth, ({ many }) => ({
-  users: many(user),
-  financeLogs: many(financeLog),
   comments: many(comment),
-  financeAccounts: many(financeAccount)
+  financeLogs: many(financeLog),
+  financeAccounts: many(financeAccount),
+  users: many(user)
 }))
 
 export const financeLogRelations = relations(financeLog, ({ one }) => ({
@@ -46,17 +58,39 @@ export const financeAccountRelations = relations(
   })
 )
 
-export const commentRelations = relations(comment, ({ one }) => ({
-  diary: one(diary, {
-    fields: [comment.diaryPk],
-    references: [diary.pk]
-  }),
+export const userRelations = relations(user, ({ one }) => ({
   usersInAuth: one(usersInAuth, {
-    fields: [comment.uid],
+    fields: [user.uid],
     references: [usersInAuth.id]
   })
 }))
 
-export const diaryRelations = relations(diary, ({ many }) => ({
-  comments: many(comment)
+export const devLogTagRelationRelations = relations(
+  devLogTagRelation,
+  ({ one }) => ({
+    devLog: one(devLog, {
+      fields: [devLogTagRelation.devLogPk],
+      references: [devLog.pk]
+    }),
+    devLogTag: one(devLogTag, {
+      fields: [devLogTagRelation.devLogTagPk],
+      references: [devLogTag.pk]
+    })
+  })
+)
+
+export const devLogRelations = relations(devLog, ({ one, many }) => ({
+  devLogTagRelations: many(devLogTagRelation),
+  devLogGroup: one(devLogGroup, {
+    fields: [devLog.groupPk],
+    references: [devLogGroup.pk]
+  })
+}))
+
+export const devLogTagRelations = relations(devLogTag, ({ many }) => ({
+  devLogTagRelations: many(devLogTagRelation)
+}))
+
+export const devLogGroupRelations = relations(devLogGroup, ({ many }) => ({
+  devLogs: many(devLog)
 }))

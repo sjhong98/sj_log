@@ -16,7 +16,7 @@ import dayjs from 'dayjs'
 import DiaryType from '@/types/DiaryType'
 import { toast } from 'react-toastify'
 import { useParams, useRouter } from 'next/navigation'
-import getDiaryOne from '@/actions/diary/getDiaryOne'
+import getDiaryDetail from '@/actions/diary/getDiaryDetail'
 import updateDiary from '@/actions/diary/updateDiary'
 import confetti from 'canvas-confetti'
 
@@ -40,7 +40,7 @@ const CreateDiary = () => {
   useEffect(() => {
     if (!diaryPk || !quill) return
     ;(async () => {
-      const diary = await getDiaryOne(Number(diaryPk))
+      const diary = await getDiaryDetail(Number(diaryPk))
       setPk(diary?.pk)
       setDate(new Date(diary?.date ?? new Date()))
       setTitle(diary?.title ?? '')

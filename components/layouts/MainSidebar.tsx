@@ -38,6 +38,10 @@ const MainSidebar = () => {
     {
       text: 'Finance',
       route: `/finance`
+    },
+    {
+      text: 'Dev Blog',
+      route: `/dev`
     }
   ]
 

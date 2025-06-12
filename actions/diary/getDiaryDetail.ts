@@ -5,7 +5,7 @@ import db from '@/supabase'
 import { comment, diary } from '@/supabase/schema'
 import { and, desc, eq } from 'drizzle-orm'
 
-export default async function getDiaryOne(pk: number) {
+export default async function getDiaryDetail(pk: number) {
   const user = await getUser()
   if (!user) return
 
