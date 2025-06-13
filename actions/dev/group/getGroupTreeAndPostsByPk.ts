@@ -3,7 +3,7 @@
 // 자신의 상위에 있는 모든 Groups + 자신의 한 단계 하위에 있는 Groups 조회
 import db from '@/supabase'
 import { devLog, devLogGroup } from '@/supabase/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import { getUser } from '@/actions/session/getUser'
 
@@ -60,9 +60,27 @@ async function getLowerGroupList(pk: number) {
   return db.select().from(devLogGroup).where(eq(devLogGroup.parentGroupPk, pk))
 }
 
-export default async function getGroupTreeAndPostsByPk(pk: number) {
+export default async function getGroupTreeAndPostsByPk(pk?: number) {
   let user: any = await getUser()
   if (!user) return null
+
+  // pk 가 없는 경우 -> 아무 group 도 지정되지 않은 상태 -> 최상단 groupList 반환
+  if (!pk) {
+    const topGroupList: devLogGroupType[] = await db
+      .select()
+      .from(devLogGroup)
+      .where(
+        and(eq(devLogGroup.uid, user.id), isNull(devLogGroup.parentGroupPk))
+      )
+      .limit(1)
+
+    return {
+      currentGroup: null,
+      posts: [],
+      upperGroupList: null,
+      lowerGroupList: topGroupList
+    }
+  }
 
   const { currentGroup, posts } = await getCurrentGroup(pk)
 
