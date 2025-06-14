@@ -3,13 +3,15 @@
 import Column from '@/components/flexBox/column'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { FileIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
+import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
+import { toast } from 'react-toastify'
 
 export default function DevLogView({
   list,
@@ -23,16 +25,20 @@ export default function DevLogView({
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
     null
   )
+  const [currentGroupTree, setCurrentGroupTree] =
+    useState<GroupTreeType[]>(groupTree)
 
   const handleClickDevLog = useCallback(async (item?: devLogType) => {
     if (!item) return
     setSelectedDevLog(item)
   }, [])
 
-  const handleClickDevLogGroup = useCallback(async (item: devLogGroupType) => {
-    const currentBoard: BoardType | null = await getGroupTreeAndPostsByPk(
-      item.pk
-    )
+  const handleClickDevLogGroup = useCallback(async (groupPk?: number) => {
+    if (!groupPk) return
+
+    const currentBoard: BoardType | null =
+      // TODO: post 만 가져오도록 변경
+      await getGroupTreeAndPostsByPk(groupPk)
     if (!currentBoard) return
     setBoard(currentBoard)
   }, [])
@@ -49,7 +55,7 @@ export default function DevLogView({
             element={group.name}
             onClick={e => {
               e.stopPropagation()
-              handleClickDevLogGroup(group)
+              handleClickDevLogGroup(group.pk)
               setSelectedGroup(group)
             }}
             isSelectable
@@ -65,9 +71,8 @@ export default function DevLogView({
           value={group?.name ?? ''}
           onClick={e => {
             e.stopPropagation()
-            handleClickDevLogGroup(group)
+            handleClickDevLogGroup(group.pk)
             setSelectedGroup(group)
-            console.log(selectedGroup)
           }}
           isSelectable
           isSelect={selectedGroup?.pk === group.pk}
@@ -76,18 +81,25 @@ export default function DevLogView({
         </Folder>
       )
     },
-    [groupTree, selectedGroup]
+    [currentGroupTree, selectedGroup]
   )
 
   const GroupTreeComponent = useMemo(() => {
-    return groupTree.map(child => returnFolder(child))
-  }, [groupTree, selectedGroup])
+    return currentGroupTree.map(child => returnFolder(child))
+  }, [currentGroupTree, selectedGroup])
+
+  const updateFileTree = useCallback(
+    async (groupPk: number) => {
+      await handleClickDevLogGroup(groupPk)
+    },
+    [handleClickDevLogGroup]
+  )
 
   return (
     <Row fullWidth gap={4} className={'min-w-[200px]'}>
       {/*  Navigation Area  */}
       <Column gap={4} fullWidth className={'flex-[1]'}>
-        <Tree className={'text-[#ddd]'}>{GroupTreeComponent}</Tree>
+        <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
 
         <Column fullWidth gap={4} className={''}>
           {/*  File List  */}
@@ -118,8 +130,10 @@ export default function DevLogView({
       <Column gap={4} fullWidth className={'flex-[3]'}>
         <DevLogDetailView
           selectedDevLog={selectedDevLog}
+          setSelectedDevLog={setSelectedDevLog}
           selectedGroup={selectedGroup}
-          currentBoard={board}
+          selectedBoard={board}
+          updateFileTree={updateFileTree}
         />
       </Column>
     </Row>

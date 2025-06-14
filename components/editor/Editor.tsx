@@ -4,9 +4,8 @@ import '@blocknote/core/fonts/inter.css'
 import { BlockNoteView } from '@blocknote/mantine'
 import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { devLogType } from '@/types/schemaType'
-import { devLog } from '@/supabase/schema'
 
 export default function Editor({
   selectedDevLog,
@@ -57,13 +56,14 @@ export default function Editor({
   // 선택된 log 가 바뀌는 경우 -> block 갱신
   useEffect(() => {
     if (!selectedDevLog) return
+
     const _blocks = JSON.parse(selectedDevLog?.content ?? '')
     if (!_blocks || _blocks.length === 0) return
 
     const currentBlocks = editor.document
-    const initialBlockId = currentBlocks[0].id
 
     // 새로운 block 삽입 후, 기존 blocks 삭제
+    const initialBlockId = currentBlocks[0].id
     editor.insertBlocks(_blocks, initialBlockId, 'before')
     editor.removeBlocks([...currentBlocks.map((block: any) => block.id)])
   }, [selectedDevLog])

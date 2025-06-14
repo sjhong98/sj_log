@@ -4,22 +4,23 @@ import db from '@/supabase'
 import { devLog } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import { devLogType } from '@/types/schemaType'
+import { eq } from 'drizzle-orm'
 
-export default async function createDevLog(devLogItem: devLogType) {
+export default async function updateDevLog(devLogItem: devLogType) {
   let user: any = await getUser()
-  if (!user) return null
+  if (!user || !devLogItem.pk) return null
 
   try {
     const [result] = await db
-      .insert(devLog)
-      .values({
+      .update(devLog)
+      .set({
         title: devLogItem.title,
         content: devLogItem.content,
-        groupPk: devLogItem.groupPk,
-        date: new Date().toISOString(),
-        uid: user.id
+        updatedAt: new Date().toISOString()
       })
+      .where(eq(devLog.pk, devLogItem.pk))
       .returning()
+    console.log(result)
     return result
   } catch (e) {
     console.error(e)
