@@ -1,5 +1,6 @@
-import { devLogGroupType } from '@/types/schemaType'
+import { devLogGroupType, devLogType } from '@/types/schemaType'
 
 export default interface GroupTreeType extends devLogGroupType {
-  childGroupList: devLogGroupType[]
+  childGroupList?: devLogGroupType[]
+  posts?: devLogType[]
 }

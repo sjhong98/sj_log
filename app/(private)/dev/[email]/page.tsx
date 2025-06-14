@@ -5,6 +5,7 @@ import DevLogView from '@/components/dev/DevLogView'
 import BoardType from '@/types/dev/BoardType'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
+import GroupTreeType from '@/types/dev/GroupTreeType'
 
 export default async function Page() {
   let user: any = await getUser()
@@ -12,12 +13,12 @@ export default async function Page() {
 
   const boardList: BoardType | null = await getGroupTreeAndPostsByPk()
 
-  const test = await getAllGroupTree()
+  const groupTree: GroupTreeType[] | null = await getAllGroupTree()
 
-  if (!boardList) return
+  if (!boardList || !groupTree) return
   return (
     <>
-      <DevLogView list={boardList} test={test} />
+      <DevLogView list={boardList} groupTree={groupTree} />
     </>
   )
 }

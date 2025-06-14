@@ -4,16 +4,20 @@ import '@blocknote/core/fonts/inter.css'
 import { BlockNoteView } from '@blocknote/mantine'
 import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { devLogType } from '@/types/schemaType'
+import { devLog } from '@/supabase/schema'
 
 export default function Editor({
+  selectedDevLog,
   blocks,
   setBlocks
 }: {
+  selectedDevLog: devLogType | null
   blocks: any
   setBlocks: any
 }) {
-  const editor = useCreateBlockNote({})
+  const editor = useCreateBlockNote()
 
   const currentTheme = {
     colors: {
@@ -50,10 +54,29 @@ export default function Editor({
     fontFamily: 'Helvetica Neue, sans-serif'
   }
 
+  // 선택된 log 가 바뀌는 경우 -> block 갱신
+  useEffect(() => {
+    if (!selectedDevLog) return
+    const _blocks = JSON.parse(selectedDevLog?.content ?? '')
+    if (!_blocks || _blocks.length === 0) return
+
+    const currentBlocks = editor.document
+    const initialBlockId = currentBlocks[0].id
+
+    // 새로운 block 삽입 후, 기존 blocks 삭제
+    editor.insertBlocks(_blocks, initialBlockId, 'before')
+    editor.removeBlocks([...currentBlocks.map((block: any) => block.id)])
+  }, [selectedDevLog])
+
+  // onChange 이벤틑 헨들러
+  // 기존 값과 동일하지 않은 경우에만 상태 변경
   useEffect(() => {
     editor.onChange((editor, { getChanges }) => {
       const blocks = editor.document
-      setBlocks(blocks)
+      setBlocks((prev: any) => {
+        const isEqual = JSON.stringify(prev) === JSON.stringify(blocks)
+        return isEqual ? prev : blocks
+      })
     })
   }, [setBlocks])
 

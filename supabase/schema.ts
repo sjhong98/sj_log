@@ -212,6 +212,24 @@ export const devLogTagRelation = pgTable(
   ]
 )
 
+export const devLogTag = pgTable('dev_log_tag', {
+  // You can use { mode: "bigint" } if numbers are exceeding js number limitations
+  pk: bigint({ mode: 'number' })
+    .primaryKey()
+    .generatedByDefaultAsIdentity({
+      name: 'dev_log_tag_pk_seq',
+      startWith: 1,
+      increment: 1,
+      minValue: 1,
+      maxValue: 9223372036854775807,
+      cache: 1
+    }),
+  name: varchar().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
+    .defaultNow()
+    .notNull()
+})
+
 export const devLog = pgTable(
   'dev_log',
   {
@@ -235,7 +253,7 @@ export const devLog = pgTable(
     title: varchar().notNull(),
     content: text().notNull(),
     date: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
-    uid: varchar().notNull(),
+    uid: uuid().defaultRandom().notNull(),
     // You can use { mode: "bigint" } if numbers are exceeding js number limitations
     groupPk: bigint('group_pk', { mode: 'number' }).notNull()
   },
@@ -244,27 +262,14 @@ export const devLog = pgTable(
       columns: [table.groupPk],
       foreignColumns: [devLogGroup.pk],
       name: 'dev_log_group_pk_fkey'
+    }),
+    foreignKey({
+      columns: [table.uid],
+      foreignColumns: [users.id],
+      name: 'dev_log_uid_fkey'
     })
   ]
 )
-
-export const devLogTag = pgTable('dev_log_tag', {
-  // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-  pk: bigint({ mode: 'number' })
-    .primaryKey()
-    .generatedByDefaultAsIdentity({
-      name: 'dev_log_tag_pk_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      maxValue: 9223372036854775807,
-      cache: 1
-    }),
-  name: varchar().notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' })
-    .defaultNow()
-    .notNull()
-})
 
 export const devLogGroup = pgTable(
   'dev_log_group',

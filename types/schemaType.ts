@@ -2,12 +2,12 @@ import {InferSelectModel} from "drizzle-orm";
 
 import { comment,devLog,devLogGroup,devLogTag,devLogTagRelation,diary,financeAccount,financeLog,user } from '../supabase/schema'
 
-export type commentType = InferSelectModel<typeof comment> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type devLogType = InferSelectModel<typeof devLog> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type devLogGroupType = InferSelectModel<typeof devLogGroup> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type devLogTagType = InferSelectModel<typeof devLogTag> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type devLogTagRelationType = InferSelectModel<typeof devLogTagRelation> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type diaryType = InferSelectModel<typeof diary> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type financeAccountType = InferSelectModel<typeof financeAccount> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type financeLogType = InferSelectModel<typeof financeLog> & { pk?: number; created_at?: Date; updated_at?: Date }
-export type userType = InferSelectModel<typeof user> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type commentType = Omit<InferSelectModel<typeof comment>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type devLogType = Omit<InferSelectModel<typeof devLog>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type devLogGroupType = Omit<InferSelectModel<typeof devLogGroup>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type devLogTagType = Omit<InferSelectModel<typeof devLogTag>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type devLogTagRelationType = Omit<InferSelectModel<typeof devLogTagRelation>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type diaryType = Omit<InferSelectModel<typeof diary>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type financeAccountType = Omit<InferSelectModel<typeof financeAccount>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type financeLogType = Omit<InferSelectModel<typeof financeLog>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
+export type userType = Omit<InferSelectModel<typeof user>, 'pk' | 'createdAt' | 'updatedAt' | 'uid'> & { pk?: number; created_at?: Date; updated_at?: Date }
