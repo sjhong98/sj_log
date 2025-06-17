@@ -3,25 +3,31 @@
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
 import { and, eq } from 'drizzle-orm'
-import { PgTableWithColumns } from 'drizzle-orm/pg-core'
-import { devLog } from '@/supabase/schema'
+import { devLog, devLogGroup } from '@/supabase/schema'
 
 export default async function Delete(
-  table: PgTableWithColumns<any>,
+  table: string,
   pk: number,
-  options: {
+  options?: {
     conditions?: any[]
   }
 ) {
-  const user = await getUser()
-  if (!user) return
+  try {
+    const user = await getUser()
+    if (!user) return
 
-  let { conditions = [] } = options
+    let conditions: any = []
 
-  conditions.push(eq(devLog.pk, pk))
+    const _table: any =
+      table === 'devLog' ? devLog : table === 'devLogGroup' ? devLogGroup : null
+    if (!_table) return
 
-  return db
-    .delete(table)
-    .where(and(...conditions))
-    .returning()
+    if (options?.conditions) conditions = [...options.conditions]
+    conditions.push(eq(_table.pk, pk))
+    const result = await db.delete(_table).where(and(...conditions))
+    return result.rowCount
+  } catch (error) {
+    console.error(error)
+    throw new Error('Error occurred while deleting dev log')
+  }
 }

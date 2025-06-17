@@ -18,6 +18,7 @@ import { CircularProgress } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
+import { CheckIcon } from 'lucide-react'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -46,7 +47,8 @@ export default function DevLogDetailView({
   }
   const [currentBoard, setCurrentBoard] = useState<BoardType | null>()
   const [blocks, setBlocks] = useState<any>([])
-  const [isSaving, setIsSaving] = useState(false)
+  // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
+  const [editorStatus, setEditorStatus] = useState(0)
   const [devLogForm, setDevLogForm] = useState<editableDevLogType>(
     selectedDevLog
       ? {
@@ -82,7 +84,7 @@ export default function DevLogDetailView({
     if (timerRef.current) clearTimeout(timerRef.current)
 
     timerRef.current = setTimeout(async () => {
-      setIsSaving(true)
+      setEditorStatus(1)
       await autoSave()
     }, 2000)
   }, [devLogForm, blocks])
@@ -98,11 +100,13 @@ export default function DevLogDetailView({
   )
 
   const autoSave = useCallback(async () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+
     let _devLogForm: editableDevLogType = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
     const updated = await updateDevLog(_devLogForm)
-    setIsSaving(false)
+    setEditorStatus(2)
     if (updated) {
       await updateFileTree(_devLogForm.groupPk)
       return true
@@ -110,6 +114,11 @@ export default function DevLogDetailView({
       toast.error('자동 저장 실패')
       return false
     }
+  }, [devLogForm, blocks, timerRef])
+
+  // editor 수정 이벤트 핸들링
+  useEffect(() => {
+    setEditorStatus(0)
   }, [devLogForm, blocks])
 
   // 새로운 devLog row 생성
@@ -143,10 +152,6 @@ export default function DevLogDetailView({
     await updateFileTree(_devLogForm.groupPk)
   }, [devLogForm, blocks, selectedBoard])
 
-  const deleteEmptyDevLog = useCallback(async () => {
-    //
-  }, [])
-
   return (
     <>
       <Column
@@ -166,9 +171,13 @@ export default function DevLogDetailView({
                     : ''
                 }${currentBoard?.currentGroup ? currentBoard.currentGroup.name : ''}`}
               </p>
-              <CircularProgress
-                className={`!text-white ${!isSaving && 'opacity-0'}`}
-              />
+              {editorStatus === 0 ? (
+                <button onClick={() => autoSave()}>저장</button>
+              ) : editorStatus === 1 ? (
+                <CircularProgress className={`!text-white`} />
+              ) : (
+                <CheckIcon />
+              )}
             </Row>
             <Column gap={4} className={'mt-[-30px]'}>
               <input

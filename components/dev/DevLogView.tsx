@@ -5,13 +5,18 @@ import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
 import React, { useCallback, useMemo, useState } from 'react'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
+import Delete from '@/actions/commonMethods/delete'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
-import { FileIcon } from 'lucide-react'
+import { FileIcon, PlusIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
-import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
+import ModifyPopper from '@/components/popper/ModifyPopper'
+import { devLog } from '@/supabase/schema'
 import { toast } from 'react-toastify'
+import createGroup from '@/actions/dev/group/createGroup'
+import { Dialog } from '@mui/material'
+import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 
 export default function DevLogView({
   list,
@@ -27,6 +32,8 @@ export default function DevLogView({
   )
   const [currentGroupTree, setCurrentGroupTree] =
     useState<GroupTreeType[]>(groupTree)
+  const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
+  const [newGroupName, setNewGroupName] = useState<string>('')
 
   const handleClickDevLog = useCallback(async (item?: devLogType) => {
     if (!item) return
@@ -95,11 +102,94 @@ export default function DevLogView({
     [handleClickDevLogGroup]
   )
 
+  const handleCreateGroup = useCallback(async () => {
+    if (!selectedGroup) return
+    try {
+      const result = await createGroup({
+        parentGroupPk: selectedGroup.pk ?? 0,
+        name: newGroupName
+      })
+      if (!result) return
+      toast.success('Created new group successfully!')
+      const newGroupTree = await getAllGroupTree()
+      if (newGroupTree) setCurrentGroupTree(newGroupTree)
+    } catch (e) {
+      console.error(e)
+      toast.error('Failed to create new group.')
+    } finally {
+      setNewGroupName('')
+    }
+  }, [selectedGroup, newGroupName])
+
+  const handleDeleteGroup = useCallback(async () => {
+    if (!selectedGroup) return
+
+    if (board?.posts?.length && board?.posts?.length > 0) {
+      toast.error('Cannot delete group with files')
+      return
+    }
+
+    try {
+      const rowCount = await Delete('devLogGroup', selectedGroup?.pk ?? 0)
+      if (rowCount) {
+        toast.success('Deleted group successfully!')
+        const newGroupTree = await getAllGroupTree()
+        if (newGroupTree) setCurrentGroupTree(newGroupTree)
+      } else {
+        toast.error('Failed to delete group.')
+      }
+    } catch (e) {
+      console.error(e)
+      toast.error('Failed to delete group.')
+    }
+  }, [selectedGroup, board])
+
   return (
     <Row fullWidth gap={4} className={'min-w-[200px]'}>
       {/*  Navigation Area  */}
       <Column gap={4} fullWidth className={'flex-[1]'}>
-        <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
+        <Row className={'relative group'}>
+          <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
+          {selectedGroup && (
+            <Row
+              className={
+                'absolute right-0 top-0 opacity-0 group-hover:opacity-100'
+              }
+            >
+              <PlusIcon
+                className={'cursor-pointer'}
+                onClick={() => setGroupCreateModalOpen(true)}
+              />
+              <PlusIcon
+                className={'cursor-pointer rotate-[45deg]'}
+                onClick={handleDeleteGroup}
+              />
+            </Row>
+          )}
+          <Dialog
+            open={groupCreateModalOpen}
+            onClose={() => setGroupCreateModalOpen(false)}
+          >
+            <form
+              onSubmit={e => {
+                e.preventDefault()
+                if (newGroupName === '') return
+                handleCreateGroup()
+                setGroupCreateModalOpen(false)
+              }}
+              className={'flex p-2'}
+            >
+              <input
+                placeholder={'New group name'}
+                value={newGroupName}
+                onChange={e => setNewGroupName(e.target.value)}
+                className={
+                  'w-full !outline-none bg-[#333] rounded-sm px-2 min-w-[150px]'
+                }
+              />
+            </form>
+          </Dialog>
+        </Row>
 
         <Column fullWidth gap={4} className={''}>
           {/*  File List  */}
@@ -113,12 +203,39 @@ export default function DevLogView({
                   gap={1}
                   fullWidth
                   className={
-                    'items-center cursor-pointer rounded-sm py-1 px-2 hover:bg-stone-800'
+                    'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group'
                   }
                   onClick={() => handleClickDevLog(item)}
                 >
-                  <FileIcon className='size-4 mt-[1px]' />
-                  {item.title}
+                  <Row gap={1} className={'items-center'}>
+                    <FileIcon className='size-4 mt-[1px]' />
+                    {item.title}
+                  </Row>
+                  <Row
+                    className={
+                      'group-hover:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                    }
+                  >
+                    <ModifyPopper
+                      handleClickDelete={async () => {
+                        if (!item.pk) return
+
+                        try {
+                          const rowCount = await Delete('devLog', item.pk)
+                          if (rowCount) {
+                            toast.success('Deleted successfully!')
+                            await updateFileTree(item.groupPk)
+                          } else toast.error('Failed to delete group')
+                        } catch (e) {
+                          console.error(e)
+                          toast.error('Failed to delete group')
+                        }
+                      }}
+                      handleClickModify={() => {}}
+                      iconButtonClassName={'!h-[30px] !w-[30px]'}
+                      hiddenModify
+                    />
+                  </Row>
                 </Row>
               )
             })}

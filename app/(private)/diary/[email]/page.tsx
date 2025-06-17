@@ -4,8 +4,6 @@ import { diary } from '@/supabase/schema'
 import DiaryList from '@/components/diary/DiaryList'
 import { getUser } from '@/actions/session/getUser'
 import dayjs from 'dayjs'
-import { refreshSession } from '@/actions/session/refreshSession'
-import { cookies } from 'next/headers'
 
 export default async function Page() {
   let user: any = await getUser()

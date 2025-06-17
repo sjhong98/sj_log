@@ -16,17 +16,22 @@ import { useRef, useState } from 'react'
 const ModifyPopper = ({
   onOpen,
   handleClickDelete,
-  handleClickModify
+  handleClickModify,
+  hiddenModify,
+  iconButtonClassName
 }: {
   onOpen?: any
   handleClickDelete: any
   handleClickModify: any
+  hiddenModify?: boolean
+  iconButtonClassName?: string
 }) => {
   const anchorRef = useRef<any>(null)
   const [hamburgerOpen, setHamburgerOpen] = useState(false)
   return (
     <div>
       <IconButton
+        className={iconButtonClassName}
         ref={anchorRef}
         onClick={() => {
           setHamburgerOpen(true)
@@ -65,17 +70,19 @@ const ModifyPopper = ({
                       className={'group-hover:text-red-500 duration-100'}
                     />
                   </IconButton>
-                  <IconButton
-                    onClick={() => {
-                      setHamburgerOpen(false)
-                      handleClickModify()
-                    }}
-                    className={'group'}
-                  >
-                    <IconPencil
-                      className={'group-hover:text-amber-500 duration-100'}
-                    />
-                  </IconButton>
+                  {!hiddenModify && (
+                    <IconButton
+                      onClick={() => {
+                        setHamburgerOpen(false)
+                        handleClickModify()
+                      }}
+                      className={'group'}
+                    >
+                      <IconPencil
+                        className={'group-hover:text-amber-500 duration-100'}
+                      />
+                    </IconButton>
+                  )}
                 </Row>
               </ClickAwayListener>
             </Paper>

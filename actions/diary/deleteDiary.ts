@@ -29,11 +29,9 @@ export default async function DeleteDiary(diaryItem: DiaryType) {
   //   Delete Image
   const sources = extractImageSrcFromHtml(diaryItem.content ?? '')
   if (sources.length > 0) {
-    console.log(sources)
     const deleteImageResult = await supabase.storage
       .from('sjlog')
       .remove(sources)
-    console.log(deleteImageResult)
     if (deleteImageResult.error)
       throw new Error(`이미지 삭제 중 에러 발생: ${deleteImageResult.error}`)
   }
