@@ -19,6 +19,7 @@ import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import { CheckIcon } from 'lucide-react'
+import PerfectScrollbar from 'react-perfect-scrollbar'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -155,66 +156,72 @@ export default function DevLogDetailView({
   return (
     <>
       <Column
-        gap={4}
-        fullWidth
-        className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative'}
+        className={
+          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1]'
+        }
       >
-        {selectedDevLog && (
-          <>
-            <Row fullWidth className={'justify-between pl-[55px] pr-4'}>
-              <p className={'text-[12px]'}>
-                {`${
-                  currentBoard?.upperGroupList
-                    ? currentBoard?.upperGroupList
-                        ?.map((item: devLogGroupType) => item.name)
-                        .join(' > ') + ' > '
-                    : ''
-                }${currentBoard?.currentGroup ? currentBoard.currentGroup.name : ''}`}
-              </p>
-              {editorStatus === 0 ? (
-                <div className={'h-[30px]'}>
-                  <button onClick={() => autoSave()}>저장</button>
-                </div>
-              ) : editorStatus === 1 ? (
-                <div className={'h-[30px]'}>
-                  <CircularProgress className={`!text-white`} />
-                </div>
-              ) : (
-                <div className={'h-[30px]'}>
-                  <CheckIcon />
-                </div>
-              )}
-            </Row>
-            <Column gap={4} className={'mt-[-30px]'}>
-              <input
-                name={'title'}
-                value={devLogForm.title}
-                onChange={handleChange}
-                placeholder={'Title'}
-                autoComplete={'off'}
-                className={
-                  'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
-                }
-              />
-              {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
-              <Editor
-                selectedDevLog={selectedDevLog}
-                blocks={blocks}
-                setBlocks={setBlocks}
-              />
-            </Column>
-          </>
-        )}
-
-        {/*  새로운 dev log 생성 버튼  */}
-        <button
-          onClick={handleCreateNewDevLog}
-          className={
-            'bg-[#ddd] rounded-full p-1 shadow-lg z-[10] cursor-pointer absolute right-0 bottom-0'
-          }
+        <Column
+          gap={4}
+          fullWidth
+          className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative'}
         >
-          <IconPlus color={'#333'} />
-        </button>
+          {selectedDevLog && (
+            <>
+              <Row fullWidth className={'justify-between pl-[55px] pr-4'}>
+                <p className={'text-[12px]'}>
+                  {`${
+                    currentBoard?.upperGroupList
+                      ? currentBoard?.upperGroupList
+                          ?.map((item: devLogGroupType) => item.name)
+                          .join(' > ') + ' > '
+                      : ''
+                  }${currentBoard?.currentGroup ? currentBoard.currentGroup.name : ''}`}
+                </p>
+                {editorStatus === 0 ? (
+                  <div className={'h-[30px]'}>
+                    <button onClick={() => autoSave()}>저장</button>
+                  </div>
+                ) : editorStatus === 1 ? (
+                  <div className={'h-[30px]'}>
+                    <CircularProgress className={`!text-white`} />
+                  </div>
+                ) : (
+                  <div className={'h-[30px]'}>
+                    <CheckIcon />
+                  </div>
+                )}
+              </Row>
+              <Column gap={4} className={'mt-[-30px]'}>
+                <input
+                  name={'title'}
+                  value={devLogForm.title}
+                  onChange={handleChange}
+                  placeholder={'Title'}
+                  autoComplete={'off'}
+                  className={
+                    'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                  }
+                />
+                {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
+                <Editor
+                  selectedDevLog={selectedDevLog}
+                  blocks={blocks}
+                  setBlocks={setBlocks}
+                />
+              </Column>
+            </>
+          )}
+
+          {/*  새로운 dev log 생성 버튼  */}
+          <button
+            onClick={handleCreateNewDevLog}
+            className={
+              'bg-[#ddd] rounded-full p-1 shadow-lg z-[10] cursor-pointer absolute right-0 bottom-0'
+            }
+          >
+            <IconPlus color={'#333'} />
+          </button>
+        </Column>
       </Column>
     </>
   )

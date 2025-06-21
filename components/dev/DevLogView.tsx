@@ -183,6 +183,7 @@ export default function DevLogView({
               className={'flex p-2'}
             >
               <input
+                autoFocus
                 placeholder={'New group name'}
                 value={newGroupName}
                 onChange={e => setNewGroupName(e.target.value)}
