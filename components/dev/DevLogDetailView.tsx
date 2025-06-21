@@ -19,7 +19,6 @@ import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import { CheckIcon } from 'lucide-react'
-import PerfectScrollbar from 'react-perfect-scrollbar'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -29,14 +28,14 @@ export default function DevLogDetailView({
   selectedDevLog,
   setSelectedDevLog,
   selectedGroup,
-  selectedBoard,
-  updateFileTree
+  currentPostList,
+  setCurrentPostList
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
   selectedGroup: devLogGroupType | null
-  selectedBoard: BoardType | null
-  updateFileTree: any
+  currentPostList: devLogType[]
+  setCurrentPostList: any
 }) {
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
@@ -92,12 +91,21 @@ export default function DevLogDetailView({
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
+      if (!selectedDevLog?.pk) return
+
       let _devLogForm: editableDevLogType = { ...devLogForm }
       // @ts-ignore
       _devLogForm[e.target.name as keyof editableDevLogType] = e.target.value
       setDevLogForm(_devLogForm)
+
+      let _currentPostList = [...currentPostList]
+      const idx = _currentPostList.findIndex(
+        devLog => devLog.pk === selectedDevLog.pk
+      )
+      _currentPostList[idx].title = e.target.value
+      setCurrentPostList(_currentPostList)
     },
-    [devLogForm]
+    [devLogForm, currentPostList, selectedDevLog]
   )
 
   const autoSave = useCallback(async () => {
@@ -109,7 +117,6 @@ export default function DevLogDetailView({
     const updated = await updateDevLog(_devLogForm)
     setEditorStatus(2)
     if (updated) {
-      await updateFileTree(_devLogForm.groupPk)
       return true
     } else {
       toast.error('자동 저장 실패')
@@ -145,13 +152,16 @@ export default function DevLogDetailView({
         children: []
       }
     ])
-    _devLogForm.groupPk = selectedBoard?.currentGroup?.pk ?? -1
+    _devLogForm.groupPk = selectedGroup?.pk ?? -1
 
-    const inserted: devLogType | null = await createDevLog(_devLogForm)
+    const inserted = await createDevLog(_devLogForm)
     if (!inserted) return
+
     setSelectedDevLog(inserted)
-    await updateFileTree(_devLogForm.groupPk)
-  }, [devLogForm, blocks, selectedBoard])
+    let _currentPostList: devLogType[] = [...currentPostList]
+    _currentPostList.push(inserted)
+    setCurrentPostList(_currentPostList)
+  }, [devLogForm, blocks, selectedGroup])
 
   return (
     <>

@@ -87,8 +87,7 @@ export default async function getGroupTreeAndPostsByPk(pk?: number) {
   return {
     currentGroup,
     posts,
-    // stack
-    upperGroupList: await getUpperGroupList(pk),
+    upperGroupList: null,
     lowerGroupList: await getLowerGroupList(pk)
   }
 }

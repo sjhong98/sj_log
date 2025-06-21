@@ -5,20 +5,19 @@ import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
 import React, { useCallback, useMemo, useState } from 'react'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
-import Delete from '@/actions/commonMethods/delete'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { FileIcon, FolderInputIcon, PlusIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
-import { devLog } from '@/supabase/schema'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
 import { Dialog } from '@mui/material'
-import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 import CustomPopper from '@/components/popper/CustomPopper'
 import { IconTrashFilled } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
+import deleteGroup from '@/actions/dev/group/deleteGroup'
+import deleteDevLog from '@/actions/dev/log/deleteDevLog'
 
 export default function DevLogView({
   list,
@@ -28,6 +27,7 @@ export default function DevLogView({
   groupTree: GroupTreeType[]
 }) {
   const [board, setBoard] = useState<BoardType | null>(list)
+  const [currentPostList, setCurrentPostList] = useState<devLogType[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
     null
@@ -49,10 +49,10 @@ export default function DevLogView({
     if (!groupPk) return
 
     const currentBoard: BoardType | null =
-      // TODO: post 만 가져오도록 변경
       await getGroupTreeAndPostsByPk(groupPk)
     if (!currentBoard) return
     setBoard(currentBoard)
+    setCurrentPostList(currentBoard.posts)
   }, [])
 
   // Recursive Tree for Navigator
@@ -118,7 +118,7 @@ export default function DevLogView({
 
               if (temporarySelectedGroup?.pk !== group.pk)
                 setTemporarySelectedGroup(group)
-              else updateDevLogParentGroup()
+              else handleUpdateDevLogParentGroup()
             }}
             isSelectable
             isSelect={temporarySelectedGroup?.pk === group.pk}
@@ -137,7 +137,7 @@ export default function DevLogView({
 
             if (temporarySelectedGroup?.pk !== group.pk)
               setTemporarySelectedGroup(group)
-            else updateDevLogParentGroup()
+            else handleUpdateDevLogParentGroup()
           }}
           isSelectable
           isSelect={temporarySelectedGroup?.pk === group.pk}
@@ -153,24 +153,16 @@ export default function DevLogView({
     return currentGroupTree.map(child => returnIndependentFolder(child))
   }, [currentGroupTree, temporarySelectedGroup])
 
-  const updateFileTree = useCallback(
-    async (groupPk: number) => {
-      await handleClickDevLogGroup(groupPk)
-    },
-    [handleClickDevLogGroup]
-  )
-
   const handleCreateGroup = useCallback(async () => {
     if (!selectedGroup) return
     try {
-      const result = await createGroup({
+      const updatedGroupTree = await createGroup({
         parentGroupPk: selectedGroup.pk ?? 0,
         name: newGroupName
       })
-      if (!result) return
+      if (!updatedGroupTree) return
+      setCurrentGroupTree(updatedGroupTree)
       toast.success('Created new group successfully!')
-      const newGroupTree = await getAllGroupTree()
-      if (newGroupTree) setCurrentGroupTree(newGroupTree)
     } catch (e) {
       console.error(e)
       toast.error('Failed to create new group.')
@@ -182,20 +174,20 @@ export default function DevLogView({
   const handleDeleteGroup = useCallback(async () => {
     if (!selectedGroup) return
 
-    if (
-      (board?.posts?.length && board?.posts?.length > 0) ||
-      (board?.lowerGroupList?.length && board?.lowerGroupList?.length > 0)
-    ) {
-      toast.error('Cannot delete group with files or child groups')
-      return
-    }
+    // TODO: modify logic
+    // if (
+    //   (board?.posts?.length && board?.posts?.length > 0) ||
+    //   (board?.lowerGroupList?.length && board?.lowerGroupList?.length > 0)
+    // ) {
+    //   toast.error('Cannot delete group with files or child groups')
+    //   return
+    // }
 
     try {
-      const rowCount = await Delete('devLogGroup', selectedGroup?.pk ?? 0)
-      if (rowCount) {
+      const updatedGroupTree = await deleteGroup(selectedGroup?.pk ?? 0)
+      if (updatedGroupTree) {
         toast.success('Deleted group successfully!')
-        const newGroupTree = await getAllGroupTree()
-        if (newGroupTree) setCurrentGroupTree(newGroupTree)
+        setCurrentGroupTree(updatedGroupTree)
       } else {
         toast.error('Failed to delete group.')
       }
@@ -205,25 +197,28 @@ export default function DevLogView({
     }
   }, [selectedGroup, board])
 
-  const deleteDevLog = useCallback(
-    async (devLog: devLogType) => {
-      if (!devLog.pk) return
+  const handleDeleteDevLog = useCallback(async (devLog: devLogType) => {
+    if (!devLog.pk) return
 
-      try {
-        const rowCount = await Delete('devLog', devLog.pk)
-        if (rowCount) {
-          toast.success('Deleted successfully!')
-          await updateFileTree(devLog.groupPk)
-        } else toast.error('Failed to delete group')
-      } catch (e) {
-        console.error(e)
-        toast.error('Failed to delete group')
-      }
-    },
-    [updateFileTree]
-  )
+    try {
+      const deleted = await deleteDevLog(devLog.pk)
+      if (deleted) {
+        toast.success('Deleted successfully!')
 
-  const updateDevLogParentGroup = useCallback(async () => {
+        let _currentPostList = [...currentPostList]
+        const idx = _currentPostList.findIndex(
+          devLog => devLog.pk === deleted.pk
+        )
+        _currentPostList.splice(idx, 1)
+        setCurrentPostList(_currentPostList)
+      } else toast.error('Failed to delete group')
+    } catch (e) {
+      console.error(e)
+      toast.error('Failed to delete group')
+    }
+  }, [])
+
+  const handleUpdateDevLogParentGroup = useCallback(async () => {
     if (
       !temporarySelectedGroup?.pk ||
       !selectedDevLog?.pk ||
@@ -231,19 +226,24 @@ export default function DevLogView({
     )
       return
 
-    const rowCount = await updateParentGroupPk(
+    const updated = await updateParentGroupPk(
       selectedDevLog.pk,
       temporarySelectedGroup.pk
     )
-    if (rowCount) {
+
+    if (updated) {
       setChangeGroupModalOpen(false)
-      await updateFileTree(selectedGroup.pk)
       setTemporarySelectedGroup(null)
+
+      let _currentPostList = [...currentPostList]
+      const idx = _currentPostList.findIndex(devLog => devLog.pk === updated.pk)
+      _currentPostList.splice(idx, 1)
+      setCurrentPostList(_currentPostList)
       toast.success('Dev log moved successfully!')
     } else {
       toast.error('Failed to moved parent group')
     }
-  }, [temporarySelectedGroup, selectedDevLog, updateFileTree, selectedGroup])
+  }, [temporarySelectedGroup, selectedDevLog, selectedGroup])
 
   return (
     <>
@@ -273,7 +273,7 @@ export default function DevLogView({
           <Column fullWidth gap={4} className={''}>
             {/*  File List  */}
             <Column fullWidth>
-              {board?.posts.map((item: devLogType, i: number) => {
+              {currentPostList.map((item: devLogType, i: number) => {
                 const isPost = 'content' in item
                 if (!isPost) return
                 return (
@@ -299,7 +299,7 @@ export default function DevLogView({
                         buttons={[
                           {
                             icon: <IconTrashFilled />,
-                            function: () => deleteDevLog(item)
+                            function: () => handleDeleteDevLog(item)
                           },
                           {
                             icon: <FolderInputIcon />,
@@ -321,8 +321,8 @@ export default function DevLogView({
             selectedDevLog={selectedDevLog}
             setSelectedDevLog={setSelectedDevLog}
             selectedGroup={selectedGroup}
-            selectedBoard={board}
-            updateFileTree={updateFileTree}
+            currentPostList={currentPostList}
+            setCurrentPostList={setCurrentPostList}
           />
         </Column>
       </Row>
@@ -367,22 +367,3 @@ export default function DevLogView({
     </>
   )
 }
-
-// {board?.currentGroup && (
-//   <p
-//     onClick={async () => {
-//       // 현재 최상단 그룹을 가리키고 있는 경우
-//       if (!board?.upperGroupList) {
-//         await handleClickDevLog()
-//       }
-//       // 부모가 있는 경우
-//       else {
-//         const parentGroup =
-//           board?.upperGroupList?.[board?.upperGroupList.length - 1]
-//         if (parentGroup) await handleClickDevLogGroup(parentGroup)
-//       }
-//     }}
-//   >
-//     back
-//   </p>
-// )}

@@ -10,7 +10,7 @@ export default async function createDevLog(devLogItem: devLogType) {
   if (!user) return null
 
   try {
-    const [result] = await db
+    const [inserted] = await db
       .insert(devLog)
       .values({
         title: devLogItem.title,
@@ -20,7 +20,8 @@ export default async function createDevLog(devLogItem: devLogType) {
         uid: user.id
       })
       .returning()
-    return result
+    if (!inserted) return
+    return inserted
   } catch (e) {
     console.error(e)
     return null

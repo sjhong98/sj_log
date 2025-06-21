@@ -4,6 +4,7 @@ import db from '@/supabase'
 import { devLogGroup } from '@/supabase/schema'
 import { devLogGroupType } from '@/types/schemaType'
 import { getUser } from '@/actions/session/getUser'
+import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 
 export default async function createGroup(group: devLogGroupType) {
   try {
@@ -19,7 +20,8 @@ export default async function createGroup(group: devLogGroupType) {
       })
       .returning()
 
-    return result
+    const updatedGroupTree = await getAllGroupTree()
+    return updatedGroupTree
   } catch (e) {
     console.error(e)
     throw new Error('create group failed')
