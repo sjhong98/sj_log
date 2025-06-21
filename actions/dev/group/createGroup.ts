@@ -20,6 +20,8 @@ export default async function createGroup(group: devLogGroupType) {
       })
       .returning()
 
+    return result
+
     // const updatedGroupTree = await getAllGroupTree()
     // return updatedGroupTree
   } catch (e) {
