@@ -20,8 +20,8 @@ export default async function createGroup(group: devLogGroupType) {
       })
       .returning()
 
-    const updatedGroupTree = await getAllGroupTree()
-    return updatedGroupTree
+    // const updatedGroupTree = await getAllGroupTree()
+    // return updatedGroupTree
   } catch (e) {
     console.error(e)
     throw new Error('create group failed')

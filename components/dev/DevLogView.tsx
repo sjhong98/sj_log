@@ -160,8 +160,8 @@ export default function DevLogView({
         parentGroupPk: selectedGroup.pk ?? 0,
         name: newGroupName
       })
-      if (!updatedGroupTree) return
-      setCurrentGroupTree(updatedGroupTree)
+      // if (!updatedGroupTree) return
+      // setCurrentGroupTree(updatedGroupTree)
       toast.success('Created new group successfully!')
     } catch (e) {
       console.error(e)
