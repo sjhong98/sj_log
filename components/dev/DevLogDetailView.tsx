@@ -172,11 +172,17 @@ export default function DevLogDetailView({
                 }${currentBoard?.currentGroup ? currentBoard.currentGroup.name : ''}`}
               </p>
               {editorStatus === 0 ? (
-                <button onClick={() => autoSave()}>저장</button>
+                <div className={'h-[30px]'}>
+                  <button onClick={() => autoSave()}>저장</button>
+                </div>
               ) : editorStatus === 1 ? (
-                <CircularProgress className={`!text-white`} />
+                <div className={'h-[30px]'}>
+                  <CircularProgress className={`!text-white`} />
+                </div>
               ) : (
-                <CheckIcon />
+                <div className={'h-[30px]'}>
+                  <CheckIcon />
+                </div>
               )}
             </Row>
             <Column gap={4} className={'mt-[-30px]'}>

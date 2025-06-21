@@ -124,8 +124,11 @@ export default function DevLogView({
   const handleDeleteGroup = useCallback(async () => {
     if (!selectedGroup) return
 
-    if (board?.posts?.length && board?.posts?.length > 0) {
-      toast.error('Cannot delete group with files')
+    if (
+      (board?.posts?.length && board?.posts?.length > 0) ||
+      (board?.lowerGroupList?.length && board?.lowerGroupList?.length > 0)
+    ) {
+      toast.error('Cannot delete group with files or child groups')
       return
     }
 
