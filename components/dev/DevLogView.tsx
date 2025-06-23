@@ -243,7 +243,7 @@ export default function DevLogView({
 
   return (
     <>
-      <Row fullWidth gap={4} className={'min-w-[200px]'}>
+      <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
         {/*  Navigation Area  */}
         <Column gap={4} fullWidth className={'flex-[1]'}>
           <Row className={'relative group'}>
