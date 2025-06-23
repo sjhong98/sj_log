@@ -16,5 +16,8 @@ export default async function getAllGroupTree() {
     .where(eq(devLogGroup.uid, user.id))
 
   const newGroupTree = createGroupTree(allGroupList)
-  return newGroupTree
+  return {
+    groupTree: newGroupTree,
+    groupList: allGroupList
+  }
 }

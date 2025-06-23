@@ -13,7 +13,7 @@ export default async function deleteGroup(pk: number) {
       .returning()
     if (!deletedGroup.parentGroupPk) return
     const updatedGroupTree = await getAllGroupTree()
-    return updatedGroupTree
+    return updatedGroupTree?.groupTree
   } catch (e) {
     console.error(e)
   }

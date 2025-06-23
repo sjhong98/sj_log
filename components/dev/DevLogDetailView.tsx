@@ -12,13 +12,12 @@ import Editor from '@/components/editor/Editor'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import createDevLog from '@/actions/dev/log/createDevLog'
 import { toast } from 'react-toastify'
-import BoardType from '@/types/dev/BoardType'
 import Row from '@/components/flexBox/row'
 import { CircularProgress } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
-import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import { CheckIcon } from 'lucide-react'
+import GroupTreeType from '@/types/dev/GroupTreeType'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -29,13 +28,17 @@ export default function DevLogDetailView({
   setSelectedDevLog,
   selectedGroup,
   currentPostList,
-  setCurrentPostList
+  setCurrentPostList,
+  groupTree,
+  groupList
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
   selectedGroup: devLogGroupType | null
   currentPostList: devLogType[]
   setCurrentPostList: any
+  groupTree: GroupTreeType[]
+  groupList: devLogGroupType[]
 }) {
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
@@ -45,7 +48,6 @@ export default function DevLogDetailView({
     date: new Date().toISOString(),
     groupPk: 0
   }
-  const [currentBoard, setCurrentBoard] = useState<BoardType | null>()
   const [blocks, setBlocks] = useState<any>([])
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
   const [editorStatus, setEditorStatus] = useState(0)
@@ -57,6 +59,7 @@ export default function DevLogDetailView({
         }
       : initialValue
   )
+  const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
 
   useEffect(() => {
     setDevLogForm(
@@ -68,13 +71,20 @@ export default function DevLogDetailView({
         : initialValue
     )
 
-    if (!selectedDevLog) {
-      setCurrentBoard(null)
-    } else {
-      getGroupTreeAndPostsByPk(selectedDevLog.groupPk).then(res => {
-        setCurrentBoard(res)
-      })
+    if (!selectedDevLog?.groupPk) return
+
+    // 조상 리스트 생성
+    let parentGroupPk = selectedDevLog.groupPk
+    let _parentGroupList: devLogGroupType[] = []
+    while (true) {
+      const parent = groupList.find(group => group.pk === parentGroupPk)
+      if (!parent) return
+      console.log('loop')
+      _parentGroupList.unshift(parent)
+      if (!parent?.parentGroupPk) break
+      parentGroupPk = parent.parentGroupPk
     }
+    setParentGroupList(_parentGroupList)
   }, [selectedDevLog])
 
   // 3초마다 자동저장 (수정의 경우)
@@ -178,15 +188,9 @@ export default function DevLogDetailView({
           {selectedDevLog && (
             <>
               <Row fullWidth className={'justify-between pl-[55px] pr-4'}>
-                <p className={'text-[12px]'}>
-                  {`${
-                    currentBoard?.upperGroupList
-                      ? currentBoard?.upperGroupList
-                          ?.map((item: devLogGroupType) => item.name)
-                          .join(' > ') + ' > '
-                      : ''
-                  }${currentBoard?.currentGroup ? currentBoard.currentGroup.name : ''}`}
-                </p>
+                <p
+                  className={'text-[12px]'}
+                >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
                 {editorStatus === 0 ? (
                   <div className={'h-[30px]'}>
                     <button onClick={() => autoSave()}>저장</button>

@@ -13,12 +13,16 @@ export default async function Page() {
 
   const boardList: BoardType | null = await getGroupTreeAndPostsByPk()
 
-  const groupTree: GroupTreeType[] | null = await getAllGroupTree()
+  const groupTree = await getAllGroupTree()
 
   if (!boardList || !groupTree) return
   return (
     <>
-      <DevLogView list={boardList} groupTree={groupTree} />
+      <DevLogView
+        list={boardList}
+        groupTree={groupTree.groupTree}
+        groupList={groupTree.groupList}
+      />
     </>
   )
 }

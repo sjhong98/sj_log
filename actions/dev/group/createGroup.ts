@@ -21,7 +21,7 @@ export default async function createGroup(group: devLogGroupType) {
       .returning()
 
     const updatedGroupTree = await getAllGroupTree()
-    return updatedGroupTree
+    return updatedGroupTree?.groupTree
   } catch (e) {
     console.error(e)
     throw new Error('create group failed')

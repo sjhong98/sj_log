@@ -21,10 +21,12 @@ import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 
 export default function DevLogView({
   list,
-  groupTree
+  groupTree,
+  groupList
 }: {
   list: BoardType
   groupTree: GroupTreeType[]
+  groupList: devLogGroupType[]
 }) {
   const [currentPostList, setCurrentPostList] = useState<devLogType[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
@@ -327,6 +329,8 @@ export default function DevLogView({
             selectedGroup={selectedGroup}
             currentPostList={currentPostList}
             setCurrentPostList={setCurrentPostList}
+            groupTree={currentGroupTree}
+            groupList={groupList}
           />
         </Column>
       </Row>
