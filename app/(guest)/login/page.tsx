@@ -30,6 +30,8 @@ export default function Page() {
       const user = await auth.signIn({ email, password })
       if (!user) return
 
+      console.log(user)
+
       router.push(`/diary/${user.email}`)
     },
     [email, password]

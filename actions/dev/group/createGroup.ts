@@ -11,7 +11,7 @@ export default async function createGroup(group: devLogGroupType) {
     let user: any = await getUser()
     if (!user) return
 
-    const [result] = await db
+    const [inserted] = await db
       .insert(devLogGroup)
       .values({
         name: group.name,
@@ -20,10 +20,8 @@ export default async function createGroup(group: devLogGroupType) {
       })
       .returning()
 
-    return result
-
-    // const updatedGroupTree = await getAllGroupTree()
-    // return updatedGroupTree
+    const updatedGroupTree = await getAllGroupTree()
+    return updatedGroupTree
   } catch (e) {
     console.error(e)
     throw new Error('create group failed')

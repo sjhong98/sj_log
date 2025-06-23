@@ -160,8 +160,8 @@ export default function DevLogView({
         parentGroupPk: selectedGroup.pk ?? 0,
         name: newGroupName
       })
-      // if (!updatedGroupTree) return
-      // setCurrentGroupTree(updatedGroupTree)
+      if (!updatedGroupTree) return
+      setCurrentGroupTree(updatedGroupTree)
       toast.success('Created new group successfully!')
     } catch (e) {
       console.error(e)
@@ -175,13 +175,10 @@ export default function DevLogView({
     if (!selectedGroup) return
 
     // TODO: modify logic
-    // if (
-    //   (board?.posts?.length && board?.posts?.length > 0) ||
-    //   (board?.lowerGroupList?.length && board?.lowerGroupList?.length > 0)
-    // ) {
-    //   toast.error('Cannot delete group with files or child groups')
-    //   return
-    // }
+    if (currentPostList?.length && currentPostList?.length > 0) {
+      toast.error('Cannot delete group with files or child groups')
+      return
+    }
 
     try {
       const updatedGroupTree = await deleteGroup(selectedGroup?.pk ?? 0)

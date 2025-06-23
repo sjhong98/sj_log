@@ -12,8 +12,8 @@ export default async function deleteGroup(pk: number) {
       .where(eq(devLogGroup.pk, pk))
       .returning()
     if (!deletedGroup.parentGroupPk) return
-    const newGroupTree = await getAllGroupTree()
-    return newGroupTree
+    const updatedGroupTree = await getAllGroupTree()
+    return updatedGroupTree
   } catch (e) {
     console.error(e)
   }
