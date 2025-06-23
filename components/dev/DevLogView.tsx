@@ -18,6 +18,7 @@ import { IconTrashFilled } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
 import deleteGroup from '@/actions/dev/group/deleteGroup'
 import deleteDevLog from '@/actions/dev/log/deleteDevLog'
+import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 
 export default function DevLogView({
   list,
@@ -47,12 +48,8 @@ export default function DevLogView({
 
   const handleClickDevLogGroup = useCallback(async (groupPk?: number) => {
     if (!groupPk) return
-
-    const currentBoard: BoardType | null =
-      await getGroupTreeAndPostsByPk(groupPk)
-    if (!currentBoard) return
-    setBoard(currentBoard)
-    setCurrentPostList(currentBoard.posts)
+    const postList = await getPostListByGroupPk(groupPk)
+    setCurrentPostList(postList)
   }, [])
 
   // Recursive Tree for Navigator
