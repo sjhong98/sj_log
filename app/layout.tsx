@@ -52,7 +52,7 @@ export default function RootLayout({
       >
         <div
           className={
-            'w-screen min-h-screen flex flex-col relative bg-[var(--color-background)]'
+            'w-screen min-h-screen flex flex-col relative bg-[#050505]'
           }
         >
           <ToastContainer />

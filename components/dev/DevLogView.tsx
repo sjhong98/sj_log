@@ -4,7 +4,6 @@ import Column from '@/components/flexBox/column'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
 import React, { useCallback, useMemo, useState } from 'react'
-import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
@@ -12,7 +11,7 @@ import { FileIcon, FolderInputIcon, PlusIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
-import { Dialog } from '@mui/material'
+import { Dialog, Skeleton } from '@mui/material'
 import CustomPopper from '@/components/popper/CustomPopper'
 import { IconTrashFilled } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
@@ -27,7 +26,6 @@ export default function DevLogView({
   list: BoardType
   groupTree: GroupTreeType[]
 }) {
-  const [board, setBoard] = useState<BoardType | null>(list)
   const [currentPostList, setCurrentPostList] = useState<devLogType[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
@@ -40,16 +38,20 @@ export default function DevLogView({
   const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState<string>('')
+  const [postListLoading, setPostListLoading] = useState(false)
 
   const handleClickDevLog = useCallback(async (item?: devLogType) => {
     if (!item) return
     setSelectedDevLog(item)
   }, [])
 
-  const handleClickDevLogGroup = useCallback(async (groupPk?: number) => {
+  const getPostList = useCallback(async (groupPk?: number) => {
     if (!groupPk) return
+
+    setPostListLoading(true)
     const postList = await getPostListByGroupPk(groupPk)
     setCurrentPostList(postList)
+    setPostListLoading(false)
   }, [])
 
   // Recursive Tree for Navigator
@@ -65,7 +67,7 @@ export default function DevLogView({
             element={group.name}
             onClick={e => {
               e.stopPropagation()
-              handleClickDevLogGroup(group.pk)
+              getPostList(group.pk)
               setSelectedGroup(group)
             }}
             isSelectable
@@ -81,7 +83,7 @@ export default function DevLogView({
           value={group?.name ?? ''}
           onClick={e => {
             e.stopPropagation()
-            handleClickDevLogGroup(group.pk)
+            getPostList(group.pk)
             setSelectedGroup(group)
           }}
           isSelectable
@@ -189,7 +191,7 @@ export default function DevLogView({
       console.error(e)
       toast.error('Failed to delete group.')
     }
-  }, [selectedGroup, board])
+  }, [selectedGroup])
 
   const handleDeleteDevLog = useCallback(async (devLog: devLogType) => {
     if (!devLog.pk) return
@@ -267,44 +269,52 @@ export default function DevLogView({
           <Column fullWidth gap={4} className={''}>
             {/*  File List  */}
             <Column fullWidth>
-              {currentPostList.map((item: devLogType, i: number) => {
-                const isPost = 'content' in item
-                if (!isPost) return
-                return (
-                  <Row
-                    key={i}
-                    gap={1}
-                    fullWidth
-                    className={
-                      'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group'
-                    }
-                    onClick={() => handleClickDevLog(item)}
-                  >
-                    <Row gap={1} className={'items-center'}>
-                      <FileIcon className='size-4 mt-[1px]' />
-                      {item.title}
-                    </Row>
+              {!postListLoading ? (
+                currentPostList.map((item: devLogType, i: number) => {
+                  const isPost = 'content' in item
+                  if (!isPost) return
+                  return (
                     <Row
+                      key={i}
+                      gap={1}
+                      fullWidth
                       className={
-                        'group-hover:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group'
                       }
+                      onClick={() => handleClickDevLog(item)}
                     >
-                      <CustomPopper
-                        buttons={[
-                          {
-                            icon: <IconTrashFilled />,
-                            function: () => handleDeleteDevLog(item)
-                          },
-                          {
-                            icon: <FolderInputIcon />,
-                            function: () => setChangeGroupModalOpen(true)
-                          }
-                        ]}
-                      />
+                      <Row gap={1} className={'items-center'}>
+                        <FileIcon className='size-4 mt-[1px]' />
+                        {item.title}
+                      </Row>
+                      <Row
+                        className={
+                          'group-hover:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                        }
+                      >
+                        <CustomPopper
+                          buttons={[
+                            {
+                              icon: <IconTrashFilled />,
+                              function: () => handleDeleteDevLog(item)
+                            },
+                            {
+                              icon: <FolderInputIcon />,
+                              function: () => setChangeGroupModalOpen(true)
+                            }
+                          ]}
+                        />
+                      </Row>
                     </Row>
-                  </Row>
-                )
-              })}
+                  )
+                })
+              ) : (
+                <Column gap={1} className={'fade-in'}>
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                </Column>
+              )}
             </Column>
           </Column>
         </Column>
