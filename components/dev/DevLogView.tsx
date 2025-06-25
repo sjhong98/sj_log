@@ -281,7 +281,7 @@ export default function DevLogView({
                       gap={1}
                       fullWidth
                       className={
-                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group'
+                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group mb-[-5px]'
                       }
                       onClick={() => handleClickDevLog(item)}
                     >
