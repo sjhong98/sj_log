@@ -83,7 +83,7 @@ export default function Editor({
   return (
     <BlockNoteView
       editor={editor}
-      className={'w-full z-[2000]'}
+      className={'w-full z-[100]'}
       theme={{
         // @ts-ignore
         light: currentTheme,

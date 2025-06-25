@@ -235,7 +235,7 @@ export default function DevLogDetailView({
           <button
             onClick={handleCreateNewDevLog}
             className={
-              'bg-[#ddd] rounded-full p-1 shadow-lg z-[10] cursor-pointer absolute right-0 bottom-0'
+              'bg-[#ddd] rounded-full p-1 shadow-lg z-[101] cursor-pointer absolute right-0 bottom-0'
             }
           >
             <IconPlus color={'#333'} />
