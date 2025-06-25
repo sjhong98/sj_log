@@ -124,6 +124,11 @@ export default function DevLogDetailView({
     let _devLogForm: editableDevLogType = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
+    if (_devLogForm.blocks === '[]') {
+      console.error('문서 초기화를 차단하였습니다.')
+      return
+    }
+
     const updated = await updateDevLog(_devLogForm)
     setEditorStatus(2)
     if (updated) {
