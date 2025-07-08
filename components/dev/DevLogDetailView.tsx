@@ -182,9 +182,38 @@ export default function DevLogDetailView({
     <>
       <Column
         className={
-          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1]'
+          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
         }
       >
+        <div className={'sticky top-0 z-[200]'}>
+          <div className={'absolute h-full w-full'}>
+            {/*  자동저장 관련  */}
+            <div
+              className={
+                'h-[30px] absolute top-0 ml-[calc(100vw-800px)] pr-4 z-[200]'
+              }
+            >
+              {editorStatus === 0 ? (
+                <button onClick={() => autoSave()}>저장</button>
+              ) : editorStatus === 1 ? (
+                <CircularProgress className={`!text-white`} />
+              ) : (
+                <CheckIcon />
+              )}
+            </div>
+
+            {/*  새로운 dev log 생성 버튼  */}
+            <button
+              onClick={handleCreateNewDevLog}
+              className={
+                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[calc(100vw-800px)] mt-[calc(100vh-250px)] z-[200]'
+              }
+            >
+              <IconPlus color={'#333'} />
+            </button>
+          </div>
+        </div>
+
         <Column
           gap={4}
           fullWidth
@@ -192,23 +221,13 @@ export default function DevLogDetailView({
         >
           {selectedDevLog && (
             <>
-              <Row fullWidth className={'justify-between pl-[55px] pr-4'}>
+              <Row
+                fullWidth
+                className={'justify-between pl-[55px] pr-4 relative'}
+              >
                 <p
                   className={'text-[12px]'}
                 >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
-                {editorStatus === 0 ? (
-                  <div className={'h-[30px]'}>
-                    <button onClick={() => autoSave()}>저장</button>
-                  </div>
-                ) : editorStatus === 1 ? (
-                  <div className={'h-[30px]'}>
-                    <CircularProgress className={`!text-white`} />
-                  </div>
-                ) : (
-                  <div className={'h-[30px]'}>
-                    <CheckIcon />
-                  </div>
-                )}
               </Row>
               <Column gap={4} className={'mt-[-30px]'}>
                 <input
@@ -230,16 +249,6 @@ export default function DevLogDetailView({
               </Column>
             </>
           )}
-
-          {/*  새로운 dev log 생성 버튼  */}
-          <button
-            onClick={handleCreateNewDevLog}
-            className={
-              'bg-[#ddd] rounded-full p-1 shadow-lg z-[101] cursor-pointer absolute right-0 bottom-0'
-            }
-          >
-            <IconPlus color={'#333'} />
-          </button>
         </Column>
       </Column>
     </>
