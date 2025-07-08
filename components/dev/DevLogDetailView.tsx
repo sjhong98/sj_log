@@ -60,6 +60,15 @@ export default function DevLogDetailView({
       : initialValue
   )
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
+  const [overview, setOverview] = useState([])
+
+  useEffect(() => {
+    let _overview: any = []
+    blocks.map((block: any) => {
+      if (block.type === 'heading') _overview.push(block)
+    })
+    setOverview(_overview)
+  }, [blocks])
 
   useEffect(() => {
     setDevLogForm(
@@ -79,12 +88,12 @@ export default function DevLogDetailView({
     while (true) {
       const parent = groupList.find(group => group.pk === parentGroupPk)
       if (!parent) return
-      console.log('loop')
       _parentGroupList.unshift(parent)
       if (!parent?.parentGroupPk) break
       parentGroupPk = parent.parentGroupPk
     }
     setParentGroupList(_parentGroupList)
+    setBlocks(JSON.parse(selectedDevLog.content))
   }, [selectedDevLog])
 
   // 3초마다 자동저장 (수정의 경우)
@@ -178,23 +187,38 @@ export default function DevLogDetailView({
     setCurrentPostList(_currentPostList)
   }, [devLogForm, blocks, selectedGroup])
 
+  const handleScrollToBlock = useCallback((block: any) => {
+    if (!block?.id) return
+
+    const blockElem = document.querySelector(`div[data-id="${block.id}"]`)
+    if (!blockElem) return
+
+    blockElem.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    })
+  }, [])
+
   return (
     <>
       <Column
         className={
-          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
+          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative '
         }
       >
-        <div className={'sticky top-0 z-[200]'}>
-          <div className={'absolute h-full w-full'}>
+        <div className={'sticky top-0 z-[200] right-0'}>
+          <div className={'absolute h-full w-full pointer-events-none'}>
             {/*  자동저장 관련  */}
-            <div
-              className={
-                'h-[30px] absolute top-0 ml-[calc(100vw-800px)] pr-4 z-[200]'
-              }
-            >
+            <div className={'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
               {editorStatus === 0 ? (
-                <button onClick={() => autoSave()}>저장</button>
+                <button
+                  onClick={autoSave}
+                  className={
+                    'whitespace-nowrap pointer-events-auto cursor-pointer'
+                  }
+                >
+                  저장
+                </button>
               ) : editorStatus === 1 ? (
                 <CircularProgress className={`!text-white`} />
               ) : (
@@ -206,7 +230,7 @@ export default function DevLogDetailView({
             <button
               onClick={handleCreateNewDevLog}
               className={
-                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[calc(100vw-800px)] mt-[calc(100vh-250px)] z-[200]'
+                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[200] mr-2'
               }
             >
               <IconPlus color={'#333'} />
@@ -230,6 +254,7 @@ export default function DevLogDetailView({
                 >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
               </Row>
               <Column gap={4} className={'mt-[-30px]'}>
+                {/*  title  */}
                 <input
                   name={'title'}
                   value={devLogForm.title}
@@ -240,6 +265,23 @@ export default function DevLogDetailView({
                     'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
                   }
                 />
+
+                {/*  overview  */}
+                <Column className={'pl-[55px] cursor-pointer'}>
+                  {overview.map((block: any) => {
+                    return (
+                      <Row
+                        key={block.id}
+                        onClick={() => handleScrollToBlock(block)}
+                        className={'text-[12px] italic'}
+                      >
+                        {block.content[0]?.text ?? ''}
+                      </Row>
+                    )
+                  })}
+                </Column>
+
+                {/*  editor  */}
                 {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
                 <Editor
                   selectedDevLog={selectedDevLog}
