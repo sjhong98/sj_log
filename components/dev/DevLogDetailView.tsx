@@ -267,15 +267,26 @@ export default function DevLogDetailView({
                 />
 
                 {/*  overview  */}
-                <Column className={'pl-[55px] cursor-pointer'}>
+                <Column className={'pl-[55px] cursor-pointer font-bold'}>
                   {overview.map((block: any) => {
+                    const level = block.props.level
                     return (
                       <Row
                         key={block.id}
                         onClick={() => handleScrollToBlock(block)}
-                        className={'text-[12px] italic'}
+                        className={'mt-[-2px]'}
+                        style={{
+                          fontSize:
+                            level === 1
+                              ? '14px'
+                              : level === 2
+                                ? '13px'
+                                : '12px',
+                          marginLeft:
+                            level === 1 ? '0px' : level === 2 ? '8px' : '16px'
+                        }}
                       >
-                        {block.content[0]?.text ?? ''}
+                        {`${block.content[0]?.text ?? ''}`}
                       </Row>
                     )
                   })}
