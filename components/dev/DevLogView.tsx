@@ -250,7 +250,7 @@ export default function DevLogView({
     <>
       <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
         {/*  Navigation Area  */}
-        <Column gap={4} fullWidth className={'flex-[1]'}>
+        <Column gap={4} fullWidth className={'min-w-[380px]'}>
           <Row className={'relative group'}>
             <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
             {selectedGroup && (
@@ -325,7 +325,7 @@ export default function DevLogView({
         </Column>
 
         {/*  File View Area  */}
-        <Column gap={4} fullWidth className={'flex-[3]'}>
+        <Column gap={4} fullWidth className={'max-w-[calc(100vw-750px)]'}>
           <DevLogDetailView
             selectedDevLog={selectedDevLog}
             setSelectedDevLog={setSelectedDevLog}
