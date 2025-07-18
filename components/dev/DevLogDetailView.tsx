@@ -206,8 +206,11 @@ export default function DevLogDetailView({
           'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative '
         }
       >
-        <div className={'sticky top-0 z-[200] right-0'}>
-          <div className={'absolute h-full w-full pointer-events-none'}>
+        <div className={'sticky top-0 z-[100] right-0'}>
+          <div
+            className={'absolute h-full w-full pointer-events-none'}
+            id={'absolute-area'}
+          >
             {/*  자동저장 관련  */}
             <div className={'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
               {editorStatus === 0 ? (
@@ -230,7 +233,7 @@ export default function DevLogDetailView({
             <button
               onClick={handleCreateNewDevLog}
               className={
-                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[200] mr-2'
+                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
               }
             >
               <IconPlus color={'#333'} />
