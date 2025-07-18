@@ -195,26 +195,29 @@ export default function DevLogView({
     }
   }, [selectedGroup])
 
-  const handleDeleteDevLog = useCallback(async (devLog: devLogType) => {
-    if (!devLog.pk) return
+  const handleDeleteDevLog = useCallback(
+    async (devLog: devLogType) => {
+      if (!devLog.pk) return
 
-    try {
-      const deleted = await deleteDevLog(devLog.pk)
-      if (deleted) {
-        toast.success('Deleted successfully!')
+      try {
+        const deleted = await deleteDevLog(devLog.pk)
+        if (deleted) {
+          toast.success('Deleted successfully!')
 
-        let _currentPostList = [...currentPostList]
-        const idx = _currentPostList.findIndex(
-          devLog => devLog.pk === deleted.pk
-        )
-        _currentPostList.splice(idx, 1)
-        setCurrentPostList(_currentPostList)
-      } else toast.error('Failed to delete group')
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to delete group')
-    }
-  }, [])
+          let _currentPostList = [...currentPostList]
+          const idx = _currentPostList.findIndex(
+            devLog => devLog.pk === deleted.pk
+          )
+          _currentPostList.splice(idx, 1)
+          setCurrentPostList(_currentPostList)
+        } else toast.error('Failed to delete group')
+      } catch (e) {
+        console.error(e)
+        toast.error('Failed to delete group')
+      }
+    },
+    [currentPostList]
+  )
 
   const handleUpdateDevLogParentGroup = useCallback(async () => {
     if (

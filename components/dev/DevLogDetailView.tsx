@@ -185,7 +185,7 @@ export default function DevLogDetailView({
     let _currentPostList: devLogType[] = [...currentPostList]
     _currentPostList.push(inserted)
     setCurrentPostList(_currentPostList)
-  }, [devLogForm, blocks, selectedGroup])
+  }, [devLogForm, blocks, selectedGroup, currentPostList])
 
   const handleScrollToBlock = useCallback((block: any) => {
     if (!block?.id) return
