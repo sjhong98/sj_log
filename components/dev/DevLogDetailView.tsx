@@ -130,10 +130,10 @@ export default function DevLogDetailView({
   const autoSave = useCallback(async () => {
     if (timerRef.current) clearTimeout(timerRef.current)
 
-    let _devLogForm: editableDevLogType = { ...devLogForm }
+    let _devLogForm: any = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
-    let isEmpty = _devLogForm.blocks[0].content[0].text === ''
+    let isEmpty = _devLogForm.content === '[]'
 
     if (isEmpty) {
       console.log('문서 초기화를 차단하였습니다.')
