@@ -35,7 +35,7 @@ export default function DevLogDetailView({
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
   selectedGroup: devLogGroupType | null
-  currentPostList: devLogType[]
+  currentPostList: { pk: number; title: string }[]
   setCurrentPostList: any
   groupTree: GroupTreeType[]
   groupList: devLogGroupType[]
@@ -184,8 +184,11 @@ export default function DevLogDetailView({
     if (!inserted) return
 
     setSelectedDevLog(inserted)
-    let _currentPostList: devLogType[] = [...currentPostList]
-    _currentPostList.push(inserted)
+    let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
+    _currentPostList.push({
+      pk: inserted.pk,
+      title: inserted.title
+    })
     setCurrentPostList(_currentPostList)
   }, [devLogForm, blocks, selectedGroup, currentPostList])
 

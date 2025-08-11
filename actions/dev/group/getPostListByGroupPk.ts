@@ -9,7 +9,10 @@ export default async function getPostListByGroupPk(groupPk: number) {
   unstable_noStore()
 
   const postList = await db
-    .select()
+    .select({
+      pk: devLog.pk,
+      title: devLog.title
+    })
     .from(devLog)
     .where(eq(devLog.groupPk, groupPk))
     .orderBy(desc(devLog.title))

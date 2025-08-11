@@ -18,6 +18,7 @@ import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
 import deleteGroup from '@/actions/dev/group/deleteGroup'
 import deleteDevLog from '@/actions/dev/log/deleteDevLog'
 import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
+import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 
 export default function DevLogView({
   list,
@@ -28,7 +29,7 @@ export default function DevLogView({
   groupTree: GroupTreeType[]
   groupList: devLogGroupType[]
 }) {
-  const [currentPostList, setCurrentPostList] = useState<devLogType[]>([])
+  const [currentPostList, setCurrentPostList] = useState<{ pk: number; title: string }[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
     null
@@ -42,9 +43,18 @@ export default function DevLogView({
   const [newGroupName, setNewGroupName] = useState<string>('')
   const [postListLoading, setPostListLoading] = useState(false)
 
-  const handleClickDevLog = useCallback(async (item?: devLogType) => {
-    if (!item) return
-    setSelectedDevLog(item)
+  const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
+    if (!item?.pk) return
+    
+    try {
+      const devLogData = await getDevLogByPk(item.pk)
+      if (devLogData) {
+        setSelectedDevLog(devLogData)
+      }
+    } catch (error) {
+      console.error('Failed to fetch dev log:', error)
+      toast.error('Failed to load dev log')
+    }
   }, [])
 
   const getPostList = useCallback(async (groupPk?: number) => {
@@ -204,12 +214,14 @@ export default function DevLogView({
         if (deleted) {
           toast.success('Deleted successfully!')
 
-          let _currentPostList = [...currentPostList]
+          let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
           const idx = _currentPostList.findIndex(
-            devLog => devLog.pk === deleted.pk
+            post => post.pk === deleted.pk
           )
-          _currentPostList.splice(idx, 1)
-          setCurrentPostList(_currentPostList)
+          if (idx !== -1) {
+            _currentPostList.splice(idx, 1)
+            setCurrentPostList(_currentPostList)
+          }
         } else toast.error('Failed to delete group')
       } catch (e) {
         console.error(e)
@@ -236,10 +248,12 @@ export default function DevLogView({
       setChangeGroupModalOpen(false)
       setTemporarySelectedGroup(null)
 
-      let _currentPostList = [...currentPostList]
-      const idx = _currentPostList.findIndex(devLog => devLog.pk === updated.pk)
-      _currentPostList.splice(idx, 1)
-      setCurrentPostList(_currentPostList)
+      let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
+      const idx = _currentPostList.findIndex(post => post.pk === updated.pk)
+      if (idx !== -1) {
+        _currentPostList.splice(idx, 1)
+        setCurrentPostList(_currentPostList)
+      }
       toast.success('Dev log moved successfully!')
     } else {
       toast.error('Failed to moved parent group')
@@ -275,9 +289,7 @@ export default function DevLogView({
             {/*  File List  */}
             <Column fullWidth>
               {!postListLoading ? (
-                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: devLogType, i: number) => {
-                  const isPost = 'content' in item
-                  if (!isPost) return
+                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
                   return (
                     <Row
                       key={i}
@@ -301,7 +313,7 @@ export default function DevLogView({
                           buttons={[
                             {
                               icon: <IconTrashFilled />,
-                              function: () => handleDeleteDevLog(item)
+                              function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
                             },
                             {
                               icon: <FolderInputIcon />,
