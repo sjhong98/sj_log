@@ -64,6 +64,7 @@ export default function Editor({
 
     // 새로운 block 삽입 후, 기존 blocks 삭제
     const initialBlockId = currentBlocks[0].id
+    console.log('inserting block : ',_blocks)
     editor.insertBlocks(_blocks, initialBlockId, 'before')
     editor.removeBlocks([...currentBlocks.map((block: any) => block.id)])
   }, [selectedDevLog])

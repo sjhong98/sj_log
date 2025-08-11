@@ -137,7 +137,7 @@ export default function DevLogDetailView({
 
     if (isEmpty) {
       console.log('문서 초기화를 차단하였습니다.')
-      _devLogForm.blocks = undefined
+      _devLogForm.content = undefined
     }
 
     const updated = await updateDevLog(_devLogForm)
