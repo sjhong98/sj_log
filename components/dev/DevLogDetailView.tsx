@@ -133,8 +133,10 @@ export default function DevLogDetailView({
     let _devLogForm: editableDevLogType = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
-    if (_devLogForm.blocks === '[]') {
-      console.error('문서 초기화를 차단하였습니다.')
+    let isEmpty = _devLogForm.blocks[0].content[0].text === ''
+
+    if (isEmpty) {
+      console.log('문서 초기화를 차단하였습니다.')
       return
     }
 
