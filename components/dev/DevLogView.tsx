@@ -275,7 +275,7 @@ export default function DevLogView({
             {/*  File List  */}
             <Column fullWidth>
               {!postListLoading ? (
-                currentPostList.map((item: devLogType, i: number) => {
+                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: devLogType, i: number) => {
                   const isPost = 'content' in item
                   if (!isPost) return
                   return (
