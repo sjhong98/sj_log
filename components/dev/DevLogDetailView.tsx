@@ -18,6 +18,7 @@ import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import { CheckIcon } from 'lucide-react'
 import GroupTreeType from '@/types/dev/GroupTreeType'
+import { Skeleton } from '@mui/material'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -30,7 +31,8 @@ export default function DevLogDetailView({
   currentPostList,
   setCurrentPostList,
   groupTree,
-  groupList
+  groupList,
+  devLogLoading
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
@@ -39,6 +41,7 @@ export default function DevLogDetailView({
   setCurrentPostList: any
   groupTree: GroupTreeType[]
   groupList: devLogGroupType[]
+  devLogLoading: boolean
 }) {
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
@@ -251,7 +254,20 @@ export default function DevLogDetailView({
           fullWidth
           className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative'}
         >
-          {selectedDevLog && (
+          {devLogLoading || !selectedDevLog ? (
+            // DevLog 로딩 중이거나 선택된 DevLog가 없을 때 skeleton
+            <Column gap={4} className={'pl-[55px] pr-4'}>
+              <Skeleton variant='rounded' className={'w-full h-[30px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+              <Column gap={2} className={'mt-4'}>
+                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+              </Column>
+            </Column>
+          ) : (
             <>
               <Row
                 fullWidth

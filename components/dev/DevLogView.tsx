@@ -42,10 +42,12 @@ export default function DevLogView({
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState<string>('')
   const [postListLoading, setPostListLoading] = useState(false)
+  const [devLogLoading, setDevLogLoading] = useState(false)
 
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
     
+    setDevLogLoading(true)
     try {
       const devLogData = await getDevLogByPk(item.pk)
       if (devLogData) {
@@ -54,6 +56,8 @@ export default function DevLogView({
     } catch (error) {
       console.error('Failed to fetch dev log:', error)
       toast.error('Failed to load dev log')
+    } finally {
+      setDevLogLoading(false)
     }
   }, [])
 
@@ -350,6 +354,7 @@ export default function DevLogView({
             setCurrentPostList={setCurrentPostList}
             groupTree={currentGroupTree}
             groupList={groupList}
+            devLogLoading={devLogLoading}
           />
         </Column>
       </Row>
