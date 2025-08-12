@@ -3,7 +3,7 @@
 import Column from '@/components/flexBox/column'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
@@ -43,6 +43,13 @@ export default function DevLogView({
   const [newGroupName, setNewGroupName] = useState<string>('')
   const [postListLoading, setPostListLoading] = useState(false)
   const [devLogLoading, setDevLogLoading] = useState(false)
+
+  // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
+  useEffect(() => {
+    if (selectedDevLog) {
+      setDevLogLoading(false)
+    }
+  }, [selectedDevLog])
 
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return

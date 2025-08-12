@@ -22,6 +22,7 @@ import { Skeleton } from '@mui/material'
 
 interface editableDevLogType extends devLogType {
   blocks: any
+  text: string | null
 }
 
 export default function DevLogDetailView({
@@ -49,7 +50,8 @@ export default function DevLogDetailView({
     blocks: null,
     content: '',
     date: new Date().toISOString(),
-    groupPk: 0
+    groupPk: 0,
+    text: null
   }
   const [blocks, setBlocks] = useState<any>([])
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
@@ -136,11 +138,15 @@ export default function DevLogDetailView({
     let _devLogForm: any = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
+    const onlyText = blocks.map((block: any) => block.content.map((content: any) => content.text)).flat().join(' ')
+    _devLogForm.text = onlyText
+
     let isEmpty = _devLogForm.content === '[]'
 
     if (isEmpty) {
       console.log('문서 초기화를 차단하였습니다.')
       _devLogForm.content = undefined
+      _devLogForm.text = undefined
     }
 
     const updated = await updateDevLog(_devLogForm)
@@ -254,20 +260,16 @@ export default function DevLogDetailView({
           fullWidth
           className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative'}
         >
-          {devLogLoading || !selectedDevLog ? (
-            // DevLog 로딩 중이거나 선택된 DevLog가 없을 때 skeleton
-            <Column gap={4} className={'pl-[55px] pr-4'}>
-              <Skeleton variant='rounded' className={'w-full h-[30px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+          {devLogLoading ? (
+            // DevLog 로딩 중일 때만 skeleton 표시
+            <Column gap={4} className={'pl-[55px] pr-12'}>
               <Column gap={2} className={'mt-4'}>
                 <Skeleton variant='rounded' className={'w-full h-[100px]'} />
                 <Skeleton variant='rounded' className={'w-full h-[100px]'} />
                 <Skeleton variant='rounded' className={'w-full h-[100px]'} />
               </Column>
             </Column>
-          ) : (
+          ) : selectedDevLog ? (
             <>
               <Row
                 fullWidth
@@ -325,7 +327,7 @@ export default function DevLogDetailView({
                 />
               </Column>
             </>
-          )}
+          ) : null}
         </Column>
       </Column>
     </>

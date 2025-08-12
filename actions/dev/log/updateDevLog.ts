@@ -16,6 +16,7 @@ export default async function updateDevLog(devLogItem: devLogType) {
       .set({
         title: devLogItem.title,
         content: devLogItem.content,
+        text: devLogItem.text,
         updatedAt: new Date().toISOString()
       })
       .where(eq(devLog.pk, devLogItem.pk))
