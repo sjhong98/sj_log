@@ -3,7 +3,7 @@
 import Column from '@/components/flexBox/column'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import Row from '@/components/flexBox/row'
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
@@ -11,7 +11,7 @@ import { FileIcon, FolderInputIcon, PlusIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
-import { Dialog, Skeleton } from '@mui/material'
+import { Dialog, Skeleton, Typography, useMediaQuery, useTheme } from '@mui/material'
 import CustomPopper from '@/components/popper/CustomPopper'
 import { IconTrashFilled } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
@@ -19,6 +19,8 @@ import deleteGroup from '@/actions/dev/group/deleteGroup'
 import deleteDevLog from '@/actions/dev/log/deleteDevLog'
 import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
+import SearchInput from '../search/searchInput'
+import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
 
 export default function DevLogView({
   list,
@@ -29,6 +31,9 @@ export default function DevLogView({
   groupTree: GroupTreeType[]
   groupList: devLogGroupType[]
 }) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const searchInputRef = useRef<any>(null)
   const [currentPostList, setCurrentPostList] = useState<{ pk: number; title: string }[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
@@ -43,6 +48,8 @@ export default function DevLogView({
   const [newGroupName, setNewGroupName] = useState<string>('')
   const [postListLoading, setPostListLoading] = useState(false)
   const [devLogLoading, setDevLogLoading] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState<string>('')
+  const [searchResult, setSearchResult] = useState<any[]>([])
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -271,17 +278,97 @@ export default function DevLogView({
     }
   }, [temporarySelectedGroup, selectedDevLog, selectedGroup])
 
+  // 검색 결과에서 키워드 주변 텍스트를 추출하는 함수
+const getContextText = (text: string, keyword: string) => {
+  if (!text || !keyword) return ''
+  
+  const lowerText = text.toLowerCase()
+  const lowerKeyword = keyword.toLowerCase()
+  const keywordIndex = lowerText.indexOf(lowerKeyword)
+  
+  if (keywordIndex === -1) return ''
+  
+  // 키워드 시작 위치와 끝 위치
+  const start = keywordIndex
+  const end = start + keyword.length
+  
+  // 이전 3단어와 이후 3단어를 포함한 범위 계산
+  const words = text.split(/\s+/)
+  let startWordIndex = 0
+  let endWordIndex = words.length - 1
+
+  // 키워드가 포함된 단어의 인덱스 찾기
+  let currentPos = 0
+  for (let i = 0; i < words.length; i++) {
+    const wordLength = words[i].length
+    if (currentPos <= start && start < currentPos + wordLength) {
+      startWordIndex = Math.max(0, i - 5)
+      endWordIndex = Math.min(words.length - 1, i + 5)
+      break
+    }
+    currentPos += wordLength + 1 // 공백 고려
+  }
+  
+  // 범위 내 단어들을 조합
+  const contextWords = words.slice(startWordIndex, endWordIndex + 1)
+  let contextText = contextWords.join(' ')
+
+  return contextText
+}
+
+  const handleSearch = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchKeyword(e.target.value)
+    if(e.target.value === '') {
+      setSearchResult([])
+      return
+    }
+
+    const result = await searchDevLogByKeyword(e.target.value)
+    setSearchResult(result ?? [])
+  }, [])
+
+  const SearchDialog = useMemo(() => {
+    return (
+      <>
+        <Column className={`${isMobile ? 'w-[90vw]' : 'w-[600px]'} overflow-y-hidden`}>
+          <input autoFocus type="text" placeholder='Search' className='w-full h-12 outline-none px-4 bg-[#222]' value={searchKeyword} onChange={handleSearch} />
+          <Column gap={2} className='pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar'>
+            { searchResult.map((result: any, i: number) => {
+              const contextText = getContextText(result.text, searchKeyword)
+              if(contextText === '') return
+              return (
+                <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => {
+                  handleClickDevLog(result)
+                  searchInputRef.current?.close()
+                }}>
+                  <Row gap={1} className={'items-center'}>
+                    <FileIcon className='size-4 mt-[1px]' />
+                    {result.title}
+                  </Row>
+                  <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
+                </Column>
+              )
+            })}
+          </Column>
+        </Column>
+      </>
+    )
+  }, [searchKeyword, handleSearch, searchResult])
+
   return (
     <>
       <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
         {/*  Navigation Area  */}
         <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px]'}>
-          <Row className={'relative group'}>
-            <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
+          <Row className={'relative group/navigation'}>
+            <Column gap={2}>
+              <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
+              <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
+            </Column>
             {selectedGroup && (
               <Row
                 className={
-                  'absolute right-0 top-0 opacity-0 group-hover:opacity-100'
+                  'absolute right-0 top-0 opacity-0 group-hover/navigation:opacity-100'
                 }
               >
                 <PlusIcon
@@ -307,7 +394,7 @@ export default function DevLogView({
                       gap={1}
                       fullWidth
                       className={
-                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group mb-[-5px]'
+                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
                       }
                       onClick={() => handleClickDevLog(item)}
                     >
@@ -317,7 +404,7 @@ export default function DevLogView({
                       </Row>
                       <Row
                         className={
-                          'group-hover:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                          'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
                         }
                       >
                         <CustomPopper
