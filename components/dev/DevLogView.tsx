@@ -50,6 +50,7 @@ export default function DevLogView({
   const [devLogLoading, setDevLogLoading] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [searchResult, setSearchResult] = useState<any[]>([])
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -57,6 +58,34 @@ export default function DevLogView({
       setDevLogLoading(false)
     }
   }, [selectedDevLog])
+
+  // 선택된 그룹이 변경될 때 부모 디렉토리들을 자동으로 열기
+  useEffect(() => {
+    if (selectedGroup) {
+      console.log('selectedGroup', selectedGroup)
+      const expandParentGroups = (groupTree: GroupTreeType[], targetPk: number, path: number[] = []): number[] | null => {
+        for (const group of groupTree) {
+          if (group.pk === targetPk) {
+            return path
+          }
+          if (group.childGroupList && group.childGroupList.length > 0) {
+            const result = expandParentGroups(group.childGroupList, targetPk, [...path, group.pk ?? 0])
+            if (result) return result
+          }
+        }
+        return null
+      }
+
+      const parentPath = expandParentGroups(currentGroupTree, selectedGroup.pk ?? 0)
+      if (parentPath) {
+        setExpandedGroups(new Set(parentPath))
+      }
+    }
+  }, [selectedGroup, currentGroupTree])
+
+  useEffect(() => {
+    console.log('expandedGroups', expandedGroups)
+  }, [expandedGroups])
 
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
@@ -327,23 +356,26 @@ const getContextText = (text: string, keyword: string) => {
     setSearchResult(result ?? [])
   }, [])
 
+  const handleClickResultItem = useCallback((resultItem: any) => {
+    handleClickDevLog(resultItem)
+    searchInputRef.current?.close()
+    setSelectedGroup(groupList.find(group => group.pk === resultItem.groupPk) ?? null)
+  }, [handleClickDevLog, groupList])
+
   const SearchDialog = useMemo(() => {
     return (
       <>
         <Column className={`${isMobile ? 'w-[90vw]' : 'w-[600px]'} overflow-y-hidden`}>
           <input autoFocus type="text" placeholder='Search' className='w-full h-12 outline-none px-4 bg-[#222]' value={searchKeyword} onChange={handleSearch} />
           <Column gap={2} className='pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar'>
-            { searchResult.map((result: any, i: number) => {
-              const contextText = getContextText(result.text, searchKeyword)
+            { searchResult.map((resultItem: any, i: number) => {
+              const contextText = getContextText(resultItem.text, searchKeyword)
               if(contextText === '') return
               return (
-                <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => {
-                  handleClickDevLog(result)
-                  searchInputRef.current?.close()
-                }}>
+                <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
                   <Row gap={1} className={'items-center'}>
                     <FileIcon className='size-4 mt-[1px]' />
-                    {result.title}
+                    {resultItem.title}
                   </Row>
                   <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
                 </Column>
@@ -355,6 +387,8 @@ const getContextText = (text: string, keyword: string) => {
     )
   }, [searchKeyword, handleSearch, searchResult])
 
+  console.log('Array.from(expandedGroups).map(String)', Array.from(expandedGroups).map(String))
+
   return (
     <>
       <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
@@ -363,7 +397,12 @@ const getContextText = (text: string, keyword: string) => {
           <Row className={'relative group/navigation'}>
             <Column gap={2}>
               <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
-              <Tree className={'text-[#ddd] !h-fit'}>{GroupTreeComponent}</Tree>
+              <Tree 
+                className={'text-[#ddd] !h-fit'} 
+                initialExpandedItems={Array.from(expandedGroups).map(String)}
+              >
+                {GroupTreeComponent}
+              </Tree>
             </Column>
             {selectedGroup && (
               <Row
