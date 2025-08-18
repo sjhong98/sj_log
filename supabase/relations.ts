@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { relations } from "drizzle-orm/relations";
 import { diary, comment, usersInAuth, financeAccount, financeLog, user, devLogGroup, devLog, devLogTagRelation, devLogTag } from "./schema";
 
