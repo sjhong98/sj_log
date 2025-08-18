@@ -31,6 +31,7 @@ export default function DevLogView({
   groupTree: GroupTreeType[]
   groupList: devLogGroupType[]
 }) {
+  const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const searchInputRef = useRef<any>(null)
@@ -62,7 +63,6 @@ export default function DevLogView({
   // 선택된 그룹이 변경될 때 부모 디렉토리들을 자동으로 열기
   useEffect(() => {
     if (selectedGroup) {
-      console.log('selectedGroup', selectedGroup)
       const expandParentGroups = (groupTree: GroupTreeType[], targetPk: number, path: number[] = []): number[] | null => {
         for (const group of groupTree) {
           if (group.pk === targetPk) {
@@ -83,10 +83,6 @@ export default function DevLogView({
     }
   }, [selectedGroup, currentGroupTree])
 
-  useEffect(() => {
-    console.log('expandedGroups', expandedGroups)
-  }, [expandedGroups])
-
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
     
@@ -96,6 +92,7 @@ export default function DevLogView({
       if (devLogData) {
         setSelectedDevLog(devLogData)
       }
+      return devLogData
     } catch (error) {
       console.error('Failed to fetch dev log:', error)
       toast.error('Failed to load dev log')
@@ -122,6 +119,7 @@ export default function DevLogView({
         return (
           <Folder
             key={group.pk}
+            id={group.pk?.toString() ?? ''}
             value={group.name}
             element={group.name}
             onClick={e => {
@@ -138,6 +136,7 @@ export default function DevLogView({
       return (
         <Folder
           key={group.pk}
+          id={group.pk?.toString() ?? ''}
           element={group?.name ?? ''}
           value={group?.name ?? ''}
           onClick={e => {
@@ -168,6 +167,7 @@ export default function DevLogView({
         return (
           <Folder
             key={group.pk}
+            id={group.pk?.toString() ?? ''}
             value={group.name}
             element={group.name}
             onClick={e => {
@@ -187,6 +187,7 @@ export default function DevLogView({
       return (
         <Folder
           key={group.pk}
+          id={group.pk?.toString() ?? ''}
           element={group?.name ?? ''}
           value={group?.name ?? ''}
           onClick={e => {
@@ -356,11 +357,38 @@ const getContextText = (text: string, keyword: string) => {
     setSearchResult(result ?? [])
   }, [])
 
-  const handleClickResultItem = useCallback((resultItem: any) => {
-    handleClickDevLog(resultItem)
+  const expandSelectedGroupTree = useCallback(async (groupPks: number[]) => {
+    for (let i = 0; i < groupPks.length; i++) {
+      const groupPk = groupPks[i]
+      const elem = document.getElementById(groupPk.toString())
+      if(elem) {
+        // Folder 내부의 button 태그를 찾아서 클릭
+        const button = elem.querySelector('button')
+        if (button) {
+          // data-state가 'closed'가 아닐 때만 클릭
+          const dataState = button.getAttribute('data-state')
+          if (dataState === 'closed') {
+            (button as HTMLElement).click()
+          }
+        } else {
+          // 버튼을 찾을 수 없으면 요소 자체를 클릭
+          elem.click()
+        }
+      }
+
+      // 마지막 요소가 아니면 100ms 대기
+      if (i < groupPks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
+  }, [])
+
+  const handleClickResultItem = useCallback(async (resultItem: any) => {
+    const _devLogData = await handleClickDevLog(resultItem)
+    expandSelectedGroupTree(_devLogData.group.map((group: any) => group.pk))
     searchInputRef.current?.close()
     setSelectedGroup(groupList.find(group => group.pk === resultItem.groupPk) ?? null)
-  }, [handleClickDevLog, groupList])
+  }, [handleClickDevLog, groupList, treeRef])
 
   const SearchDialog = useMemo(() => {
     return (
@@ -375,7 +403,7 @@ const getContextText = (text: string, keyword: string) => {
                 <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
                   <Row gap={1} className={'items-center'}>
                     <FileIcon className='size-4 mt-[1px]' />
-                    {resultItem.title}
+                    {`${resultItem.group?.name ?? ''} > ${resultItem.title}`}
                   </Row>
                   <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
                 </Column>
@@ -387,8 +415,6 @@ const getContextText = (text: string, keyword: string) => {
     )
   }, [searchKeyword, handleSearch, searchResult])
 
-  console.log('Array.from(expandedGroups).map(String)', Array.from(expandedGroups).map(String))
-
   return (
     <>
       <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
@@ -398,6 +424,7 @@ const getContextText = (text: string, keyword: string) => {
             <Column gap={2}>
               <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               <Tree 
+                ref={treeRef}
                 className={'text-[#ddd] !h-fit'} 
                 initialExpandedItems={Array.from(expandedGroups).map(String)}
               >

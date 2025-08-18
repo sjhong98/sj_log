@@ -21,7 +21,6 @@ export default async function updateDevLog(devLogItem: devLogType) {
       })
       .where(eq(devLog.pk, devLogItem.pk))
       .returning()
-    console.log(result)
     return result
   } catch (e) {
     console.error(e)

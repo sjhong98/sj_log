@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useImperativeHandle,
   useState
 } from 'react'
 
@@ -45,7 +46,7 @@ const useTree = () => {
 }
 
 // @ts-ignore
-interface TreeViewComponentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface TreeViewComponentProps extends React.HTMLAttributes<any> {}
 
 type Direction = 'rtl' | 'ltr' | undefined
 
@@ -58,7 +59,7 @@ type TreeViewProps = {
   closeIcon?: React.ReactNode
 } & TreeViewComponentProps
 
-const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
+const Tree = forwardRef<{ expandSpecificTargetedElements: (elements?: TreeViewElement[], selectId?: string) => void }, TreeViewProps>(
   (
     {
       className,
@@ -73,7 +74,7 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
       ...props
     },
     ref
-  ) => {
+  ): any => {
     const [selectedId, setSelectedId] = useState<string | undefined>(
       initialSelectedId
     )
@@ -131,6 +132,12 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
       []
     )
 
+    useImperativeHandle(ref, () => {
+      return {
+        expandSpecificTargetedElements
+      }
+    }, [])
+
     useEffect(() => {
       if (initialSelectedId) {
         expandSpecificTargetedElements(elements, initialSelectedId)
@@ -155,7 +162,6 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
       >
         <div className={cn('size-full', className)}>
           <ScrollArea
-            ref={ref}
             className='relative h-full px-2'
             dir={dir as Direction}
           >
