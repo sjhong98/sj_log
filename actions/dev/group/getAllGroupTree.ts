@@ -1,10 +1,10 @@
 'use server'
 
+import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
 import { devLogGroup } from '@/supabase/schema'
-import { asc, desc, eq } from 'drizzle-orm'
-import { getUser } from '@/actions/session/getUser'
 import createGroupTree from '@/utils/createGroupTree'
+import { asc, eq } from 'drizzle-orm'
 
 export default async function getAllGroupTree() {
   let user: any = await getUser()
@@ -14,7 +14,7 @@ export default async function getAllGroupTree() {
     .select()
     .from(devLogGroup)
     .where(eq(devLogGroup.uid, user.id))
-    .orderBy(desc(devLogGroup.name))
+    .orderBy(asc(devLogGroup.name))
 
   const newGroupTree = createGroupTree(allGroupList)
   return {
