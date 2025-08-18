@@ -11,9 +11,9 @@ import { FileIcon, FolderInputIcon, PlusIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
-import { Dialog, Skeleton, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { Dialog, Skeleton, Typography, useMediaQuery, useTheme, Box, Drawer, IconButton } from '@mui/material'
 import CustomPopper from '@/components/popper/CustomPopper'
-import { IconTrashFilled } from '@tabler/icons-react'
+import { IconTrashFilled, IconList } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
 import deleteGroup from '@/actions/dev/group/deleteGroup'
 import deleteDevLog from '@/actions/dev/log/deleteDevLog'
@@ -21,6 +21,8 @@ import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import SearchInput from '../search/searchInput'
 import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
+
+const drawerWidth = 380
 
 export default function DevLogView({
   list,
@@ -52,6 +54,7 @@ export default function DevLogView({
   const [searchKeyword, setSearchKeyword] = useState<string>('')
   const [searchResult, setSearchResult] = useState<any[]>([])
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
+  const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -91,6 +94,10 @@ export default function DevLogView({
       const devLogData = await getDevLogByPk(item.pk)
       if (devLogData) {
         setSelectedDevLog(devLogData)
+        // 모바일에서 devLog 선택 시 drawer 닫기
+        if (isMobile) {
+          setDevLogListDrawerOpen(false)
+        }
       }
       return devLogData
     } catch (error) {
@@ -99,7 +106,7 @@ export default function DevLogView({
     } finally {
       setDevLogLoading(false)
     }
-  }, [])
+  }, [isMobile])
 
   const getPostList = useCallback(async (groupPk?: number) => {
     if (!groupPk) return
@@ -415,96 +422,145 @@ const getContextText = (text: string, keyword: string) => {
     )
   }, [searchKeyword, handleSearch, searchResult])
 
-  return (
-    <>
-      <Row fullWidth gap={4} className={'min-w-[200px] bg-[#050505]'}>
-        {/*  Navigation Area  */}
-        <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px]'}>
-          <Row className={'relative group/navigation'}>
-            <Column gap={2}>
-              <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
-              <Tree 
-                ref={treeRef}
-                className={'text-[#ddd] !h-fit'} 
-                initialExpandedItems={Array.from(expandedGroups).map(String)}
-              >
-                {GroupTreeComponent}
-              </Tree>
-            </Column>
-            {selectedGroup && (
-              <Row
-                className={
-                  'absolute right-0 top-0 opacity-0 group-hover/navigation:opacity-100'
-                }
-              >
-                <PlusIcon
-                  className={'cursor-pointer'}
-                  onClick={() => setGroupCreateModalOpen(true)}
-                />
-                <PlusIcon
-                  className={'cursor-pointer rotate-[45deg]'}
-                  onClick={handleDeleteGroup}
-                />
+  const NavigationArea = useMemo(() => {
+    return (
+      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4 bg-[#111]'}>
+        <Row className={'relative group/navigation'}>
+          <Column gap={2} fullWidth>
+            <Row fullWidth gap={2} className={'items-center'}>
+              <Row fullWidth className={'flex-1'}>
+                <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               </Row>
-            )}
-          </Row>
-
-          <Column fullWidth gap={4} className={''}>
-            {/*  File List  */}
-            <Column fullWidth>
-              {!postListLoading ? (
-                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
-                  return (
-                    <Row
-                      key={i}
-                      gap={1}
-                      fullWidth
-                      className={
-                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
-                      }
-                      onClick={() => handleClickDevLog(item)}
-                    >
-                      <Row gap={1} className={'items-center'}>
-                        <FileIcon className='size-4 mt-[1px]' />
-                        {item.title}
-                      </Row>
-                      <Row
-                        className={
-                          'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
-                        }
-                      >
-                        <CustomPopper
-                          buttons={[
-                            {
-                              icon: <IconTrashFilled />,
-                              function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
-                            },
-                            {
-                              icon: <FolderInputIcon />,
-                              function: () => setChangeGroupModalOpen(true)
-                            }
-                          ]}
-                        />
-                      </Row>
-                    </Row>
-                  )
-                })
-              ) : (
-                <Column gap={1} className={'fade-in'}>
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                </Column>
+              {isMobile && (
+                <IconButton 
+                  onClick={() => setDevLogListDrawerOpen(false)}
+                  className={'text-[#ddd]'}
+                >
+                  <IconList />
+                </IconButton>
               )}
-            </Column>
+            </Row>
+            <Tree 
+              ref={treeRef}
+              className={'text-[#ddd] !h-fit'} 
+              initialExpandedItems={Array.from(expandedGroups).map(String)}
+            >
+              {GroupTreeComponent}
+            </Tree>
+          </Column>
+          {selectedGroup && (
+            <Row
+              className={
+                'absolute right-0 top-0 opacity-0 group-hover/navigation:opacity-100'
+              }
+            >
+              <PlusIcon
+                className={'cursor-pointer'}
+                onClick={() => setGroupCreateModalOpen(true)}
+              />
+              <PlusIcon
+                className={'cursor-pointer rotate-[45deg]'}
+                onClick={handleDeleteGroup}
+              />
+            </Row>
+          )}
+        </Row>
+
+        <Column fullWidth gap={4} className={''}>
+          {/*  File List  */}
+          <Column fullWidth>
+            {!postListLoading ? (
+              currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
+                return (
+                  <Row
+                    key={i}
+                    gap={1}
+                    fullWidth
+                    className={
+                      'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
+                    }
+                    onClick={() => handleClickDevLog(item)}
+                  >
+                    <Row gap={1} className={'items-center'}>
+                      <FileIcon className='size-4 mt-[1px]' />
+                      {item.title}
+                    </Row>
+                    <Row
+                      className={
+                        'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                      }
+                    >
+                      <CustomPopper
+                        buttons={[
+                          {
+                            icon: <IconTrashFilled />,
+                            function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
+                          },
+                          {
+                            icon: <FolderInputIcon />,
+                            function: () => setChangeGroupModalOpen(true)
+                          }
+                        ]}
+                      />
+                    </Row>
+                  </Row>
+                )
+              })
+            ) : (
+              <Column gap={1} className={'fade-in'}>
+                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+              </Column>
+            )}
           </Column>
         </Column>
+      </Column>
+    )
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog])
+
+  const RenderedDevLogList = useMemo(() => {
+    return (
+      <>
+        {isMobile && (
+          <Box className={'absolute top-12 left-2 z-[10]'}>
+            <IconButton onClick={() => setDevLogListDrawerOpen(true)}>
+              <IconList color={'#ddd'} />
+            </IconButton>
+          </Box>
+        )}
+        <Drawer
+          open={devLogListDrawerOpen}
+          onClose={() => setDevLogListDrawerOpen(false)}
+          variant={!isMobile ? 'permanent' : 'temporary'}
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              left: isMobile ? '0px' : '0px',
+              overflow: 'hidden',
+              backgroundColor: '#050505'
+            }
+          }}
+        >
+          {NavigationArea}
+        </Drawer>
+      </>
+    )
+  }, [isMobile, devLogListDrawerOpen, NavigationArea])
+
+  return (
+    <>
+      <Box sx={{ display: 'flex', width: '100%' }}>
+        {RenderedDevLogList}
 
         {/*  File View Area  */}
         <Column
           gap={4}
           fullWidth
-          className={'max-w-[calc(100vw-750px)] min-w-[calc(100vw-750px)]'}
+          className={isMobile ? 'w-[90vw]' : 'max-w-[calc(100vw-750px)] min-w-[calc(100vw-750px)]'}
         >
           <DevLogDetailView
             selectedDevLog={selectedDevLog}
@@ -517,7 +573,7 @@ const getContextText = (text: string, keyword: string) => {
             devLogLoading={devLogLoading}
           />
         </Column>
-      </Row>
+      </Box>
 
       {/*  Create New Group Modal  */}
       <Dialog

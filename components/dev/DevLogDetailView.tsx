@@ -13,7 +13,7 @@ import { devLogGroupType, devLogType } from '@/types/schemaType'
 import createDevLog from '@/actions/dev/log/createDevLog'
 import { toast } from 'react-toastify'
 import Row from '@/components/flexBox/row'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, useMediaQuery, useTheme } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import { CheckIcon } from 'lucide-react'
@@ -44,6 +44,8 @@ export default function DevLogDetailView({
   groupList: devLogGroupType[]
   devLogLoading: boolean
 }) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
     title: 'New Title',
@@ -217,7 +219,9 @@ export default function DevLogDetailView({
     <>
       <Column
         className={
-          'w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative '
+          isMobile 
+            ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
+            : `w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
         }
       >
         <div className={'sticky top-0 z-[100] right-0'}>
@@ -226,7 +230,7 @@ export default function DevLogDetailView({
             id={'absolute-area'}
           >
             {/*  자동저장 관련  */}
-            <div className={'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
+            <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[200]' : 'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
               {editorStatus === 0 ? (
                 <button
                   onClick={autoSave}
@@ -247,7 +251,9 @@ export default function DevLogDetailView({
             <button
               onClick={handleCreateNewDevLog}
               className={
-                'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
+                isMobile
+                  ? 'bg-[#ddd] rounded-full p-2 shadow-lg cursor-pointer absolute bottom-4 right-4 z-[9999] pointer-events-auto'
+                  : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
               }
             >
               <IconPlus color={'#333'} />
@@ -262,7 +268,7 @@ export default function DevLogDetailView({
         >
           {devLogLoading ? (
             // DevLog 로딩 중일 때만 skeleton 표시
-            <Column gap={4} className={'pl-[55px] pr-12'}>
+            <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
               <Column gap={2} className={'mt-4'}>
                 <Skeleton variant='rounded' className={'w-full h-[100px]'} />
                 <Skeleton variant='rounded' className={'w-full h-[100px]'} />
@@ -273,13 +279,13 @@ export default function DevLogDetailView({
             <>
               <Row
                 fullWidth
-                className={'justify-between pl-[55px] pr-4 relative'}
+                className={isMobile ? 'justify-between px-0 relative' : 'justify-between pl-[55px] pr-4 relative'}
               >
                 <p
-                  className={'text-[12px]'}
+                  className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
                 >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
               </Row>
-              <Column gap={4} className={'mt-[-30px]'}>
+              <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
                 {/*  title  */}
                 <input
                   name={'title'}
@@ -288,35 +294,39 @@ export default function DevLogDetailView({
                   placeholder={'Title'}
                   autoComplete={'off'}
                   className={
-                    'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                    isMobile
+                      ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
+                      : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
                   }
                 />
 
-                {/*  overview  */}
-                <Column className={'pl-[55px] cursor-pointer font-bold'}>
-                  {overview.map((block: any) => {
-                    const level = block.props.level
-                    return (
-                      <Row
-                        key={block.id}
-                        onClick={() => handleScrollToBlock(block)}
-                        className={'mt-[-2px]'}
-                        style={{
-                          fontSize:
-                            level === 1
-                              ? '14px'
-                              : level === 2
-                                ? '13px'
-                                : '12px',
-                          marginLeft:
-                            level === 1 ? '0px' : level === 2 ? '8px' : '16px'
-                        }}
-                      >
-                        {`${block.content[0]?.text ?? ''}`}
-                      </Row>
-                    )
-                  })}
-                </Column>
+                {/*  overview - 모바일에서는 더 간결하게 표시 */}
+                {!isMobile && (
+                  <Column className={'pl-[55px] cursor-pointer font-bold'}>
+                    {overview.map((block: any) => {
+                      const level = block.props.level
+                      return (
+                        <Row
+                          key={block.id}
+                          onClick={() => handleScrollToBlock(block)}
+                          className={'mt-[-2px]'}
+                          style={{
+                            fontSize:
+                              level === 1
+                                ? '14px'
+                                : level === 2
+                                  ? '13px'
+                                  : '12px',
+                            marginLeft:
+                              level === 1 ? '0px' : level === 2 ? '8px' : '16px'
+                          }}
+                        >
+                          {`${block.content[0]?.text ?? ''}`}
+                        </Row>
+                      )
+                    })}
+                  </Column>
+                )}
 
                 {/*  editor  */}
                 {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}

@@ -1,9 +1,9 @@
-import { ReactNode } from 'react'
-import Column from '@/components/flexBox/column'
+import { getUser } from '@/actions/session/getUser'
 import Header from '@/components/layouts/Header'
 import MainSidebar from '@/components/layouts/MainSidebar'
 import { Box } from '@mui/material'
-import { getUser } from '@/actions/session/getUser'
+import { ReactNode } from 'react'
+import ClientLayout from './clientLayout'
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const user = await getUser()
@@ -19,9 +19,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
           }}
         >
           <Header user={user} />
-          <Column className={'w-full items-center px-6 pt-4'}>
+          <ClientLayout>
             {children}
-          </Column>
+          </ClientLayout>
         </Box>
       </Box>
     </>
