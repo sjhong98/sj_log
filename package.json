@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:pull": "bun drizzle-kit pull && bun ./scripts/createTypesFromSchema.ts"
+    "db:pull": "bun drizzle-kit pull && bun ./scripts/createTypesFromSchema.ts && echo '// @ts-nocheck' > temp_file && cat supabase/relations.ts >> temp_file && mv temp_file supabase/relations.ts"
   },
   "dependencies": {
     "@biomejs/biome": "^1.9.4",
