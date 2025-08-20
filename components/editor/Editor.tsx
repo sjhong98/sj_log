@@ -6,6 +6,7 @@ import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
 import { useEffect } from 'react'
 import { devLogType } from '@/types/schemaType'
+import { useMediaQuery, useTheme } from '@mui/material'
 
 export default function Editor({
   selectedDevLog,
@@ -17,6 +18,9 @@ export default function Editor({
   setBlocks: any
 }) {
   const editor = useCreateBlockNote()
+
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const currentTheme = {
     colors: {
@@ -84,7 +88,7 @@ export default function Editor({
   return (
     <BlockNoteView
       editor={editor}
-      className={'w-[90vw] z-[3]'}
+      className={`${isMobile ? 'w-[90vw]' : 'w-full'} z-[3]`}
       theme={{
         // @ts-ignore
         light: currentTheme,

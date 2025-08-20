@@ -451,7 +451,7 @@ const getContextText = (text: string, keyword: string) => {
           {selectedGroup && (
             <Row
               className={
-                'absolute right-0 top-0 opacity-0 group-hover/navigation:opacity-100'
+                'absolute right-0 top-16 opacity-0 group-hover/navigation:opacity-100'
               }
             >
               <PlusIcon
@@ -481,9 +481,11 @@ const getContextText = (text: string, keyword: string) => {
                     }
                     onClick={() => handleClickDevLog(item)}
                   >
-                    <Row gap={1} className={'items-center'}>
+                    <Row gap={1} className={'w-full items-center'}>
                       <FileIcon className='size-4 mt-[1px]' />
+                      <p className='w-full break-all line-clamp-1'>
                       {item.title}
+                      </p>
                     </Row>
                     <Row
                       className={
