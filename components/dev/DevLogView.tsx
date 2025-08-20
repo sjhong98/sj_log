@@ -424,7 +424,7 @@ const getContextText = (text: string, keyword: string) => {
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4 bg-[#111]'}>
+      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4'}>
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
@@ -545,7 +545,9 @@ const getContextText = (text: string, keyword: string) => {
             }
           }}
         >
-          {NavigationArea}
+          <Box className={'bg-[#111]'}> 
+            {NavigationArea}
+          </Box>
         </Drawer>
       </>
     )
@@ -554,7 +556,14 @@ const getContextText = (text: string, keyword: string) => {
   return (
     <>
       <Box sx={{ display: 'flex', width: '100%' }}>
-        {RenderedDevLogList}
+        {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
+        {!isMobile ? (
+          <Row fullWidth gap={4} className={'min-w-[200px]'}>
+            {NavigationArea}
+          </Row>
+        ) : (
+          RenderedDevLogList
+        )}
 
         {/*  File View Area  */}
         <Column
