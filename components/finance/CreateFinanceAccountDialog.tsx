@@ -22,6 +22,7 @@ import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 import createFinanceAccount from '@/actions/finance/account/createFinanceAccount'
 import FinanceAccountCategories from '@/types/finance/account/FinanceAccountCategories'
 import confetti from 'canvas-confetti'
+import createFinanceLog from '@/actions/finance/log/createFinanceLog'
 
 // const CreateFinanceLogDialog = forwardRef(function Page(props, ref) )
 
@@ -66,12 +67,23 @@ export default function CreateFinanceAccountDialog({
 
   const handleSubmit = useCallback(async () => {
     setSubmitButtonDisabled(true)
-    const rowCount = await createFinanceAccount(formData)
-    if (rowCount) {
+    const createdAccount = await createFinanceAccount(formData)
+
+    if (createdAccount) {
       setOpen(false)
       toast.success('Created Account successfully!')
-      refreshData()
 
+      await createFinanceLog({
+        type: 'income',
+        amount: formData.amount,
+        category: 'calibration',
+        note: `${formData.title} 계좌 생성`,
+        paymentMethod: '',
+        financeAccountPk: createdAccount.pk,
+        date: new Date()
+      })
+
+      refreshData()
       setSubmitButtonDisabled(false)
       setFormData({
         title: '',

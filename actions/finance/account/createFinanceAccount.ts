@@ -8,10 +8,10 @@ import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 export default async function createFinanceAccount(props: FinanceAccountType) {
   const user = await getUser()
 
-  const result = await db.insert(financeAccount).values({
+  const [result] = await db.insert(financeAccount).values({
     ...props,
     uid: user.id
-  })
+  }).returning()
 
-  return result.rowCount
+  return result
 }

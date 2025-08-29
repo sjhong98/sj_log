@@ -45,13 +45,13 @@ export default async function createFinanceLog(props: FinanceLogType) {
       )
     )
 
-  const result = await db.insert(financeLog).values({
+  const [result] = await db.insert(financeLog).values({
     ...props,
     uid: user.id,
     date: props.date
       ? new Date(props.date).toISOString()
       : new Date().toISOString()
-  })
+  }).returning()
 
-  return result.rowCount
+  return result
 }

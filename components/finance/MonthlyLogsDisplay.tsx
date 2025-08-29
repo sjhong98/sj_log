@@ -29,6 +29,7 @@ import FinanceCategories from '@/types/finance/FinanceCategories'
 import financeCategories from '@/types/finance/FinanceCategories'
 import { formatInputNumber } from '@/utils/math'
 import getMonthlyLogs from '@/actions/finance/log/getMonthlyLogs'
+import { PlusIcon } from 'lucide-react'
 
 let currentGetMonthLogRequestId = 0
 
@@ -308,22 +309,22 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                         <Row gap={2}>
                           <Row
                             className={
-                              'p-2 rounded-xl group-hover:scale-[1.05] duration-100'
+                              'p-2 rounded-xl group-hover:scale-[1.05] duration-100 w-[40px] h-[40px]'
                             }
                             style={{
                               backgroundColor: FinanceCategories.find(
                                 c => c.title === log.category
-                              )?.color
+                              )?.color ?? '#00c951'
                             }}
                           >
                             {
                               FinanceCategories.find(
                                 c => c.title === log.category
-                              )?.icon
+                              )?.icon ?? <PlusIcon />
                             }
                           </Row>
                         </Row>
-                        <Column>
+                        <Column className='flex justify-center'>
                           <p
                             className={
                               'uppercase text-[18px] font-bold text-[#dadada]'
@@ -332,18 +333,18 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                             {
                               FinanceCategories.find(
                                 c => c.title === log.category
-                              )?.text
+                              )?.text ?? log.category
                             }
                           </p>
-                          <p
-                            className={
-                              'uppercase !mt-[-2px] text-sm text-[#dadada]'
-                            }
-                          >
-                            {log.note || log.note !== ''
-                              ? log.note
-                              : '메모입니다'}
-                          </p>
+                          {log.note !== '' && (
+                            <p
+                              className={
+                                'uppercase !mt-[-2px] text-sm text-[#dadada]'
+                              }
+                            >
+                              {log.note}
+                            </p>
+                          )}
                         </Column>
                       </Row>
                       <Row gap={1} className={'items-center text-[#dadada]'}>

@@ -22,7 +22,7 @@ export default function DashboardContainer({
     <Grid
       size={{ xs: xs ?? 4, md: md ?? 4 }}
       className={'rounded-lg bg-[#111] px-6 py-3'}
-      sx={{ minHeight: `${mh ?? 0}px` }}
+      sx={{ minHeight: `${mh ?? 0}px`, paddingBottom: '40px' }}
     >
       <Column gap={2}>
         {(title || action) && (

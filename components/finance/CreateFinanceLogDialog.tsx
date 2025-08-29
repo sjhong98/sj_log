@@ -7,7 +7,7 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material'
-import { useCallback, useImperativeHandle, useState } from 'react'
+import { useCallback, useImperativeHandle, useMemo, useState } from 'react'
 import FinanceLogType from '@/types/finance/FinanceLogType'
 import { IconCurrencyWon, IconPencil } from '@tabler/icons-react'
 import financeTypes from '@/types/finance/FinanceTypes'
@@ -43,16 +43,19 @@ export default function CreateFinanceLogDialog({
 
   const [open, setOpen] = useState<boolean>(false)
   const [pickerOpen, setPickerOpen] = useState<boolean>(false)
-  const [formData, setFormData] = useState<FinanceLogType>({
-    type: '',
-    amount: 0,
-    category: '',
-    note: '',
-    paymentMethod: '',
-    financeAccountPk: null,
-    date: new Date(),
-    title: ''
-  })
+  const initialFormData = useMemo(() => {
+    return {
+      type: '',
+      amount: 0,
+      category: '',
+      note: '',
+      paymentMethod: '',
+      financeAccountPk: null,
+      date: new Date(),
+      title: ''
+    }
+   }, [])
+  const [formData, setFormData] = useState<FinanceLogType>(initialFormData)
 
   const handleChange = (e: any) => {
     let _formData = { ...formData }
@@ -73,14 +76,15 @@ export default function CreateFinanceLogDialog({
   }, [])
 
   const handleSubmit = useCallback(async () => {
-    const rowCount = await createFinanceLog(formData)
-    if (rowCount) {
+    const createdLog = await createFinanceLog(formData)
+    if (createdLog) {
+      setFormData(initialFormData)
       setOpen(false)
       toast.success('Log created successfully!')
       refreshData()
       refreshAccountData()
     }
-  }, [formData])
+  }, [formData, initialFormData])
 
   return (
     <>
