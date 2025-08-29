@@ -15,7 +15,8 @@ import {
   IconButton,
   SpeedDial,
   SpeedDialAction,
-  Typography
+  Typography,
+  Skeleton
 } from '@mui/material'
 import {
   IconChevronLeft,
@@ -44,6 +45,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   const [totalIncomes, setTotalIncomes] = useState<number>(0)
   const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [options, setOptions] = useState<any>()
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     refreshData()
@@ -62,6 +64,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   }, [logs])
 
   const handleSubtractMonth = async () => {
+    setIsLoading(true)
     let changedMonth = month
     let changedYear = year
 
@@ -83,10 +86,12 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
         options
       )
       if (monthlyLogs) setLogs(monthlyLogs)
+      setIsLoading(false)
     }, 300)
   }
 
   const handleAddMonth = async () => {
+    setIsLoading(true)
     let changedMonth = month
     let changedYear = year
 
@@ -108,15 +113,18 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
         options
       )
       if (monthlyLogs) setLogs(monthlyLogs)
+      setIsLoading(false)
     }, 300)
   }
 
   const handleChangeFilter = useCallback(
     async (idx?: number) => {
+      setIsLoading(true)
       if (idx === undefined) {
         setOptions(undefined)
         const monthlyLogs = await getMonthlyLogs(year, month)
         if (monthlyLogs) setLogs(monthlyLogs)
+        setIsLoading(false)
         return
       }
       let newOptions = { ...options, filter: idx }
@@ -124,6 +132,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
 
       const monthlyLogs = await getMonthlyLogs(year, month, newOptions)
       if (monthlyLogs) setLogs(monthlyLogs)
+      setIsLoading(false)
     },
     [month, year, options]
   )
@@ -135,6 +144,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   }, [])
 
   const refreshData = useCallback(async () => {
+    setIsLoading(true)
     const changedMonth = dayjs().get('month') + 1
     const changedYear = dayjs().get('year')
     setMonth(changedMonth)
@@ -142,6 +152,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
 
     const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth)
     setLogs(monthlyLogs)
+    setIsLoading(false)
   }, [])
 
   useImperativeHandle(ref, () => {
@@ -169,6 +180,42 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
       color: category.color
     }
   })
+
+  // Skeleton 컴포넌트들
+  const renderLogSkeleton = () => (
+    <Row
+      className={
+        'px-4 py-3 bg-[#141414] rounded-xl justify-between'
+      }
+    >
+      <Row gap={2}>
+        <Row gap={2}>
+          <Skeleton
+            variant="rounded"
+            width={40}
+            height={40}
+            className="rounded-xl"
+          />
+        </Row>
+        <Column className='flex justify-center'>
+          <Skeleton variant="text" width={80} height={24} />
+          <Skeleton variant="text" width={60} height={16} />
+        </Column>
+      </Row>
+      <Row gap={1} className={'items-center'}>
+        <Skeleton variant="text" width={40} height={16} />
+        <Row className={'items-center'}>
+          <Skeleton variant="text" width={60} height={24} />
+        </Row>
+      </Row>
+    </Row>
+  )
+
+  const renderDateSkeleton = () => (
+    <Row fullWidth className={'px-6 mt-4'}>
+      <Skeleton variant="text" width={30} height={20} />
+    </Row>
+  )
 
   return (
     <>
@@ -275,7 +322,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                 />
                 <IconCurrencyWon />
               </Row>
-              <Row className={'items-center text-red-500 mt-[-8Authpx]'}>
+              <Row className={'items-center text-red-500 mt-[-8px]'}>
                 <Typography className={'font2'}>-</Typography>
                 <NumberFlow
                   value={totalExpenses}
@@ -287,7 +334,19 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
           </Row>
         </Column>
         <Column gap={1} className={'pb-4'}>
-          {logs.length > 0 ? (
+          {isLoading ? (
+            <Column
+              gap={1}
+              className={'min-h-[300px]'}
+            >
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Fragment key={i}>
+                  {i % 3 === 0 && renderDateSkeleton()}
+                  {renderLogSkeleton()}
+                </Fragment>
+              ))}
+            </Column>
+          ) : logs.length > 0 ? (
             <Column
               gap={1}
               className={'min-h-[300px] opacity-0 opacity-up-appear'}
