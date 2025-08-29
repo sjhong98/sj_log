@@ -2,7 +2,7 @@ import { Grid } from '@mui/material'
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
 import NumberFlow from '@number-flow/react'
-import { IconCurrencyWon, IconX } from '@tabler/icons-react'
+import { IconCurrencyWon, IconX, IconTrash } from '@tabler/icons-react'
 import DashboardContainer from '@/components/layouts/DashboardContainer'
 import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 import { useCallback, useMemo, useState } from 'react'
@@ -13,13 +13,17 @@ import { toast } from 'react-toastify'
 
 export default function AccountDisplay({
   accounts,
+  onAccountDeleted,
 }: {
   accounts: FinanceAccountType[]
+  onAccountDeleted?: () => void
 }) {
   const [accountDetailOpen, setAccountDetailOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<FinanceAccountType | null>(null)
   const [accountLogs, setAccountLogs] = useState<any[]>([])
   const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleOpenAccountDetail = useCallback(async (account: FinanceAccountType) => {
     setSelectedAccount(account)
@@ -43,10 +47,35 @@ export default function AccountDisplay({
     setAccountDetailOpen(false)
     setSelectedAccount(null)
     setAccountLogs([])
+    setShowDeleteConfirm(false)
   }, [])
 
   const handleDeleteAccount = useCallback(async (account: FinanceAccountType) => {
-    if(account?.pk) await deleteFinanceAccount(account.pk)
+    if (!account?.pk) return
+    
+    setIsDeleting(true)
+    try {
+      await deleteFinanceAccount(account.pk)
+      toast.success('계좌가 성공적으로 삭제되었습니다.')
+      handleCloseAccountDetail()
+      // 부모 컴포넌트에 삭제 완료 알림
+      if (onAccountDeleted) {
+        onAccountDeleted()
+      }
+    } catch (error) {
+      console.error('계좌 삭제 오류:', error)
+      toast.error('계좌 삭제 중 오류가 발생했습니다.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }, [onAccountDeleted])
+
+  const openDeleteConfirm = useCallback(() => {
+    setShowDeleteConfirm(true)
+  }, [])
+
+  const closeDeleteConfirm = useCallback(() => {
+    setShowDeleteConfirm(false)
   }, [])
 
   return useMemo(() => {
@@ -143,12 +172,23 @@ export default function AccountDisplay({
                 <h2 className="text-2xl font-bold text-gray-800">
                   {selectedAccount.title}
                 </h2>
-                <button
-                  onClick={handleCloseAccountDetail}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <IconX size={24} />
-                </button>
+                <Row gap={2} className="items-center">
+                  {/* 삭제 버튼 */}
+                  <button
+                    onClick={openDeleteConfirm}
+                    className="p-2 hover:bg-red-50 text-red-600 rounded-full transition-colors"
+                    title="계좌 삭제"
+                  >
+                    <IconTrash size={20} />
+                  </button>
+                  {/* 닫기 버튼 */}
+                  <button
+                    onClick={handleCloseAccountDetail}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <IconX size={24} />
+                  </button>
+                </Row>
               </Row>
 
               {/* 계좌 기본 정보 */}
@@ -231,7 +271,51 @@ export default function AccountDisplay({
             </div>
           </div>
         )}
+
+        {/* 삭제 확인 다이얼로그 */}
+        {showDeleteConfirm && selectedAccount && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                  <IconTrash className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  계좌 삭제 확인
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  <strong>"{selectedAccount.title}"</strong> 계좌를 삭제하시겠습니까?<br />
+                  이 작업은 되돌릴 수 없으며, 관련된 모든 거래 내역도 함께 삭제됩니다.
+                </p>
+                
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={closeDeleteConfirm}
+                    disabled={isDeleting}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={() => handleDeleteAccount(selectedAccount)}
+                    disabled={isDeleting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                  >
+                    {isDeleting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        삭제 중...
+                      </div>
+                    ) : (
+                      '삭제'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Column>
     )
-  }, [accounts, accountDetailOpen, selectedAccount, accountLogs, isLoadingLogs, handleOpenAccountDetail, handleCloseAccountDetail])
+  }, [accounts, accountDetailOpen, selectedAccount, accountLogs, isLoadingLogs, showDeleteConfirm, isDeleting, handleOpenAccountDetail, handleCloseAccountDetail, openDeleteConfirm, closeDeleteConfirm, handleDeleteAccount])
 }
