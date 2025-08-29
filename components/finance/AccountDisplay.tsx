@@ -284,7 +284,7 @@ export default function AccountDisplay({
                   계좌 삭제 확인
                 </h3>
                 <p className="text-sm text-gray-500 mb-6">
-                  <strong>"{selectedAccount.title}"</strong> 계좌를 삭제하시겠습니까?<br />
+                  <strong>&ldquo;{selectedAccount.title}&rdquo;</strong> 계좌를 삭제하시겠습니까?<br />
                   이 작업은 되돌릴 수 없으며, 관련된 모든 거래 내역도 함께 삭제됩니다.
                 </p>
                 
