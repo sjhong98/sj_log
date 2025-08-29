@@ -6,7 +6,8 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material'
 import { useCallback, useState } from 'react'
 import Column from '@/components/flexBox/column'
@@ -22,15 +23,19 @@ export default function Page() {
   const auth = useAuth()
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+  const [loginClicked, setLoginClicked] = useState<boolean>(false)
 
   const handleSignIn = useCallback(
     async (e: any) => {
       e.preventDefault()
 
-      const user = await auth.signIn({ email, password })
-      if (!user) return
+      setLoginClicked(true)
 
-      console.log(user)
+      const user = await auth.signIn({ email, password })
+      if (!user) {
+        setLoginClicked(false)
+        return
+      }
 
       router.push(`/diary/${user.email}`)
     },
@@ -78,8 +83,14 @@ export default function Page() {
                 fullWidth
                 type={'submit'}
                 color={'inherit'}
+                disabled={loginClicked}
+                className='h-10'
               >
-                Sign In
+                {loginClicked ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </Column>
           </Column>

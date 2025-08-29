@@ -55,6 +55,8 @@ export default function DevLogView({
   const [searchResult, setSearchResult] = useState<any[]>([])
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
   const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
+  const [treeLoading, setTreeLoading] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -112,9 +114,15 @@ export default function DevLogView({
     if (!groupPk) return
 
     setPostListLoading(true)
-    const postList = await getPostListByGroupPk(groupPk)
-    setCurrentPostList(postList)
-    setPostListLoading(false)
+    try {
+      const postList = await getPostListByGroupPk(groupPk)
+      setCurrentPostList(postList)
+    } catch (error) {
+      console.error('Failed to fetch post list:', error)
+      toast.error('Failed to load post list')
+    } finally {
+      setPostListLoading(false)
+    }
   }, [])
 
   // Recursive Tree for Navigator
@@ -158,12 +166,22 @@ export default function DevLogView({
         </Folder>
       )
     },
-    [currentGroupTree, selectedGroup]
+    [currentGroupTree, selectedGroup, getPostList]
   )
 
   const GroupTreeComponent = useMemo(() => {
+    if (treeLoading) {
+      return (
+        <Column gap={2} className={'fade-in'}>
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+        </Column>
+      )
+    }
     return currentGroupTree.map(child => returnFolder(child))
-  }, [currentGroupTree, selectedGroup])
+  }, [currentGroupTree, selectedGroup, returnFolder, treeLoading])
 
   // Recursive Tree for Select Group
   const returnIndependentFolder = useCallback(
@@ -216,11 +234,21 @@ export default function DevLogView({
   )
 
   const IndependentGroupTreeComponent = useMemo(() => {
+    if (treeLoading) {
+      return (
+        <Column gap={2} className={'fade-in'}>
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+        </Column>
+      )
+    }
     return currentGroupTree.map(child => returnIndependentFolder(child))
-  }, [currentGroupTree, temporarySelectedGroup])
+  }, [currentGroupTree, temporarySelectedGroup, returnIndependentFolder, treeLoading])
 
   const handleCreateGroup = useCallback(async () => {
     if (!selectedGroup) return
+    setTreeLoading(true)
     try {
       const updatedGroupTree = await createGroup({
         parentGroupPk: selectedGroup.pk ?? 0,
@@ -234,6 +262,7 @@ export default function DevLogView({
       toast.error('Failed to create new group.')
     } finally {
       setNewGroupName('')
+      setTreeLoading(false)
     }
   }, [selectedGroup, newGroupName])
 
@@ -246,6 +275,7 @@ export default function DevLogView({
       return
     }
 
+    setTreeLoading(true)
     try {
       const updatedGroupTree = await deleteGroup(selectedGroup?.pk ?? 0)
       if (updatedGroupTree) {
@@ -257,8 +287,10 @@ export default function DevLogView({
     } catch (e) {
       console.error(e)
       toast.error('Failed to delete group.')
+    } finally {
+      setTreeLoading(false)
     }
-  }, [selectedGroup])
+  }, [selectedGroup, currentPostList])
 
   const handleDeleteDevLog = useCallback(
     async (devLog: devLogType) => {
@@ -294,26 +326,34 @@ export default function DevLogView({
     )
       return
 
-    const updated = await updateParentGroupPk(
-      selectedDevLog.pk,
-      temporarySelectedGroup.pk
-    )
+    setTreeLoading(true)
+    try {
+      const updated = await updateParentGroupPk(
+        selectedDevLog.pk,
+        temporarySelectedGroup.pk
+      )
 
-    if (updated) {
-      setChangeGroupModalOpen(false)
-      setTemporarySelectedGroup(null)
+      if (updated) {
+        setChangeGroupModalOpen(false)
+        setTemporarySelectedGroup(null)
 
-      let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
-      const idx = _currentPostList.findIndex(post => post.pk === updated.pk)
-      if (idx !== -1) {
-        _currentPostList.splice(idx, 1)
-        setCurrentPostList(_currentPostList)
+        let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
+        const idx = _currentPostList.findIndex(post => post.pk === updated.pk)
+        if (idx !== -1) {
+          _currentPostList.splice(idx, 1)
+          setCurrentPostList(_currentPostList)
+        }
+        toast.success('Dev log moved successfully!')
+      } else {
+        toast.error('Failed to moved parent group')
       }
-      toast.success('Dev log moved successfully!')
-    } else {
-      toast.error('Failed to moved parent group')
+    } catch (error) {
+      console.error('Failed to update parent group:', error)
+      toast.error('Failed to move dev log')
+    } finally {
+      setTreeLoading(false)
     }
-  }, [temporarySelectedGroup, selectedDevLog, selectedGroup])
+  }, [temporarySelectedGroup, selectedDevLog, selectedGroup, currentPostList])
 
   // 검색 결과에서 키워드 주변 텍스트를 추출하는 함수
 const getContextText = (text: string, keyword: string) => {
@@ -360,8 +400,16 @@ const getContextText = (text: string, keyword: string) => {
       return
     }
 
-    const result = await searchDevLogByKeyword(e.target.value)
-    setSearchResult(result ?? [])
+    setSearchLoading(true)
+    try {
+      const result = await searchDevLogByKeyword(e.target.value)
+      setSearchResult(result ?? [])
+    } catch (error) {
+      console.error('Search failed:', error)
+      toast.error('Search failed')
+    } finally {
+      setSearchLoading(false)
+    }
   }, [])
 
   const expandSelectedGroupTree = useCallback(async (groupPks: number[]) => {
@@ -395,7 +443,7 @@ const getContextText = (text: string, keyword: string) => {
     expandSelectedGroupTree(_devLogData.group.map((group: any) => group.pk))
     searchInputRef.current?.close()
     setSelectedGroup(groupList.find(group => group.pk === resultItem.groupPk) ?? null)
-  }, [handleClickDevLog, groupList, treeRef])
+  }, [handleClickDevLog, groupList, treeRef, expandSelectedGroupTree])
 
   const SearchDialog = useMemo(() => {
     return (
@@ -403,24 +451,43 @@ const getContextText = (text: string, keyword: string) => {
         <Column className={`${isMobile ? 'w-[90vw]' : 'w-[600px]'} overflow-y-hidden`}>
           <input autoFocus type="text" placeholder='Search' className='w-full h-12 outline-none px-4 bg-[#222]' value={searchKeyword} onChange={handleSearch} />
           <Column gap={2} className='pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar'>
-            { searchResult.map((resultItem: any, i: number) => {
-              const contextText = getContextText(resultItem.text, searchKeyword)
-              if(contextText === '') return
-              return (
-                <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
-                  <Row gap={1} className={'items-center'}>
-                    <FileIcon className='size-4 mt-[1px]' />
-                    {`${resultItem.group?.name ?? ''} > ${resultItem.title}`}
-                  </Row>
-                  <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
-                </Column>
-              )
-            })}
+            {searchLoading ? (
+              // 검색 로딩 skeleton
+              <Column gap={2} className={'fade-in'}>
+                {[1, 2, 3].map((i) => (
+                  <Column key={i} fullWidth className='rounded-sm pr-1 pl-2 mb-[-5px]'>
+                    <Row gap={1} className={'items-center mb-2'}>
+                      <Skeleton variant='circular' className={'size-4'} />
+                      <Skeleton variant='rounded' className={'h-4 flex-1'} />
+                    </Row>
+                    <Skeleton variant='rounded' className={'h-3 w-3/4'} />
+                  </Column>
+                ))}
+              </Column>
+            ) : searchResult.length > 0 ? (
+              searchResult.map((resultItem: any, i: number) => {
+                const contextText = getContextText(resultItem.text, searchKeyword)
+                if(contextText === '') return
+                return (
+                  <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
+                    <Row gap={1} className={'items-center'}>
+                      <FileIcon className='size-4 mt-[1px]' />
+                      {`${resultItem.group?.name ?? ''} > ${resultItem.title}`}
+                    </Row>
+                    <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
+                  </Column>
+                )
+              })
+            ) : searchKeyword && !searchLoading ? (
+              <Typography variant='body2' className='text-[#999] text-center py-4'>
+                검색 결과가 없습니다.
+              </Typography>
+            ) : null}
           </Column>
         </Column>
       </>
     )
-  }, [searchKeyword, handleSearch, searchResult])
+  }, [searchKeyword, handleSearch, searchResult, searchLoading, isMobile, handleClickResultItem])
 
   const NavigationArea = useMemo(() => {
     return (
@@ -440,13 +507,22 @@ const getContextText = (text: string, keyword: string) => {
                 </IconButton>
               )}
             </Row>
-            <Tree 
-              ref={treeRef}
-              className={'text-[#ddd] !h-fit'} 
-              initialExpandedItems={Array.from(expandedGroups).map(String)}
-            >
-              {GroupTreeComponent}
-            </Tree>
+            {treeLoading ? (
+              <Column gap={2} className={'fade-in'}>
+                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+              </Column>
+            ) : (
+              <Tree 
+                ref={treeRef}
+                className={'text-[#ddd] !h-fit'} 
+                initialExpandedItems={Array.from(expandedGroups).map(String)}
+              >
+                {GroupTreeComponent}
+              </Tree>
+            )}
           </Column>
           {selectedGroup && (
             <Row
@@ -513,13 +589,15 @@ const getContextText = (text: string, keyword: string) => {
                 <Skeleton variant='rounded' className={'w-full h-[20px]'} />
                 <Skeleton variant='rounded' className={'w-full h-[20px]'} />
                 <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
               </Column>
             )}
           </Column>
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog])
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading])
 
   const RenderedDevLogList = useMemo(() => {
     return (
@@ -618,9 +696,18 @@ const getContextText = (text: string, keyword: string) => {
         onClose={() => setChangeGroupModalOpen(false)}
       >
         <Column className={'min-w-[300px] min-h-[400px] p-2'}>
-          <Tree className={'text-[#ddd] !h-fit'}>
-            {IndependentGroupTreeComponent}
-          </Tree>
+          {treeLoading ? (
+            <Column gap={2} className={'fade-in'}>
+              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
+            </Column>
+          ) : (
+            <Tree className={'text-[#ddd] !h-fit'}>
+              {IndependentGroupTreeComponent}
+            </Tree>
+          )}
         </Column>
       </Dialog>
     </>
