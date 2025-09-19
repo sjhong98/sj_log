@@ -37,7 +37,7 @@ export default function Page() {
         return
       }
 
-      router.push(`/diary/${user.email}`)
+      router.push(`/dev/${user.email}`)
     },
     [email, password]
   )
