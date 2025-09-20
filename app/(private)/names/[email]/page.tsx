@@ -248,8 +248,8 @@ export default function Page() {
                         namePk,
                         tagName: tag.name
                     });
-                    if (result) toast.success(`${tag.name} 태그에 성공적으로 추가되었습니다.`, { toastId: tag.name });
-                    else if (!result) toast.error(`${tag.name} 태그에 실패했습니다.`, { toastId: tag.name });
+                    // if (result) toast.success(`${tag.name} 태그에 성공적으로 추가되었습니다.`, { toastId: tag.name });
+                    // else if (!result) toast.error(`${tag.name} 태그에 실패했습니다.`, { toastId: tag.name });
                 }
             }
         } catch (error) {
