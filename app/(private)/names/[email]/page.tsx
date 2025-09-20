@@ -11,14 +11,15 @@ import CustomTextField from "@/components/customTextField/CustomTextField";
 import Column from "@/components/flexBox/column";
 import Row from "@/components/flexBox/row";
 import { nameType } from "@/types/schemaType";
-import { Autocomplete, Box, Button, Chip, Rating, TextField, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, IconButton, Rating, TextField, Typography } from "@mui/material";
 import { debounce } from "lodash";
-import { Filter, Plus, Save, SearchIcon, Trash, X } from "lucide-react";
+import { ArrowLeftRight, Filter, Plus, Save, SearchIcon, Trash, X, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from 'react-toastify'
 import getNameListByPartialKeyword from "@/actions/names/getNameListByPartialKeyword";
 import getNameListGroupByTags from "@/actions/names/getNameListGroupByTags";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 interface TagOption {
     pk: number;
@@ -52,6 +53,9 @@ export default function Page() {
         importanceLevel: 0,
         images: ''
     });
+    const [secretMode, setSecretMode] = useState(false);
+    const [showSecretModal, setShowSecretModal] = useState(false);
+    const [otpValue, setOtpValue] = useState('');
 
     useEffect(() => {
         fetchNameList();
@@ -252,11 +256,6 @@ export default function Page() {
     };
 
     const handleSaveName = async () => {
-        if (!formData.name.trim()) {
-            toast.error('이름을 입력해주세요.');
-            return;
-        }
-
         try {
             const namePkParam = searchParams.get('namePk');
 
@@ -359,6 +358,34 @@ export default function Page() {
         }
     }
 
+    const handleSecretMode = () => {
+        if (secretMode) {
+            // 이미 secret mode가 켜져있으면 끄기
+            setSecretMode(false);
+        } else {
+            // secret mode를 켜려면 OTP 모달 표시
+            setShowSecretModal(true);
+        }
+    };
+
+    const handleOtpSubmit = (e: any) => {
+        e.preventDefault();
+
+        // 간단한 OTP 검증 (실제로는 서버에서 검증해야 함)
+        if (otpValue === '404919') {
+            setSecretMode(true);
+            setShowSecretModal(false);
+            setOtpValue('');
+        } else {
+            toast.error('잘못된 OTP 코드입니다.');
+        }
+    };
+
+    const handleSecretModalClose = () => {
+        setShowSecretModal(false);
+        setOtpValue('');
+    };
+
     return (
         <Row gap={4} className="w-full">
             {/* Name List Area */}
@@ -403,8 +430,8 @@ export default function Page() {
                                         if (name?.pk) handleSelectNameDetail(name.pk)
                                     }}
                                 >
-                                    <Typography variant="body1">{name?.name ?? '-'}</Typography>
-                                    <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{name?.subname ?? '-'}</Typography>
+                                    <Typography variant="body1">{(name?.name && name.name !== '') ? name.name : '-'}</Typography>
+                                    <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{(name?.subname || name.subname !== '') ? name.subname : ''}</Typography>
                                 </Column>
                             ))
                             }
@@ -452,27 +479,17 @@ export default function Page() {
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
-                        <Button
-                            variant="contained"
-                            className="!bg-[#010101] !text-[#ddd] !rounded-md !h-[54px] hover:!bg-[#222]"
-                            onClick={handleSaveName}
-                        >
-                            <Save className="size-4" />
-                        </Button>
-                        <Button
-                            variant="contained"
-                            className="!bg-[#010101] !text-[#ddd] !rounded-md !h-[54px] hover:!bg-[#F00]"
-                            onClick={handleDeleteClick}
-                        >
-                            <Trash className="size-4" />
-                        </Button>
-                        <Button
-                            variant="contained"
-                            className="!bg-[#010101] !text-[#ddd] !rounded-md !h-[54px] hover:!bg-[#222]"
-                            onClick={handleUnselectNameDetail}
-                        >
-                            <X className="size-4" />
-                        </Button>
+                        <Row className="bg-[#010101] rounded-md p-2 h-[55px] items-center">
+                            <IconButton onClick={handleSaveName} className="w-8 h-8">
+                                <Save className="size-4" />
+                            </IconButton>
+                            <IconButton onClick={handleDeleteClick} className="w-8 h-8">
+                                <Trash className="size-4" />
+                            </IconButton>
+                            <IconButton onClick={handleUnselectNameDetail} className="w-8 h-8">
+                                <X className="size-4" />
+                            </IconButton>
+                        </Row>
                     </Row>
                     <CustomTextField
                         fullWidth
@@ -480,14 +497,25 @@ export default function Page() {
                         value={formData.subname}
                         onChange={(e) => setFormData({ ...formData, subname: e.target.value })}
                     />
-                    <CustomTextField
-                        fullWidth
-                        multiline
-                        label="Description"
-                        minRows={10}
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
+                    <Column className="relative w-full">
+                        <CustomTextField
+                            fullWidth
+                            multiline
+                            label={secretMode ? "Secret Description" : "Description"}
+                            minRows={10}
+                            value={secretMode ? formData.secretDescription : formData.description}
+                            onChange={(e) => {
+                                if (secretMode) {
+                                    setFormData({ ...formData, secretDescription: e.target.value });
+                                } else {
+                                    setFormData({ ...formData, description: e.target.value });
+                                }
+                            }}
+                        />
+                        <IconButton className="!absolute !top-1 !right-1 w-5 h-5" onClick={handleSecretMode}>
+                            {secretMode ? <EyeOff className="scale-[2]" /> : <Eye className="scale-[2]" />}
+                        </IconButton>
+                    </Column>
                     <Row gap={1} fullWidth>
                         <Row className="flex-[3] bg-[#010101] rounded-md items-center px-3">
                             <Autocomplete
@@ -645,6 +673,32 @@ export default function Page() {
                     </div>
                 </div>
             )}
+
+            {/* Secret Mode OTP Modal */}
+            <Dialog
+                open={showSecretModal}
+                onClose={handleSecretModalClose}
+            >
+                <DialogContent className="!p-0 overflo-hidden">
+                    <form onSubmit={handleOtpSubmit}>
+                        <InputOTP
+                            maxLength={6}
+                            value={otpValue}
+                            onChange={(value) => setOtpValue(value)}
+                            className="overflow-hidden !w-fit"
+                        >
+                            <InputOTPGroup className="overflow-hidden">
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                        </InputOTP>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </Row>
     )
 }
