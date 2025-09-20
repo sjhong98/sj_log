@@ -1,8 +1,70 @@
 // @ts-nocheck
-import { pgTable, foreignKey, bigint, uuid, text, timestamp, varchar } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, bigint, varchar, text, timestamp, uuid } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
+
+export const name = pgTable("name", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "name_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	name: varchar(),
+	subname: varchar(),
+	description: text(),
+	secretDescription: text("secret_description"),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	importanceLevel: bigint("importance_level", { mode: "number" }),
+	images: varchar(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	uid: uuid().defaultRandom(),
+}, (table) => [
+	foreignKey({
+			columns: [table.uid],
+			foreignColumns: [users.id],
+			name: "name_uid_fkey"
+		}),
+]);
+
+export const nameTag = pgTable("name_tag", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "name_tag_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	name: varchar(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	uid: uuid().defaultRandom(),
+}, (table) => [
+	foreignKey({
+			columns: [table.uid],
+			foreignColumns: [users.id],
+			name: "name_tag_uid_fkey"
+		}),
+]);
+
+export const financeLog = pgTable("finance_log", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "finance_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	uid: uuid().defaultRandom().notNull(),
+	type: varchar().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	amount: bigint({ mode: "number" }).default(sql`'0'`),
+	category: varchar(),
+	note: text(),
+	paymentMethod: varchar("payment_method"),
+	date: timestamp({ withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	financeAccountPk: bigint("finance_account_pk", { mode: "number" }),
+	title: varchar().default(' '),
+}, (table) => [
+	foreignKey({
+			columns: [table.financeAccountPk],
+			foreignColumns: [financeAccount.pk],
+			name: "finance_log_finance_account_pk_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.uid],
+			foreignColumns: [users.id],
+			name: "finance_uid_fkey"
+		}),
+]);
 
 export const comment = pgTable("comment", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -36,34 +98,6 @@ export const diary = pgTable("diary", {
 	contentText: text(),
 	thumbnail: text(),
 });
-
-export const financeLog = pgTable("finance_log", {
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "finance_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
-	uid: uuid().defaultRandom().notNull(),
-	type: varchar().notNull(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	amount: bigint({ mode: "number" }).default(sql`'0'`),
-	category: varchar(),
-	note: text(),
-	paymentMethod: varchar("payment_method"),
-	date: timestamp({ withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	financeAccountPk: bigint("finance_account_pk", { mode: "number" }),
-	title: varchar().default(' '),
-}, (table) => [
-	foreignKey({
-			columns: [table.financeAccountPk],
-			foreignColumns: [financeAccount.pk],
-			name: "finance_log_finance_account_pk_fkey"
-		}),
-	foreignKey({
-			columns: [table.uid],
-			foreignColumns: [users.id],
-			name: "finance_uid_fkey"
-		}),
-]);
 
 export const financeAccount = pgTable("finance_account", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -165,4 +199,25 @@ export const devLogGroup = pgTable("dev_log_group", {
 			foreignColumns: [users.id],
 			name: "dev_log_group_uid_fkey"
 		}),
+]);
+
+export const nameTagRelation = pgTable("name_tag_relation", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "name_tag_relation_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	namePk: bigint("name_pk", { mode: "number" }),
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	tagPk: bigint("tag_pk", { mode: "number" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.namePk],
+			foreignColumns: [name.pk],
+			name: "name_tag_relation_name_pk_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.tagPk],
+			foreignColumns: [nameTag.pk],
+			name: "name_tag_relation_tag_pk_fkey"
+		}).onDelete("set null"),
 ]);

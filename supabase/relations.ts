@@ -1,29 +1,32 @@
 // @ts-nocheck
 import { relations } from "drizzle-orm/relations";
-import { diary, comment, usersInAuth, financeAccount, financeLog, user, devLogGroup, devLog, devLogTagRelation, devLogTag } from "./schema";
+import { usersInAuth, name, nameTag, financeAccount, financeLog, diary, comment, user, devLogGroup, devLog, devLogTagRelation, devLogTag, nameTagRelation } from "./schema";
 
-export const commentRelations = relations(comment, ({one}) => ({
-	diary: one(diary, {
-		fields: [comment.diaryPk],
-		references: [diary.pk]
-	}),
+export const nameRelations = relations(name, ({one, many}) => ({
 	usersInAuth: one(usersInAuth, {
-		fields: [comment.uid],
+		fields: [name.uid],
 		references: [usersInAuth.id]
 	}),
-}));
-
-export const diaryRelations = relations(diary, ({many}) => ({
-	comments: many(comment),
+	nameTagRelations: many(nameTagRelation),
 }));
 
 export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
-	comments: many(comment),
+	names: many(name),
+	nameTags: many(nameTag),
 	financeLogs: many(financeLog),
+	comments: many(comment),
 	financeAccounts: many(financeAccount),
 	users: many(user),
 	devLogs: many(devLog),
 	devLogGroups: many(devLogGroup),
+}));
+
+export const nameTagRelations = relations(nameTag, ({one, many}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [nameTag.uid],
+		references: [usersInAuth.id]
+	}),
+	nameTagRelations: many(nameTagRelation),
 }));
 
 export const financeLogRelations = relations(financeLog, ({one}) => ({
@@ -43,6 +46,21 @@ export const financeAccountRelations = relations(financeAccount, ({one, many}) =
 		fields: [financeAccount.uid],
 		references: [usersInAuth.id]
 	}),
+}));
+
+export const commentRelations = relations(comment, ({one}) => ({
+	diary: one(diary, {
+		fields: [comment.diaryPk],
+		references: [diary.pk]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [comment.uid],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const diaryRelations = relations(diary, ({many}) => ({
+	comments: many(comment),
 }));
 
 export const userRelations = relations(user, ({one}) => ({
@@ -85,4 +103,15 @@ export const devLogTagRelationRelations = relations(devLogTagRelation, ({one}) =
 
 export const devLogTagRelations = relations(devLogTag, ({many}) => ({
 	devLogTagRelations: many(devLogTagRelation),
+}));
+
+export const nameTagRelationRelations = relations(nameTagRelation, ({one}) => ({
+	name: one(name, {
+		fields: [nameTagRelation.namePk],
+		references: [name.pk]
+	}),
+	nameTag: one(nameTag, {
+		fields: [nameTagRelation.tagPk],
+		references: [nameTag.pk]
+	}),
 }));

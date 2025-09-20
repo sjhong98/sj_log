@@ -42,6 +42,10 @@ const MainSidebar = () => {
     {
       text: 'Dev Blog',
       route: `/dev`
+    },
+    {
+      text: 'Names',
+      route: `/names`
     }
   ]
 
