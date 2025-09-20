@@ -242,13 +242,14 @@ export default function Page() {
     const processTags = async (namePk: number) => {
         try {
             for (const tag of tagList) {
+                console.log('추가 중인 태그: ', tag.name)
                 if (tag.name) {
                     const result = await nameTagging({
                         namePk,
                         tagName: tag.name
                     });
-                    if(result) toast.success(`${tag.name} 태그에 성공적으로 추가되었습니다.`, {toastId: tag.name});
-                    else if (!result) toast.error(`${tag.name} 태그에 실패했습니다.`, {toastId: tag.name});
+                    if (result) toast.success(`${tag.name} 태그에 성공적으로 추가되었습니다.`, { toastId: tag.name });
+                    else if (!result) toast.error(`${tag.name} 태그에 실패했습니다.`, { toastId: tag.name });
                 }
             }
         } catch (error) {
@@ -297,9 +298,8 @@ export default function Page() {
                 } as any);
 
                 if (result) {
-                    // TODO: createName에서 생성된 pk를 반환하도록 수정 필요
-                    // 현재는 태그 처리를 건너뜀
-                    // await processTags(newNamePk);
+                    // 태그 처리
+                    await processTags(result.pk);
 
                     toast.success('이름이 성공적으로 생성되었습니다.');
                     fetchNameList(); // 목록 새로고침

@@ -11,7 +11,7 @@ export default async function createName(nameData: nameType) {
 
   const { name: nameValue, subname, description, secretDescription, importanceLevel, images } = nameData
 
-  const result = await db.insert(name).values({
+  const [result] = await db.insert(name).values({
     name: nameValue,
     subname,
     description,
@@ -19,7 +19,7 @@ export default async function createName(nameData: nameType) {
     importanceLevel,
     images,
     uid: user.id
-  })
+  }).returning()
 
-  return result.rowCount
+  return result
 }
