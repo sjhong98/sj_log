@@ -56,6 +56,7 @@ export default function Page() {
     const [secretMode, setSecretMode] = useState(false);
     const [showSecretModal, setShowSecretModal] = useState(false);
     const [otpValue, setOtpValue] = useState('');
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         fetchNameList();
@@ -71,8 +72,14 @@ export default function Page() {
     }, [searchParams])
 
     const fetchNameList = async () => {
-        const names = await getNameList({ filter: filterList[currentFilterIndex] });
-        setNameList(names || []);
+        try {
+            const response = await getNameList({ filter: filterList[currentFilterIndex] });
+            setNameList(response?.nameList || []);
+            setTotal(response?.total || 0);
+        } catch (error) {
+            console.error('이름 목록 조회 오류:', error);
+            setNameList([]);
+        }
     }
 
     useEffect(() => {
@@ -318,6 +325,8 @@ export default function Page() {
                     toast.error('생성에 실패했습니다.');
                 }
             }
+            
+            setSecretMode(false)
         } catch (error) {
             console.error('저장 오류:', error);
             toast.error('저장 중 오류가 발생했습니다.');
@@ -413,7 +422,7 @@ export default function Page() {
                         <Filter />
                     </Row>
                 </Row>
-                <Row gap={1} className="flex-wrap overflow-y-auto max-h-[calc(100vh-200px)]">
+                <Row gap={1} className="flex-wrap overflow-y-auto max-h-[calc(100vh-200px)] custom-scrollbar">
                     {currentFilterIndex === 0 ? (
                         <>
                             <Row
@@ -424,18 +433,22 @@ export default function Page() {
                                 <Typography variant="body1">ADD</Typography>
                             </Row>
                             {nameList.map((name) => (
+
+                                // Name Item
                                 <Column
                                     key={name.pk}
-                                    className='bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px]'
+                                    className='bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px] relative'
                                     onClick={() => {
                                         if (name?.pk) handleSelectNameDetail(name.pk)
                                     }}
                                 >
                                     <Typography variant="body1">{(name?.name && name.name !== '') ? name.name : '-'}</Typography>
                                     <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{(name?.subname || name.subname !== '') ? name.subname : ''}</Typography>
+                                    {name.secretDescription !== '' && <div className='absolute top-2 right-2 rounded-full bg-red-600 w-1 h-1' />}
                                 </Column>
                             ))
                             }
+                            <Row fullWidth className='justify-center'><Typography className='text-stone-700 !text-[14px] font-light'>{`- Total ${total} names -`}</Typography></Row>
                         </>
                     ) : (
                         <>

@@ -27,17 +27,25 @@ export default function Page() {
 
   const handleSignIn = useCallback(
     async (e: any) => {
-      e.preventDefault()
+      try {
+        e.preventDefault()
 
-      setLoginClicked(true)
-
-      const user = await auth.signIn({ email, password })
-      if (!user) {
+        setLoginClicked(true)
+  
+        const user = await auth.signIn({ email, password })
+        console.log('login success: ', user)
+        if (!user) {
+          setLoginClicked(false)
+          return
+        }
+  
+        console.log('user.email', user.email)
+        router.push(`/dev/${user.email}`)
+      } catch (error) {
+        console.error('로그인 오류: ', error)
+      } finally {
         setLoginClicked(false)
-        return
       }
-
-      router.push(`/dev/${user.email}`)
     },
     [email, password]
   )
