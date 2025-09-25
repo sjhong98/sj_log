@@ -46,6 +46,10 @@ const MainSidebar = () => {
     {
       text: 'Names',
       route: `/names`
+    },
+    {
+      text: 'Investment',
+      route: `/investment`
     }
   ]
 

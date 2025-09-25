@@ -4,9 +4,11 @@ import deleteName from "@/actions/names/deleteName";
 import updateName from "@/actions/names/updateName";
 import createName from "@/actions/names/createName";
 import nameTagging from "@/actions/names/nameTagging";
+import nameUntagging from "@/actions/names/nameUntagging";
 import getNameDetail from "@/actions/names/getNameDetail";
 import getNameList from "@/actions/names/getNameList";
 import getNameTagByPartialKeyword from "@/actions/names/getNameTagByPartialKeyword";
+import uploadNameImage from "@/actions/names/uploadNameImage";
 import CustomTextField from "@/components/customTextField/CustomTextField";
 import Column from "@/components/flexBox/column";
 import Row from "@/components/flexBox/row";
@@ -15,11 +17,12 @@ import { Autocomplete, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Ic
 import { debounce } from "lodash";
 import { ArrowLeftRight, Filter, Plus, Save, SearchIcon, Trash, X, Eye, EyeOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from 'react-toastify'
 import getNameListByPartialKeyword from "@/actions/names/getNameListByPartialKeyword";
 import getNameListGroupByTags from "@/actions/names/getNameListGroupByTags";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import Image from "next/image";
 
 interface TagOption {
     pk: number;
@@ -71,16 +74,19 @@ export default function Page() {
         }
     }, [searchParams])
 
-    const fetchNameList = async () => {
+    const fetchNameList = useCallback(async () => {
         try {
-            const response = await getNameList({ filter: filterList[currentFilterIndex] });
+            let response: any = { nameList: [] };
+            if (searchKeyword !== '') response = await getNameListByPartialKeyword(searchKeyword)
+            else response = await getNameList({ filter: filterList[currentFilterIndex] });
+
             setNameList(response?.nameList || []);
             setTotal(response?.total || 0);
         } catch (error) {
             console.error('이름 목록 조회 오류:', error);
             setNameList([]);
         }
-    }
+    }, [searchKeyword, currentFilterIndex, filterList, getNameListByPartialKeyword, getNameList])
 
     useEffect(() => {
         (async () => {
@@ -204,10 +210,32 @@ export default function Page() {
         setTagInput('');
     };
 
-    const handleTagDelete = (tagToDelete: TagOption) => {
-        const updatedTags = selectedTags.filter(tag => tag.pk !== tagToDelete.pk);
+    const handleTagDelete = async (tagToDelete: TagOption) => {
+        const updatedTags = selectedTags.filter(tag => tag.name !== tagToDelete.name);
         setSelectedTags(updatedTags);
         setTagList(updatedTags);
+
+        if (!selectedNamePk) return
+
+        try {
+            // 서버에서 태그 연결 제거
+            const result = await nameUntagging({
+                namePk: selectedNamePk,
+                tagPk: tagToDelete.pk
+            });
+
+            if (result && result > 0) {
+                // 클라이언트 상태 업데이트
+                const updatedTags = selectedTags.filter(tag => tag.pk !== tagToDelete.pk);
+                setSelectedTags(updatedTags);
+                setTagList(updatedTags);
+            } else {
+                toast.error('태그 제거에 실패했습니다.', { autoClose: 1000 });
+            }
+        } catch (error) {
+            console.error('태그 제거 중 오류:', error);
+            toast.error('태그 제거 중 오류가 발생했습니다.', { autoClose: 1000 });
+        }
     };
 
     const handleDeleteClick = () => {
@@ -230,13 +258,13 @@ export default function Page() {
                 router.replace(`?${params.toString()}`);
 
                 fetchNameList(); // 목록 새로고침
-                toast.success('이름이 성공적으로 삭제되었습니다.');
+                toast.success('이름이 성공적으로 삭제되었습니다.', { autoClose: 1000 });
             } else {
-                toast.error('삭제에 실패했습니다.');
+                toast.error('삭제에 실패했습니다.', { autoClose: 1000 });
             }
         } catch (error) {
             console.error('이름 삭제 오류:', error);
-            toast.error('삭제 중 오류가 발생했습니다.');
+            toast.error('삭제 중 오류가 발생했습니다.', { autoClose: 1000 });
         } finally {
             setShowDeleteModal(false);
         }
@@ -286,11 +314,13 @@ export default function Page() {
                         // 태그 처리
                         await processTags(pk);
 
-                        toast.success('이름이 성공적으로 수정되었습니다.');
+                        toast.success('이름이 성공적으로 수정되었습니다.', { autoClose: 1000 });
+
                         fetchNameList(); // 목록 새로고침
+
                         fetchNameDetail(pk); // 상세 정보 새로고침
                     } else {
-                        toast.error('수정에 실패했습니다.');
+                        toast.error('수정에 실패했습니다.', { autoClose: 1000 });
                     }
                 }
             } else {
@@ -308,8 +338,11 @@ export default function Page() {
                     // 태그 처리
                     await processTags(result.pk);
 
-                    toast.success('이름이 성공적으로 생성되었습니다.');
+                    toast.success('이름이 성공적으로 생성되었습니다.', { autoClose: 1000 });
+
                     fetchNameList(); // 목록 새로고침
+
+
                     // 폼 초기화
                     setFormData({
                         name: '',
@@ -322,14 +355,14 @@ export default function Page() {
                     setTagList([]);
                     setSelectedTags([]);
                 } else {
-                    toast.error('생성에 실패했습니다.');
+                    toast.error('생성에 실패했습니다.', { autoClose: 1000 });
                 }
             }
-            
+
             setSecretMode(false)
         } catch (error) {
             console.error('저장 오류:', error);
-            toast.error('저장 중 오류가 발생했습니다.');
+            toast.error('저장 중 오류가 발생했습니다.', { autoClose: 1000 });
         }
     };
 
@@ -354,8 +387,10 @@ export default function Page() {
 
     const handleSearchKeywordChange = async (e: any) => {
         setSearchKeyword(e.target.value);
-        const names = await getNameListByPartialKeyword(e.target.value);
-        setNameList(names || []);
+        const response = await getNameListByPartialKeyword(e.target.value);
+        if (!response || !response.nameList) return;
+        setNameList(response.nameList || []);
+        setTotal(response.total || 0);
     }
 
     const handleChangeFilter = async (e: any) => {
@@ -387,7 +422,7 @@ export default function Page() {
             setShowSecretModal(false);
             setOtpValue('');
         } else {
-            toast.error('잘못된 OTP 코드입니다.');
+            toast.error('잘못된 OTP 코드입니다.', { autoClose: 1000 });
         }
     };
 
@@ -395,6 +430,107 @@ export default function Page() {
         setShowSecretModal(false);
         setOtpValue('');
     };
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !selectedNamePk) return;
+
+        // 이미지 파일인지 확인
+        if (!file.type.startsWith('image/')) {
+            toast.error('이미지 파일만 업로드할 수 있습니다.', { autoClose: 1000 });
+            return;
+        }
+
+        // 파일 크기 확인 (5MB 제한)
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            toast.error('파일 크기는 5MB를 초과할 수 없습니다.', { autoClose: 1000 });
+            return;
+        }
+
+        try {
+            // 파일을 base64로 변환
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target?.result as string;
+                if (base64) {
+                    try {
+                        const result = await uploadNameImage(selectedNamePk, base64);
+                        if (result.success) {
+                            // 폼 데이터에 이미지 URL 업데이트
+                            setFormData(prev => ({
+                                ...prev,
+                                images: result.imageUrl
+                            }));
+                            toast.success('이미지가 성공적으로 업로드되었습니다.', { autoClose: 1000 });
+                        }
+                    } catch (error) {
+                        console.error('이미지 업로드 오류:', error);
+                        toast.error('이미지 업로드에 실패했습니다.', { autoClose: 1000 });
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('파일 읽기 오류:', error);
+            toast.error('파일을 읽는 중 오류가 발생했습니다.', { autoClose: 1000 });
+        }
+
+        // input 값 초기화 (같은 파일을 다시 선택할 수 있도록)
+        event.target.value = '';
+    };
+
+    const renderNameList = useMemo(() => {
+        return (
+            // Name Item
+            nameList.map((name) => (
+                <Column
+                    key={name.pk}
+                    className='bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px] relative'
+                    onClick={() => {
+                        if (name?.pk) handleSelectNameDetail(name.pk)
+                    }}
+                >
+                    <Typography variant="body1">{(name?.name && name.name !== '') ? name.name : '-'}</Typography>
+                    <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{(name?.subname || name.subname !== '') ? name.subname : ''}</Typography>
+                    {name.description !== '' && <div className='absolute top-2 right-[20px] rounded-full bg-green-600 w-1 h-1' />}
+                    {name.images !== '' && <div className='absolute top-2 right-[14px] rounded-full bg-stone-600 w-1 h-1' />}
+                    {name.secretDescription !== '' && <div className='absolute top-2 right-[8px] rounded-full bg-red-600 w-1 h-1' />}
+                </Column>
+            ))
+        )
+    }, [nameList])
+
+    const renderNameListGroupByTags = useMemo(() => {
+        return (
+            nameListGroupByTags.map((nameListGroup: any, index: number) => (
+                <Column
+                    key={index}
+                    className='w-full'
+                >
+                    <Typography variant="body1">#{nameListGroup.tag.name ?? '-'}</Typography>
+
+                    <Row gap={1} className="flex-wrap overflow-y-auto">
+                        {nameListGroup.name.map((name: any) => (
+                            <Column
+                                key={name.pk}
+                                className='relative bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px]'
+                                onClick={() => {
+                                    if (name?.pk) handleSelectNameDetail(name.pk)
+                                }}
+                            >
+                                <Typography variant="body1">{name?.name ?? '-'}</Typography>
+                                <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{name?.subname ?? '-'}</Typography>
+                                {name.description !== '' && <div className='absolute top-2 right-[20px] rounded-full bg-green-600 w-1 h-1' />}
+                                {name.images !== '' && <div className='absolute top-2 right-[14px] rounded-full bg-stone-600 w-1 h-1' />}
+                                {name.secretDescription !== '' && <div className='absolute top-2 right-[8px] rounded-full bg-red-600 w-1 h-1' />}
+                            </Column>
+                        ))}
+                    </Row>
+                </Column>
+            ))
+        )
+    }, [nameListGroupByTags])
 
     return (
         <Row gap={4} className="w-full">
@@ -432,51 +568,13 @@ export default function Page() {
                                 <Plus />
                                 <Typography variant="body1">ADD</Typography>
                             </Row>
-                            {nameList.map((name) => (
-
-                                // Name Item
-                                <Column
-                                    key={name.pk}
-                                    className='bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px] relative'
-                                    onClick={() => {
-                                        if (name?.pk) handleSelectNameDetail(name.pk)
-                                    }}
-                                >
-                                    <Typography variant="body1">{(name?.name && name.name !== '') ? name.name : '-'}</Typography>
-                                    <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{(name?.subname || name.subname !== '') ? name.subname : ''}</Typography>
-                                    {name.secretDescription !== '' && <div className='absolute top-2 right-2 rounded-full bg-red-600 w-1 h-1' />}
-                                </Column>
-                            ))
-                            }
+                            {renderNameList}
                             <Row fullWidth className='justify-center'><Typography className='text-stone-700 !text-[14px] font-light'>{`- Total ${total} names -`}</Typography></Row>
                         </>
                     ) : (
                         <>
                             <Column gap={4} className="w-full">
-                                {nameListGroupByTags.map((nameListGroup: any, index: number) => (
-                                    <Column
-                                        key={index}
-                                        className='w-full'
-                                    >
-                                        <Typography variant="body1">#{nameListGroup.tag.name ?? '-'}</Typography>
-
-                                        <Row gap={1} className="flex-wrap overflow-y-auto max-h-[calc(100vh-200px)]">
-                                            {nameListGroup.name.map((name: any) => (
-                                                <Column
-                                                    key={name.pk}
-                                                    className='bg-stone-900 rounded-md px-2 py-1 w-[20%] min-w-[150px] cursor-pointer hover:bg-stone-800 duration-75 justify-start min-h-[54px]'
-                                                    onClick={() => {
-                                                        if (name?.pk) handleSelectNameDetail(name.pk)
-                                                    }}
-                                                >
-                                                    <Typography variant="body1">{name?.name ?? '-'}</Typography>
-                                                    <Typography variant="subtitle1" className="!text-[12px] text-stone-500 line-clamp-1">{name?.subname ?? '-'}</Typography>
-                                                </Column>
-                                            ))}
-                                        </Row>
-                                    </Column>
-                                ))
-                                }
+                                {renderNameListGroupByTags}
                             </Column>
                         </>
                     )}
@@ -486,31 +584,63 @@ export default function Page() {
             {/* Name Detail Area */}
             {selectedNameDetail && (
                 <Column gap={1} className="flex-[1.2] w-full p-2 rounded-xl bg-stone-900 h-fit">
-                    <Row gap={1} className='items-center'>
-                        <CustomTextField
-                            fullWidth
-                            label="Name"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        />
-                        <Row className="bg-[#010101] rounded-md p-2 h-[55px] items-center">
-                            <IconButton onClick={handleSaveName} className="w-8 h-8">
-                                <Save className="size-4" />
-                            </IconButton>
-                            <IconButton onClick={handleDeleteClick} className="w-8 h-8">
-                                <Trash className="size-4" />
-                            </IconButton>
-                            <IconButton onClick={handleUnselectNameDetail} className="w-8 h-8">
-                                <X className="size-4" />
-                            </IconButton>
-                        </Row>
+                    <Row gap={1} className="w-full bg-stone-900 rounded-md ">
+                        <Column
+                            className="h-[120px] w-[100px] bg-[#010101] rounded-md relative overflow-hidden cursor-pointer hover:bg-[#111] transition-colors duration-200"
+                            onClick={() => document.getElementById('image-upload-input')?.click()}
+                        >
+                            {formData.images ? (
+                                <Image
+                                    src={formData.images}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                    width={120}
+                                    height={120}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </div>
+                            )}
+                            <input
+                                id='image-upload-input'
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                disabled={!selectedNamePk}
+                            />
+                        </Column>
+                        <Column gap={1} fullWidth>
+                            <Row gap={1} className='items-center'>
+                                <CustomTextField
+                                    fullWidth
+                                    label="Name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                />
+                                <Row className="bg-[#010101] rounded-md p-2 h-[55px] items-center">
+                                    <IconButton onClick={handleSaveName} className="w-8 h-8" tabIndex={-1}>
+                                        <Save className="size-4" />
+                                    </IconButton>
+                                    <IconButton onClick={handleDeleteClick} className="w-8 h-8" tabIndex={-1}>
+                                        <Trash className="size-4" />
+                                    </IconButton>
+                                    <IconButton onClick={handleUnselectNameDetail} className="w-8 h-8" tabIndex={-1}>
+                                        <X className="size-4" />
+                                    </IconButton>
+                                </Row>
+                            </Row>
+                            <CustomTextField
+                                fullWidth
+                                label="Subname"
+                                value={formData.subname}
+                                onChange={(e) => setFormData({ ...formData, subname: e.target.value })}
+                            />
+                        </Column>
                     </Row>
-                    <CustomTextField
-                        fullWidth
-                        label="Subname"
-                        value={formData.subname}
-                        onChange={(e) => setFormData({ ...formData, subname: e.target.value })}
-                    />
                     <Column className="relative w-full">
                         <CustomTextField
                             fullWidth
@@ -526,7 +656,7 @@ export default function Page() {
                                 }
                             }}
                         />
-                        <IconButton className="!absolute !top-1 !right-1 w-5 h-5" onClick={handleSecretMode}>
+                        <IconButton className="!absolute !top-1 !right-1 w-5 h-5" onClick={handleSecretMode} tabIndex={-1}>
                             {secretMode ? <EyeOff className="scale-[2]" /> : <Eye className="scale-[2]" />}
                         </IconButton>
                     </Column>

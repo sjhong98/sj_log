@@ -3,11 +3,24 @@
 import db from '@/supabase'
 import { name } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
-import { and, eq, desc, like, or } from 'drizzle-orm'
+import { and, eq, desc, like, or, count } from 'drizzle-orm'
 
 export default async function getNameListByPartialKeyword(keyword: string) {
   const user = await getUser()
   if (!user) return
+
+  const total = await db
+    .select({count: count()})
+    .from(name)
+    .where(
+      and(
+        eq(name.uid, user.id), 
+        or(
+          like(name.name, `%${keyword}%`), 
+          like(name.subname, `%${keyword}%`)
+        )
+      )
+    )
 
   const nameList = await db
     .select()
@@ -23,5 +36,8 @@ export default async function getNameListByPartialKeyword(keyword: string) {
     )
     .orderBy(desc(name.createdAt))
 
-  return nameList
+  return {
+    nameList,
+    total: total[0]?.count ?? 0
+  }
 }

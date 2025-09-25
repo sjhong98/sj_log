@@ -55,7 +55,18 @@ export default function RootLayout({
             'w-screen min-h-screen flex flex-col relative bg-[#050505]'
           }
         >
-          <ToastContainer />
+          <ToastContainer 
+            toastClassName="!bg-transparent !backdrop-blur-md !text-white"
+            position="top-right"
+            autoClose={1000}
+            hideProgressBar={true}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
           <Providers>{children}</Providers>
         </div>
       </body>
