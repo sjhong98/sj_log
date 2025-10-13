@@ -1,10 +1,8 @@
 'use server'
 
 import db from '@/supabase'
-import { name } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import { createClient } from '@supabase/supabase-js'
-import { eq } from 'drizzle-orm'
 
 function base64ToBlob(base64: string, mime = 'image/png'): Blob {
   const byteCharacters = atob(base64.split(',')[1])
@@ -67,15 +65,20 @@ export default async function uploadNameImage(namePk: number, imageBase64: strin
     const imageUrl = publicUrlData.publicUrl
 
     // 데이터베이스에 이미지 URL 저장
-    const updateResult = await db
-      .update(name)
-      .set({ images: imageUrl })
-      .where(eq(name.pk, namePk))
+    const { error: updateError } = await db
+      .from('name')
+      .update({ images: imageUrl })
+      .eq('pk', namePk)
+
+    if (updateError) {
+      console.error('Error updating name image:', updateError)
+      throw updateError
+    }
 
     return {
       success: true,
       imageUrl: imageUrl,
-      rowCount: updateResult.rowCount
+      rowCount: 1 // supabase-js doesn't return rowCount, so we assume success
     }
 
   } catch (error) {

@@ -1,43 +1,39 @@
 'use server'
 
 import db from '@/supabase'
-import { name } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
-import { and, eq, desc, like, or, count } from 'drizzle-orm'
 
 export default async function getNameListByPartialKeyword(keyword: string) {
   const user = await getUser()
   if (!user) return
 
-  const total = await db
-    .select({count: count()})
-    .from(name)
-    .where(
-      and(
-        eq(name.uid, user.id), 
-        or(
-          like(name.name, `%${keyword}%`), 
-          like(name.subname, `%${keyword}%`)
-        )
-      )
-    )
+  const searchPattern = `%${keyword}%`
 
-  const nameList = await db
-    .select()
-    .from(name)
-    .where(
-      and(
-        eq(name.uid, user.id), 
-        or(
-          like(name.name, `%${keyword}%`), 
-          like(name.subname, `%${keyword}%`)
-        )
-      )
-    )
-    .orderBy(desc(name.createdAt))
+  const { data: nameList, error: nameListError } = await db
+    .from('name')
+    .select('*')
+    .eq('uid', user.id)
+    .or(`name.ilike.${searchPattern},subname.ilike.${searchPattern}`)
+    .order('created_at', { ascending: false })
+
+  if (nameListError) {
+    console.error('Error fetching name list by keyword:', nameListError)
+    throw nameListError
+  }
+
+  const { count: total, error: countError } = await db
+    .from('name')
+    .select('*', { count: 'exact', head: true })
+    .eq('uid', user.id)
+    .or(`name.ilike.${searchPattern},subname.ilike.${searchPattern}`)
+
+  if (countError) {
+    console.error('Error counting names by keyword:', countError)
+    throw countError
+  }
 
   return {
-    nameList,
-    total: total[0]?.count ?? 0
+    nameList: nameList || [],
+    total: total || 0
   }
 }

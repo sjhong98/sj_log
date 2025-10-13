@@ -155,7 +155,12 @@ export default function Page() {
             setLoading(true);
             try {
                 const tags = await getNameTagByPartialKeyword(keyword);
-                setTagOptions(tags || []);
+                const formattedTags = tags?.map(tag => ({
+                    pk: tag.pk,
+                    name: tag.name,
+                    createdAt: tag.created_at
+                })) || [];
+                setTagOptions(formattedTags);
             } catch (error) {
                 console.error('태그 검색 오류:', error);
                 setTagOptions([]);

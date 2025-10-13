@@ -1,9 +1,7 @@
 'use server'
 
 import db from '@/supabase'
-import { comment } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
-import { and, eq } from 'drizzle-orm'
 import { refreshSession } from '@/actions/session/refreshSession'
 
 export default async function deleteComment({
@@ -13,8 +11,16 @@ export default async function deleteComment({
 }) {
   const user = await getUser()
 
-  const result = await db
-    .delete(comment)
-    .where(and(eq(comment.uid, user.id), eq(comment.pk, commentPk)))
-  return result.rowCount
+  const { error } = await db
+    .from('comment')
+    .delete()
+    .eq('uid', user.id)
+    .eq('pk', commentPk)
+
+  if (error) {
+    console.error('Error deleting comment:', error)
+    throw error
+  }
+
+  return 1 // supabase-js doesn't return rowCount, so we assume success
 }

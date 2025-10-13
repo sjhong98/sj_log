@@ -1,17 +1,25 @@
 'use server'
 
 import db from '@/supabase'
-import { financeAccount } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 
 export default async function createFinanceAccount(props: FinanceAccountType) {
   const user = await getUser()
 
-  const [result] = await db.insert(financeAccount).values({
-    ...props,
-    uid: user.id
-  }).returning()
+  const { data, error } = await db
+    .from('finance_account')
+    .insert({
+      ...props,
+      uid: user.id
+    })
+    .select()
+    .single()
 
-  return result
+  if (error) {
+    console.error('Error creating finance account:', error)
+    throw error
+  }
+
+  return data
 }

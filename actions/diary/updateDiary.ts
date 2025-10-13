@@ -1,11 +1,9 @@
 'use server'
 
 import db from '@/supabase'
-import { diary } from '@/supabase/schema'
 import DiaryType from '@/types/DiaryType'
 import { getUser } from '@/actions/session/getUser'
 import { createClient } from '@supabase/supabase-js'
-import { and, eq } from 'drizzle-orm'
 import { refreshSession } from '@/actions/session/refreshSession'
 
 function base64ToBlob(base64: string, mime = 'image/png'): Blob {
@@ -115,17 +113,23 @@ export default async function updateDiary(diaryData: DiaryType) {
 
   let replacedContent = replaceBase64Images(content ?? '', sources)
 
-  const result = await db
-    .update(diary)
-    .set({
+  const { error } = await db
+    .from('diary')
+    .update({
       title,
       content: replacedContent,
-      contentText,
+      content_text: contentText,
       date: date.toISOString(),
       uid: user.id,
       thumbnail: sources?.[0]?.url ?? ''
     })
-    .where(and(eq(diary.uid, user.id), eq(diary.pk, pk)))
+    .eq('uid', user.id)
+    .eq('pk', pk)
 
-  return result.rowCount
+  if (error) {
+    console.error('Error updating diary:', error)
+    throw error
+  }
+
+  return 1 // supabase-js doesn't return rowCount, so we assume success
 }

@@ -4,21 +4,13 @@ import { diary } from '@/supabase/schema'
 import DiaryList from '@/components/diary/DiaryList'
 import { getUser } from '@/actions/session/getUser'
 import dayjs from 'dayjs'
+import getDiaryList from '@/actions/diary/getDiaryList'
 
 export default async function Page() {
   let user: any = await getUser()
   if (!user) return
 
-  let diaryList: any = await db
-    .select({
-      pk: diary.pk,
-      title: diary.title,
-      date: diary.date,
-      thumbnail: diary.thumbnail
-    })
-    .from(diary)
-    .where(eq(diary.uid, user.id))
-    .orderBy(desc(diary.date))
+  const diaryList: any = await getDiaryList() || []
 
   diaryList.forEach((_: any, i: number) => {
     if (i > 0) {

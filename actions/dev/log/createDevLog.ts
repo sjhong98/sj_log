@@ -1,7 +1,6 @@
 'use server'
 
 import db from '@/supabase'
-import { devLog } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import { devLogType } from '@/types/schemaType'
 
@@ -10,17 +9,24 @@ export default async function createDevLog(devLogItem: devLogType) {
   if (!user) return null
 
   try {
-    const [inserted] = await db
-      .insert(devLog)
-      .values({
+    const { data: inserted, error } = await db
+      .from('dev_log')
+      .insert({
         title: devLogItem.title,
         content: devLogItem.content,
-        groupPk: devLogItem.groupPk,
+        group_pk: devLogItem.groupPk,
         date: new Date().toISOString(),
         uid: user.id
       })
-      .returning()
-    if (!inserted) return
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating dev log:', error)
+      return null
+    }
+
+    if (!inserted) return null
     return inserted
   } catch (e) {
     console.error(e)

@@ -2,30 +2,36 @@
 
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
-import { name } from '@/supabase/schema'
-import { count, desc, eq } from 'drizzle-orm'
 
 export default async function getNameList({ filter }: { filter?: string }) {
   try {
     const user = await getUser()
     if (!user) return
 
-    let orderByCondition = desc(name.createdAt)
+    const { data: nameList, error: nameListError } = await db
+      .from('name')
+      .select('*')
+      .eq('uid', user.id)
+      .order('created_at', { ascending: false })
 
-    const nameList = await db
-      .select()
-      .from(name)
-      .where(eq(name.uid, user.id))
-      .orderBy(orderByCondition)
+    if (nameListError) {
+      console.error('Error fetching name list:', nameListError)
+      throw nameListError
+    }
 
-    const total = await db
-      .select({ count: count() })
-      .from(name)
-      .where(eq(name.uid, user.id))
+    const { count: total, error: countError } = await db
+      .from('name')
+      .select('*', { count: 'exact', head: true })
+      .eq('uid', user.id)
+
+    if (countError) {
+      console.error('Error counting names:', countError)
+      throw countError
+    }
 
     return {
-      nameList,
-      total: total[0]?.count ?? 0
+      nameList: nameList || [],
+      total: total || 0
     }
   } catch (error) {
     throw error

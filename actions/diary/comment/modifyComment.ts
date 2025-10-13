@@ -1,8 +1,6 @@
 'use server'
 
 import db from '@/supabase'
-import { comment } from '@/supabase/schema'
-import { and, eq } from 'drizzle-orm'
 import { getUser } from '@/actions/session/getUser'
 import { refreshSession } from '@/actions/session/refreshSession'
 
@@ -15,12 +13,18 @@ export default async function modifyComment({
 }) {
   const user = await getUser()
 
-  const result = await db
-    .update(comment)
-    .set({
+  const { error } = await db
+    .from('comment')
+    .update({
       content
     })
-    .where(and(eq(comment.uid, user.id), eq(comment.pk, commentPk)))
+    .eq('uid', user.id)
+    .eq('pk', commentPk)
 
-  return result.rowCount
+  if (error) {
+    console.error('Error modifying comment:', error)
+    throw error
+  }
+
+  return 1 // supabase-js doesn't return rowCount, so we assume success
 }

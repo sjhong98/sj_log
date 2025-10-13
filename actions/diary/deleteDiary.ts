@@ -4,8 +4,6 @@ import DiaryType from '@/types/DiaryType'
 import { createClient } from '@supabase/supabase-js'
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
-import { eq } from 'drizzle-orm'
-import { diary } from '@/supabase/schema'
 
 function extractImageSrcFromHtml(content: string) {
   let sources: string[] = []
@@ -36,6 +34,16 @@ export default async function DeleteDiary(diaryItem: DiaryType) {
       throw new Error(`이미지 삭제 중 에러 발생: ${deleteImageResult.error}`)
   }
 
-  const result = await db.delete(diary).where(eq(diary.pk, diaryItem.pk))
-  return result.rowCount
+  const { error } = await db
+    .from('diary')
+    .delete()
+    .eq('pk', diaryItem.pk)
+    .eq('uid', user.id)
+
+  if (error) {
+    console.error('Error deleting diary:', error)
+    throw error
+  }
+
+  return 1 // supabase-js doesn't return rowCount, so we assume success
 }

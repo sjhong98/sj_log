@@ -150,7 +150,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     setMonth(changedMonth)
     setYear(changedYear)
 
-    const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth)
+    const monthlyLogs: any = await getMonthlyLogs(changedYear, changedMonth)
     setLogs(monthlyLogs)
     setIsLoading(false)
   }, [])

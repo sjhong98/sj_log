@@ -1,7 +1,6 @@
 'use server'
 
 import db from '@/supabase'
-import { name } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import { nameType } from '@/types/schemaType'
 
@@ -11,15 +10,24 @@ export default async function createName(nameData: nameType) {
 
   const { name: nameValue, subname, description, secretDescription, importanceLevel, images } = nameData
 
-  const [result] = await db.insert(name).values({
-    name: nameValue,
-    subname,
-    description,
-    secretDescription,
-    importanceLevel,
-    images,
-    uid: user.id
-  }).returning()
+  const { data, error } = await db
+    .from('name')
+    .insert({
+      name: nameValue,
+      subname,
+      description,
+      secret_description: secretDescription,
+      importance_level: importanceLevel,
+      images,
+      uid: user.id
+    })
+    .select()
+    .single()
 
-  return result
+  if (error) {
+    console.error('Error creating name:', error)
+    throw error
+  }
+
+  return data
 }

@@ -1,21 +1,25 @@
 'use server'
 
 import db from '@/supabase'
-import { devLog } from '@/supabase/schema'
-import { eq } from 'drizzle-orm'
 import getSiblingDevLogList from '@/actions/dev/log/getSiblingDevLogList'
 
 export default async function updateParentGroupPk(
   pk: number,
   newGroupPk: number
 ) {
-  const [updated] = await db
-    .update(devLog)
-    .set({
-      groupPk: newGroupPk
+  const { data: updated, error } = await db
+    .from('dev_log')
+    .update({
+      group_pk: newGroupPk
     })
-    .where(eq(devLog.pk, pk))
-    .returning()
+    .eq('pk', pk)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating parent group pk:', error)
+    throw error
+  }
 
   if (!updated) return
   return updated
