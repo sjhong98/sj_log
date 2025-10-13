@@ -11,16 +11,16 @@ import {
 } from '@mui/material'
 import { useCallback, useState } from 'react'
 import Column from '@/components/flexBox/column'
-import useAuth from '@/hooks/auth'
 import { useRouter } from 'next/navigation'
 import 'react-toastify/dist/ReactToastify.css'
 import { AuroraBackground } from '@/components/ui/aurora-background'
+import { toast } from 'react-toastify'
+import signIn from '../../../actions/session/signIn'
 
 export default function Page() {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-  const auth = useAuth()
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loginClicked, setLoginClicked] = useState<boolean>(false)
@@ -32,18 +32,22 @@ export default function Page() {
 
         setLoginClicked(true)
   
-        const user = await auth.signIn({ email, password })
-        console.log('login success: ', user)
-        if (!user) {
+        const result = await signIn({ email, password })
+        console.log('login result: ', result)
+        
+        if (result.success && result.user) {
+          toast.success('로그인 성공')
+          // 클라이언트에서 사용할 정보만 저장
+          sessionStorage.setItem('userId', email)
+          console.log('user.email', result.user.email)
+          router.push(`/dev/${result.user.email}`)
+        } else {
+          toast.error(result.error || '로그인에 실패했습니다.')
           setLoginClicked(false)
-          return
         }
-  
-        console.log('user.email', user.email)
-        router.push(`/dev/${user.email}`)
       } catch (error) {
         console.error('로그인 오류: ', error)
-      } finally {
+        toast.error('로그인 중 오류가 발생했습니다.')
         setLoginClicked(false)
       }
     },

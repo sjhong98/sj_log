@@ -17,11 +17,11 @@ import {
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import useAuth from '@/hooks/auth'
 import { User } from '@supabase/auth-js'
+import signOut from '../../actions/session/signOut'
+import { toast } from 'react-toastify'
 
 export default function Header({ user }: { user: User }) {
-  const auth = useAuth()
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -51,9 +51,23 @@ export default function Header({ user }: { user: User }) {
     setOpen(false)
   }
 
-  const handleUserLogout = () => {
-    auth.signOut()
-    router.push('/login')
+  const handleUserLogout = async () => {
+    try {
+      const result = await signOut()
+      
+      if (result.success) {
+        // 클라이언트 쿠키와 세션 스토리지 정리
+        sessionStorage.removeItem('userId')
+        sessionStorage.removeItem('refreshToken')
+        toast.success('로그아웃되었습니다.')
+        router.push('/login')
+      } else {
+        toast.error(result.error || '로그아웃에 실패했습니다.')
+      }
+    } catch (error) {
+      console.error('로그아웃 에러:', error)
+      toast.error('로그아웃 중 오류가 발생했습니다.')
+    }
   }
 
   return (
