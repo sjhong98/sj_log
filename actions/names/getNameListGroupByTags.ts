@@ -1,40 +1,30 @@
 'use server'
 
 import db from '@/supabase'
+import { name, nameTag, nameTagRelation } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
+import { and, eq, desc, like, inArray } from 'drizzle-orm'
 
 export default async function getNameListGroupByTags() {
     const user = await getUser()
     if (!user) return
 
-    const { data: tagList, error: tagListError } = await db
-        .from('name_tag')
-        .select('*')
-        .eq('uid', user.id)
-
-    if (tagListError) {
-        console.error('Error fetching tag list:', tagListError)
-        throw tagListError
-    }
+    const tagList = await db
+        .select()
+        .from(nameTag)
+        .where(eq(nameTag.uid, user.id))
 
     const nameTagListByTag = await Promise.all(
-        (tagList || []).map(async (tag) => {
-            const { data: nameTagList, error: nameTagListError } = await db
-                .from('name_tag_relation')
-                .select(`
-                    name (
-                        *
-                    )
-                `)
-                .eq('tag_pk', tag.pk)
-
-            if (nameTagListError) {
-                console.error('Error fetching name tag relations:', nameTagListError)
-                throw nameTagListError
-            }
+        tagList.map(async (tag) => {
+            const nameTagList = await db
+                .select()
+                .from(nameTagRelation)
+                .where(eq(nameTagRelation.tagPk, tag.pk))
+                .leftJoin(name, eq(nameTagRelation.namePk, name.pk))
+                .orderBy(desc(name.createdAt))
 
             return {
-                name: nameTagList?.map((relation: any) => relation.name) || [],
+                name: nameTagList.map((nameTag) => nameTag.name),
                 tag: {...tag},
             }
         })

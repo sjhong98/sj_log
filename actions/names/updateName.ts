@@ -1,7 +1,9 @@
 'use server'
 
 import db from '@/supabase'
+import { name } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
+import { and, eq } from 'drizzle-orm'
 
 interface UpdateNameData {
   pk: number
@@ -21,24 +23,18 @@ export default async function updateName(nameData: UpdateNameData) {
   const user = await getUser()
   if (!user) return
 
-  const { error } = await db
-    .from('name')
-    .update({
+  const result = await db
+    .update(name)
+    .set({
       name: nameValue,
       subname,
       description,
-      secret_description: secretDescription,
-      importance_level: importanceLevel,
+      secretDescription,
+      importanceLevel,
       images,
       uid: user.id
     })
-    .eq('uid', user.id)
-    .eq('pk', pk)
+    .where(and(eq(name.uid, user.id), eq(name.pk, pk)))
 
-  if (error) {
-    console.error('Error updating name:', error)
-    throw error
-  }
-
-  return 1 // supabase-js doesn't return rowCount, so we assume success
+  return result.rowCount
 }

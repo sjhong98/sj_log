@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { pgTable, foreignKey, bigint, varchar, text, timestamp, uuid, pgPolicy } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, bigint, varchar, text, timestamp, uuid } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -97,9 +97,7 @@ export const diary = pgTable("diary", {
 	title: varchar(),
 	contentText: text(),
 	thumbnail: text(),
-}, (table) => [
-	pgPolicy("Enable read access for current user", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(auth.uid() = uid)` }),
-]);
+});
 
 export const financeAccount = pgTable("finance_account", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
@@ -157,7 +155,6 @@ export const devLog = pgTable("dev_log", {
 			foreignColumns: [users.id],
 			name: "dev_log_uid_fkey"
 		}),
-	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = uid)` }),
 ]);
 
 export const devLogTagRelation = pgTable("dev_log_tag_relation", {

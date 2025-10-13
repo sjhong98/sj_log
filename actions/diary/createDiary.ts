@@ -1,6 +1,7 @@
 'use server'
 
 import db from '@/supabase'
+import { diary } from '@/supabase/schema'
 import DiaryType from '@/types/DiaryType'
 import { getUser } from '@/actions/session/getUser'
 import { createClient } from '@supabase/supabase-js'
@@ -107,21 +108,14 @@ export default async function createDiary(diaryData: DiaryType) {
 
   let replacedContent = replaceBase64Images(content ?? '', sources)
 
-  const { error } = await db
-    .from('diary')
-    .insert({
-      title,
-      content: replacedContent,
-      content_text: contentText,
-      date: date.toISOString(),
-      uid: user.id,
-      thumbnail: sources?.[0]?.url ?? ''
-    })
+  const result = await db.insert(diary).values({
+    title,
+    content: replacedContent,
+    contentText,
+    date: date.toISOString(),
+    uid: user.id,
+    thumbnail: sources?.[0]?.url ?? ''
+  })
 
-  if (error) {
-    console.error('Error creating diary:', error)
-    throw error
-  }
-
-  return 1 // supabase-js doesn't return rowCount, so we assume success
+  return result.rowCount
 }

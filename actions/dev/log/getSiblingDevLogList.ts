@@ -1,17 +1,14 @@
 'use server'
 
 import db from '@/supabase'
+import { devLog } from '@/supabase/schema'
+import { eq } from 'drizzle-orm'
 
 export default async function getSiblingDevLogList(groupPk: number) {
-  const { data: updatedSiblingDevLogList, error } = await db
-    .from('dev_log')
-    .select('*')
-    .eq('group_pk', groupPk)
+  const updatedSiblingDevLogList = await db
+    .select()
+    .from(devLog)
+    .where(eq(devLog.groupPk, groupPk))
 
-  if (error) {
-    console.error('Error fetching sibling dev log list:', error)
-    throw error
-  }
-
-  return updatedSiblingDevLogList || []
+  return updatedSiblingDevLogList
 }

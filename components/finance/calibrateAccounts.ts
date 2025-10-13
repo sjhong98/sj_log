@@ -2,6 +2,8 @@
 
 import FinanceAccountType from '@/types/finance/account/FinanceAccountType'
 import db from '@/supabase'
+import { financeAccount } from '@/supabase/schema'
+import { and, eq } from 'drizzle-orm'
 import { getUser } from '@/actions/session/getUser'
 import createFinanceLog from '@/actions/finance/log/createFinanceLog'
 
@@ -33,20 +35,17 @@ export default async function calibrateAccounts({
         })
       }
 
-      const { error } = await db
-        .from('finance_account')
-        .update({
+      return db
+        .update(financeAccount)
+        .set({
           amount: account.amount
         })
-        .eq('uid', user.id)
-        .eq('pk', account.pk)
-
-      if (error) {
-        console.error('Error updating finance account:', error)
-        throw error
-      }
-
-      return { rowCount: 1 }
+        .where(
+          and(
+            eq(financeAccount.uid, user.id),
+            eq(financeAccount.pk, account.pk)
+          )
+        )
     })
   )
 

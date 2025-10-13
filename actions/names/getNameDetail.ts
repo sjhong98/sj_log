@@ -1,44 +1,36 @@
 'use server'
 
 import db from '@/supabase'
+import { name, nameTagRelation, nameTag } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
+import { and, eq } from 'drizzle-orm'
 
 export default async function getNameDetail(pk: number) {
   const user = await getUser()
   if (!user) return
 
-  const { data: nameItem, error: nameError } = await db
-    .from('name')
-    .select('*')
-    .eq('uid', user.id)
-    .eq('pk', pk)
-    .single()
-
-  if (nameError) {
-    console.error('Error fetching name detail:', nameError)
-    throw nameError
-  }
+  const [nameItem] = await db
+    .select()
+    .from(name)
+    .where(and(eq(name.uid, user.id), eq(name.pk, pk)))
+    .limit(1)
 
   // 태그 정보도 함께 가져오기
-  const { data: tags, error: tagsError } = await db
-    .from('name_tag_relation')
-    .select(`
-      name_tag (
-        pk,
-        name,
-        created_at
-      )
-    `)
-    .eq('name_pk', pk)
-    .eq('name_tag.uid', user.id)
-
-  if (tagsError) {
-    console.error('Error fetching name tags:', tagsError)
-    throw tagsError
-  }
+  const tags = await db
+    .select({
+      pk: nameTag.pk,
+      name: nameTag.name,
+      createdAt: nameTag.createdAt
+    })
+    .from(nameTagRelation)
+    .innerJoin(nameTag, eq(nameTagRelation.tagPk, nameTag.pk))
+    .where(and(
+      eq(nameTagRelation.namePk, pk),
+      eq(nameTag.uid, user.id)
+    ))
 
   return {
     ...nameItem,
-    tags: tags?.map((item: any) => item.name_tag) || []
+    tags
   }
 }

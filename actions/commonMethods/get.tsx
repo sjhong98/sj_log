@@ -2,44 +2,30 @@
 
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
+import { and, eq } from 'drizzle-orm'
+import { PgTableWithColumns } from 'drizzle-orm/pg-core'
 
-export default async function Get(tableName: string) {
+export default async function Get(table: PgTableWithColumns<any>) {
   const user = await getUser()
   if (!user) return
 
-  const list: any = async (conditions?: any) => {
-    let query = db.from(tableName).select('*').eq('uid', user.id)
-    
-    // Add additional conditions if provided
-    if (conditions) {
-      Object.entries(conditions).forEach(([key, value]) => {
-        query = query.eq(key, value)
-      })
-    }
-    
-    const { data, error } = await query
-    
-    if (error) {
-      console.error(`Error fetching list from ${tableName}:`, error)
-      throw error
-    }
-    
-    return data || []
+  const list: any = async (conditions?: any[]) => {
+    const _conditions = conditions ? [...conditions] : []
+    return db
+      .select()
+      .from(table)
+      .where(and(..._conditions))
   }
 
   const detail = async ({ pk }: { pk?: number }) => {
-    let query = db.from(tableName).select('*').eq('uid', user.id)
-    
-    if (pk) query = query.eq('pk', pk)
-    
-    const { data, error } = await query.single()
-    
-    if (error) {
-      console.error(`Error fetching detail from ${tableName}:`, error)
-      throw error
-    }
-    
-    return data
+    let conditions: any = [{ uid: user.id }]
+
+    if (pk) conditions.push({ pk })
+
+    return db
+      .select()
+      .from(table)
+      .where(and(...conditions))
   }
 
   return { detail, list }

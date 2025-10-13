@@ -1,40 +1,34 @@
 'use server'
 
 import db from '@/supabase'
+import { devLog, devLogGroup } from '@/supabase/schema'
+import { eq } from 'drizzle-orm'
 import { unstable_noStore } from 'next/cache'
 
 export default async function getDevLogByPk(pk: number) {
   unstable_noStore()
 
-  const { data: devLogData, error: devLogError } = await db
-    .from('dev_log')
-    .select('*')
-    .eq('pk', pk)
-    .single()
+  let [devLogData]: any = await db
+    .select()
+    .from(devLog)
+    .where(eq(devLog.pk, pk))
+    .limit(1)
 
-  if (devLogError) {
-    console.error('Error fetching dev log:', devLogError)
-    return null
-  }
+    devLogData.group = []
 
-  if (!devLogData) return null
-
-  devLogData.group = []
-  let parentGroupPk = devLogData.group_pk
+    let parentGroupPk = devLogData.groupPk
 
   while (true) {
-    const { data: result, error: groupError } = await db
-      .from('dev_log_group')
-      .select('*')
-      .eq('pk', parentGroupPk)
-      .single()
-
-    if (groupError || !result) break
+    const [result] = await db
+    .select()
+    .from(devLogGroup)
+    .where(eq(devLogGroup.pk, parentGroupPk))
+    .limit(1)
 
     devLogData.group.unshift(result)
-    parentGroupPk = result.parent_group_pk
+    parentGroupPk = result.parentGroupPk
 
-    if (!result.parent_group_pk) break
+    if(!result.parentGroupPk) break
   }
   
   return devLogData || null

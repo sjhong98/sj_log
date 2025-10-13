@@ -1,22 +1,17 @@
 'use server'
 
 import db from '@/supabase'
+import { financeAccount } from '@/supabase/schema'
+import { and, asc, eq } from 'drizzle-orm'
 import { getUser } from '@/actions/session/getUser'
 
 export default async function getAccounts() {
   const user = await getUser()
   if (!user) return
 
-  const { data, error } = await db
-    .from('finance_account')
-    .select('*')
-    .eq('uid', user.id)
-    .order('created_at', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching accounts:', error)
-    throw error
-  }
-
-  return data || []
+  return db
+    .select()
+    .from(financeAccount)
+    .where(and(eq(financeAccount.uid, user.id)))
+    .orderBy(asc(financeAccount.createdAt))
 }

@@ -1,23 +1,17 @@
 'use server'
 
 import db from '@/supabase'
+import { devLogGroup } from '@/supabase/schema'
+import { eq } from 'drizzle-orm'
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 
 export default async function deleteGroup(pk: number) {
   try {
-    const { data: deletedGroup, error } = await db
-      .from('dev_log_group')
-      .delete()
-      .eq('pk', pk)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error deleting group:', error)
-      throw error
-    }
-
-    if (!deletedGroup?.parent_group_pk) return
+    const [deletedGroup] = await db
+      .delete(devLogGroup)
+      .where(eq(devLogGroup.pk, pk))
+      .returning()
+    if (!deletedGroup.parentGroupPk) return
     const updatedGroupTree = await getAllGroupTree()
     return updatedGroupTree?.groupTree
   } catch (e) {

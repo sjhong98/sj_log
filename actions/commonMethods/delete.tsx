@@ -2,37 +2,32 @@
 
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
+import { and, eq } from 'drizzle-orm'
+import { devLog, devLogGroup } from '@/supabase/schema'
 
 export default async function Delete(
-  tableName: string,
+  table: string,
   pk: number,
   options?: {
-    conditions?: any
+    conditions?: any[]
   }
 ) {
   try {
     const user = await getUser()
     if (!user) return
 
-    let query = db.from(tableName).delete().eq('pk', pk).eq('uid', user.id)
+    let conditions: any = []
 
-    // Add additional conditions if provided
-    if (options?.conditions) {
-      Object.entries(options.conditions).forEach(([key, value]) => {
-        query = query.eq(key, value)
-      })
-    }
+    const _table: any =
+      table === 'devLog' ? devLog : table === 'devLogGroup' ? devLogGroup : null
+    if (!_table) return
 
-    const { error } = await query
-
-    if (error) {
-      console.error(`Error deleting from ${tableName}:`, error)
-      throw error
-    }
-
-    return 1 // supabase-js doesn't return rowCount, so we assume success
+    if (options?.conditions) conditions = [...options.conditions]
+    conditions.push(eq(_table.pk, pk))
+    const result = await db.delete(_table).where(and(...conditions))
+    return result.rowCount
   } catch (error) {
     console.error(error)
-    throw new Error(`Error occurred while deleting from ${tableName}`)
+    throw new Error('Error occurred while deleting dev log')
   }
 }

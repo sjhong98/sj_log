@@ -1,6 +1,8 @@
 'use server'
 
+import { financeLog } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
+import { and, asc, desc, eq, gte, lte } from 'drizzle-orm'
 import dayjs from 'dayjs'
 import db from '@/supabase'
 import financeCategories from '@/types/finance/FinanceCategories'
@@ -31,33 +33,36 @@ export default async function getMonthlyLogs(
     .toDate()
     .toISOString()
 
-  let query = db
-    .from('finance_log')
-    .select('*')
-    .eq('uid', user.id)
-    .gte('date', startDate)
-    .lte('date', endDate)
+  let conditions: any = [
+    eq(financeLog.uid, user.id),
+    gte(financeLog.date, startDate),
+    lte(financeLog.date, endDate)
+  ]
 
-  if (options?.filter !== undefined) {
-    query = query.eq('category', financeCategories[options.filter].title)
+  if (options) {
+    if (options.filter !== undefined)
+      conditions.push(
+        eq(financeLog.category, financeCategories[options.filter].title)
+      )
   }
 
-  const { data: logs, error } = await query.order('date', { ascending: false })
+  let logs: any = await db
+    .select()
+    .from(financeLog)
+    .where(and(...conditions))
+    .orderBy(desc(financeLog.date))
 
-  if (error) {
-    console.error('Error fetching monthly logs:', error)
-    throw error
-  }
-
-  // Add isNewDay property
-  const logsWithNewDay = (logs || []).map((log: any, i: number) => {
-    if (i === (logs || []).length - 1) {
-      return { ...log, isNewDay: true }
+  for (let i = logs.length - 1; i >= 0; i--) {
+    if (i === logs.length - 1) {
+      logs[i].isNewDay = true
     } else {
-      const isNewDay = dayjs(logs[i + 1].date).get('date') !== dayjs(log.date).get('date')
-      return { ...log, isNewDay }
+      if (
+        dayjs(logs[i + 1].date).get('date') !== dayjs(logs[i].date).get('date')
+      )
+        logs[i].isNewDay = true
+      else logs[i].isNewDay = false
     }
-  })
+  }
 
-  return logsWithNewDay
+  return logs
 }

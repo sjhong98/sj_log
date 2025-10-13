@@ -2,6 +2,8 @@
 
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
+import { devLog, devLogGroup } from '@/supabase/schema'
+import { and, eq, ilike, isNotNull, like } from 'drizzle-orm'
 
 export default async function searchDevLogByKeyword(keyword: string, signal?: AbortSignal) {
   let user: any = await getUser()
@@ -14,25 +16,20 @@ export default async function searchDevLogByKeyword(keyword: string, signal?: Ab
     throw new Error('Search cancelled')
   }
 
-  const { data: result, error } = await db
-    .from('dev_log')
-    .select(`
-      *,
-      dev_log_group (*)
-    `)
-    .ilike('text', `%${keyword.trim()}%`)
-    .eq('uid', user.id)
-    .not('text', 'is', null)
+  const result: any = await db.select().from(devLog)
+  .leftJoin(devLogGroup, eq(devLog.groupPk, devLogGroup.pk))
+  .where(
+    and(
+      ilike(devLog.text, `%${keyword.trim()}%`),
+      eq(devLog.uid, user.id), 
+      isNotNull(devLog.text)
+    )
+  )
 
-  if (error) {
-    console.error('Error searching dev logs:', error)
-    throw error
-  }
-
-  return result?.map((item: any) => {
+  return result.map((item: any) => {
     return {
-      ...item,
+      ...item.dev_log,
       group: item.dev_log_group ?? null
     }
-  }) || []
+  })
 }

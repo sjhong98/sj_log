@@ -2,26 +2,23 @@
 
 import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
+import { devLogGroup } from '@/supabase/schema'
 import createGroupTree from '@/utils/createGroupTree'
+import { asc, eq } from 'drizzle-orm'
 
 export default async function getAllGroupTree() {
   let user: any = await getUser()
   if (!user) return null
 
-  const { data: allGroupList, error } = await db
-    .from('dev_log_group')
-    .select('*')
-    .eq('uid', user.id)
-    .order('name', { ascending: true })
+  const allGroupList = await db
+    .select()
+    .from(devLogGroup)
+    .where(eq(devLogGroup.uid, user.id))
+    .orderBy(asc(devLogGroup.name))
 
-  if (error) {
-    console.error('Error fetching group tree:', error)
-    throw error
-  }
-
-  const newGroupTree = createGroupTree(allGroupList || [])
+  const newGroupTree = createGroupTree(allGroupList)
   return {
     groupTree: newGroupTree,
-    groupList: allGroupList || []
+    groupList: allGroupList
   }
 }

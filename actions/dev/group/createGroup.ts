@@ -1,6 +1,7 @@
 'use server'
 
 import db from '@/supabase'
+import { devLogGroup } from '@/supabase/schema'
 import { devLogGroupType } from '@/types/schemaType'
 import { getUser } from '@/actions/session/getUser'
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
@@ -10,20 +11,14 @@ export default async function createGroup(group: devLogGroupType) {
     let user: any = await getUser()
     if (!user) return
 
-    const { data: inserted, error } = await db
-      .from('dev_log_group')
-      .insert({
+    const [inserted] = await db
+      .insert(devLogGroup)
+      .values({
         name: group.name,
-        parent_group_pk: group.parentGroupPk,
+        parentGroupPk: group.parentGroupPk,
         uid: user.id
       })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error creating group:', error)
-      throw new Error('create group failed')
-    }
+      .returning()
 
     const updatedGroupTree = await getAllGroupTree()
     return updatedGroupTree?.groupTree
