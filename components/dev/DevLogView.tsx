@@ -635,7 +635,7 @@ const getContextText = (text: string, keyword: string) => {
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }}>
+      <Box sx={{ display: 'flex', width: '100%' }} className='h-[calc(100vh-130px)]'>
         {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
         {!isMobile ? (
           <Row fullWidth gap={4} className={'min-w-[200px]'}>

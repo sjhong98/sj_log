@@ -395,13 +395,13 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                               )?.text ?? log.category
                             }
                           </p>
-                          {log.note !== '' && (
+                          {log.title !== '' && (
                             <p
                               className={
-                                'uppercase !mt-[-2px] text-sm text-[#dadada]'
+                                'uppercase !mt-[-2px] text-sm text-[#aaa]'
                               }
                             >
-                              {log.note}
+                              {log.title}
                             </p>
                           )}
                         </Column>
