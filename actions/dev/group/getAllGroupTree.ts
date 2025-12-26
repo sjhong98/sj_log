@@ -8,17 +8,19 @@ import createGroupTree from '@/utils/createGroupTree'
 import { and, asc, eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 
-export default async function getAllGroupTree() {
+export default async function getAllGroupTree(userEmailParam?: string) {
   let user: any = await getUser()
 
-  let userEmail: string = ''
-  if(!user) {
+  let userEmail: string = userEmailParam || ''
+  if(!user && !userEmail) {
     const headersList = await headers()
     const currentUrl = headersList.get('x-url') || headersList.get('referer') || ''
+    console.log('\n\n\ncurrentUrl(getAllGroupTree)', currentUrl)
     userEmail = currentUrl.split('/').pop() ?? ''
   }
 
   const userId = user ? user.id : (await getUserByEmail(userEmail))?.uid
+  console.log('\n\n\nuserId(getAllGroupTree)', userId)
 
   let whereConditions: any[] = [eq(devLogGroup.uid, userId)];
   // 비로그인 회원 -> 공개된 그룹만 조회
