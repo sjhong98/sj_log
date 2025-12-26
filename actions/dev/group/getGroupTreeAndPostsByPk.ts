@@ -70,10 +70,9 @@ export default async function getGroupTreeAndPostsByPk(pk?: number) {
     const headersList = await headers()
     const currentUrl = headersList.get('x-url') || headersList.get('referer') || ''
     userEmail = currentUrl.split('/').pop() ?? ''
-    console.log('\n\n\nuserEmail', userEmail)
   }
 
-  const userId = user ? user.uid : (await getUserByEmail(userEmail))?.uid
+  const userId = user ? user.id : (await getUserByEmail(userEmail))?.uid
 
   // pk 가 없는 경우 -> 아무 group 도 지정되지 않은 상태 -> 최상단 groupList 반환
   if (!pk) {

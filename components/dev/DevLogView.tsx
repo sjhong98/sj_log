@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import BoardType from '@/types/dev/BoardType'
 import { Folder, Tree } from '@/components/magicui/file-tree'
 import GroupTreeType from '@/types/dev/GroupTreeType'
-import { FileIcon, FolderInputIcon, PlusIcon } from 'lucide-react'
+import { FileIcon, FolderInputIcon, LockIcon, PlusIcon, LockOpenIcon } from 'lucide-react'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
@@ -22,6 +22,7 @@ import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import SearchInput from '../search/searchInput'
 import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
 import { getUser } from '@/actions/session/getUser'
+import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
 
 const drawerWidth = 380
 
@@ -47,6 +48,7 @@ export default function DevLogView({
     useState<devLogGroupType | null>(null)
   const [currentGroupTree, setCurrentGroupTree] =
     useState<GroupTreeType[]>(groupTree)
+  const [isPrivate, setIsPrivate] = useState(false)
   const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState<string>('')
@@ -455,6 +457,18 @@ export default function DevLogView({
     setSelectedGroup(groupList.find(group => group.pk === resultItem.groupPk) ?? null)
   }, [handleClickDevLog, groupList, treeRef, expandSelectedGroupTree])
 
+  const togglePrivacy = useCallback(() => {
+    try {
+      let newIsPrivate = !isPrivate
+      toggleGroupPrivacy(selectedGroup?.pk ?? 0, !isPrivate)
+      setIsPrivate(newIsPrivate)
+      toast.success('Group privacy toggled successfully!')
+    } catch (error) {
+      console.error('Failed to toggle group privacy:', error)
+      toast.error('Failed to toggle group privacy')
+    }
+  }, [isPrivate, selectedGroup])
+
   const SearchDialog = useMemo(() => {
     return (
       <>
@@ -548,6 +562,19 @@ export default function DevLogView({
                 className={'cursor-pointer rotate-[45deg]'}
                 onClick={handleDeleteGroup}
               />
+              {isPrivate ? (
+                <LockIcon
+                  className={'cursor-pointer size-4 mt-1 ml-[3px]'}
+                  onClick={togglePrivacy}
+                />
+              ) : (
+                <LockOpenIcon
+                  className={'cursor-pointer size-4 mt-1 ml-[3px]'}
+                  onClick={togglePrivacy}
+                />
+              )
+
+              }
             </Row>
           )}
         </Row>
@@ -609,7 +636,7 @@ export default function DevLogView({
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading])
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading, isPrivate])
 
   const RenderedDevLogList = useMemo(() => {
     return (

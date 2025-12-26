@@ -13,9 +13,6 @@ export default async function Page() {
   const boardList: BoardType | null = await getGroupTreeAndPostsByPk()
   const groupTree = await getAllGroupTree()
 
-  console.log('\n\n\nboardList', boardList)
-  console.log('\n\n\ngroupTree', groupTree)
-
   if (!boardList || !groupTree) return
   return (
     <>

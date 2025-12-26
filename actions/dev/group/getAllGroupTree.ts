@@ -18,7 +18,7 @@ export default async function getAllGroupTree() {
     userEmail = currentUrl.split('/').pop() ?? ''
   }
 
-  const userId = user ? user.pk : (await getUserByEmail(userEmail))?.uid
+  const userId = user ? user.id : (await getUserByEmail(userEmail))?.uid
 
   let whereConditions: any[] = [eq(devLogGroup.uid, userId)];
   // 비로그인 회원 -> 공개된 그룹만 조회

@@ -17,7 +17,7 @@ export default async function searchDevLogByKeyword(keyword: string, signal?: Ab
     userEmail = currentUrl.split('/').pop() ?? ''
   }
 
-  const userId = user ? user.uid : (await getUserByEmail(userEmail))?.uid
+  const userId = user ? user.id : (await getUserByEmail(userEmail))?.uid
 
   // AbortSignal이 제공되고 이미 취소된 경우
   if (signal?.aborted) {
