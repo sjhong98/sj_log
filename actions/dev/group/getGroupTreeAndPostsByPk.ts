@@ -6,6 +6,8 @@ import { devLog, devLogGroup } from '@/supabase/schema'
 import { and, eq, isNull } from 'drizzle-orm'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
 import { getUser } from '@/actions/session/getUser'
+import { headers } from 'next/headers'
+import getUserByEmail from '@/actions/user/getUserByEmail'
 
 async function getUpperGroupList(pk: number) {
   let upperGroupList: devLogGroupType[] = []
@@ -62,15 +64,28 @@ async function getLowerGroupList(pk: number) {
 
 export default async function getGroupTreeAndPostsByPk(pk?: number) {
   let user: any = await getUser()
-  if (!user) return null
+
+  let userEmail: string = ''
+  if(!user) {
+    const headersList = await headers()
+    const currentUrl = headersList.get('x-url') || headersList.get('referer') || ''
+    userEmail = currentUrl.split('/').pop() ?? ''
+    console.log('\n\n\nuserEmail', userEmail)
+  }
+
+  const userId = user ? user.uid : (await getUserByEmail(userEmail))?.uid
 
   // pk 가 없는 경우 -> 아무 group 도 지정되지 않은 상태 -> 최상단 groupList 반환
   if (!pk) {
+    let whereConditions: any[] = [eq(devLogGroup.uid, userId), isNull(devLogGroup.parentGroupPk)];
+    // 비로그인 회원 -> 공개된 그룹만 조회
+    if(!user) whereConditions.push(eq(devLogGroup.isPrivate, false));
+
     const topGroupList: devLogGroupType[] = await db
       .select()
       .from(devLogGroup)
       .where(
-        and(eq(devLogGroup.uid, user.id), isNull(devLogGroup.parentGroupPk))
+        and(...whereConditions)
       )
       .limit(1)
 

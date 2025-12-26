@@ -13,16 +13,17 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { User } from '@supabase/supabase-js'
 import { IconLayoutSidebarLeftExpand } from '@tabler/icons-react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 interface MenuProps {
   text: string
   route: string
 }
 
-const MainSidebar = () => {
+const AuthMainSidebar = ({ user }: { user: User }) => {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -53,6 +54,8 @@ const MainSidebar = () => {
     }
   ]
 
+  if (!user) return null
+  
   return (
     <>
       {isMobile && (
@@ -106,4 +109,4 @@ const MainSidebar = () => {
   )
 }
 
-export default MainSidebar
+export default AuthMainSidebar

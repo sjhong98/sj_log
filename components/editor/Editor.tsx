@@ -11,11 +11,13 @@ import { useMediaQuery, useTheme } from '@mui/material'
 export default function Editor({
   selectedDevLog,
   blocks,
-  setBlocks
+  setBlocks,
+  disabled
 }: {
   selectedDevLog: devLogType | null
   blocks: any
   setBlocks: any
+  disabled: boolean
 }) {
   const editor = useCreateBlockNote()
 
@@ -88,6 +90,7 @@ export default function Editor({
   return (
     <BlockNoteView
       editor={editor}
+      editable={!disabled}
       className={`${isMobile ? 'w-[90vw]' : 'w-full'} z-[3]`}
       theme={{
         // @ts-ignore

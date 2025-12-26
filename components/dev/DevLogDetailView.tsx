@@ -19,6 +19,7 @@ import updateDevLog from '@/actions/dev/log/updateDevLog'
 import { CheckIcon } from 'lucide-react'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { Skeleton } from '@mui/material'
+import { getUser } from '@/actions/session/getUser'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -53,7 +54,8 @@ export default function DevLogDetailView({
     content: '',
     date: new Date().toISOString(),
     groupPk: 0,
-    text: null
+    text: null,
+    isPrivate: false
   }
   const [blocks, setBlocks] = useState<any>([])
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
@@ -61,13 +63,21 @@ export default function DevLogDetailView({
   const [devLogForm, setDevLogForm] = useState<editableDevLogType>(
     selectedDevLog
       ? {
-          ...selectedDevLog,
-          blocks: JSON.parse(selectedDevLog.content)
-        }
+        ...selectedDevLog,
+        blocks: JSON.parse(selectedDevLog.content)
+      }
       : initialValue
   )
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    (async () => {
+      let user: any = await getUser()
+      setUser(user)
+    })()
+  }, [])
 
   useEffect(() => {
     let _overview: any = []
@@ -81,9 +91,9 @@ export default function DevLogDetailView({
     setDevLogForm(
       selectedDevLog
         ? {
-            ...selectedDevLog,
-            blocks: JSON.parse(selectedDevLog.content)
-          }
+          ...selectedDevLog,
+          blocks: JSON.parse(selectedDevLog.content)
+        }
         : initialValue
     )
 
@@ -105,14 +115,16 @@ export default function DevLogDetailView({
 
   // 3초마다 자동저장 (수정의 경우)
   useEffect(() => {
-    if (!selectedDevLog) return
+    (async () => {
+      if (!selectedDevLog || !user) return
 
-    if (timerRef.current) clearTimeout(timerRef.current)
+      if (timerRef.current) clearTimeout(timerRef.current)
 
-    timerRef.current = setTimeout(async () => {
-      setEditorStatus(1)
-      await autoSave()
-    }, 2000)
+      timerRef.current = setTimeout(async () => {
+        setEditorStatus(1)
+        await autoSave()
+      }, 2000)
+    })()
   }, [devLogForm, blocks])
 
   const handleChange = useCallback(
@@ -219,7 +231,7 @@ export default function DevLogDetailView({
     <>
       <Column
         className={
-          isMobile 
+          isMobile
             ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
             : `w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
         }
@@ -230,34 +242,40 @@ export default function DevLogDetailView({
             id={'absolute-area'}
           >
             {/*  자동저장 관련  */}
-            <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[200]' : 'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
-              {editorStatus === 0 ? (
-                <button
-                  onClick={autoSave}
-                  className={
-                    'whitespace-nowrap pointer-events-auto cursor-pointer'
-                  }
-                >
-                  저장
-                </button>
-              ) : editorStatus === 1 ? (
-                <CircularProgress className={`!text-white`} />
-              ) : (
-                <CheckIcon />
-              )}
-            </div>
+            {Boolean(user) && (
+              <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[200]' : 'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
+                {editorStatus === 0 ? (
+                  <button
+                    onClick={autoSave}
+                    className={
+                      'whitespace-nowrap pointer-events-auto cursor-pointer'
+                    }
+                  >
+                    저장
+                  </button>
+                ) : editorStatus === 1 ? (
+                  <CircularProgress className={`!text-white`} />
+                ) : (
+                  <CheckIcon />
+                )}
+              </div>
+            )
+            }
 
             {/*  새로운 dev log 생성 버튼  */}
-            <button
-              onClick={handleCreateNewDevLog}
-              className={
-                isMobile
-                  ? 'bg-[#ddd] rounded-full p-2 shadow-lg cursor-pointer absolute bottom-4 right-4 z-[9999] pointer-events-auto'
-                  : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
-              }
-            >
-              <IconPlus color={'#333'} />
-            </button>
+            {Boolean(user) && (
+              <button
+                onClick={handleCreateNewDevLog}
+                className={
+                  isMobile
+                    ? 'bg-[#ddd] rounded-full p-2 shadow-lg cursor-pointer absolute bottom-4 right-4 z-[9999] pointer-events-auto'
+                    : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
+                }
+              >
+                <IconPlus color={'#333'} />
+              </button>
+            )
+            }
           </div>
         </div>
 
@@ -293,6 +311,7 @@ export default function DevLogDetailView({
                   onChange={handleChange}
                   placeholder={'Title'}
                   autoComplete={'off'}
+                  disabled={!Boolean(user)}
                   className={
                     isMobile
                       ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
@@ -334,6 +353,7 @@ export default function DevLogDetailView({
                   selectedDevLog={selectedDevLog}
                   blocks={blocks}
                   setBlocks={setBlocks}
+                  disabled={!Boolean(user)}
                 />
               </Column>
             </>

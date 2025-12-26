@@ -1,6 +1,6 @@
 import { getUser } from '@/actions/session/getUser'
 import Header from '@/components/layouts/Header'
-import MainSidebar from '@/components/layouts/MainSidebar'
+import AuthMainSidebar from '@/components/layouts/AuthMainSidebar'
 import { Box } from '@mui/material'
 import { ReactNode } from 'react'
 import ClientLayout from './clientLayout'
@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   return (
     <>
       <Box className={'flex p-6'}>
-        <MainSidebar />
+        <AuthMainSidebar user={user} />
         <Box
           sx={{
             display: 'flex',

@@ -20,7 +20,7 @@ export default async function middleware(request: NextRequest) {
     console.log('\nSession Exist')
   } else if (!user) {
     console.log('\nFailed to refresh session')
-    return NextResponse.redirect(new URL('/login', request.url))
+    // return NextResponse.redirect(new URL('/login', request.url))
   }
 }
 

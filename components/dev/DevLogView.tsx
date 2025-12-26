@@ -21,6 +21,7 @@ import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import SearchInput from '../search/searchInput'
 import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
+import { getUser } from '@/actions/session/getUser'
 
 const drawerWidth = 380
 
@@ -57,6 +58,14 @@ export default function DevLogView({
   const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
   const [treeLoading, setTreeLoading] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    (async () => {
+      let user: any = await getUser()
+      setUser(user)
+    })()
+  }, [])
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -90,7 +99,7 @@ export default function DevLogView({
 
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
-    
+
     setDevLogLoading(true)
     try {
       const devLogData = await getDevLogByPk(item.pk)
@@ -252,7 +261,8 @@ export default function DevLogView({
     try {
       const updatedGroupTree = await createGroup({
         parentGroupPk: selectedGroup.pk ?? 0,
-        name: newGroupName
+        name: newGroupName,
+        isPrivate: true
       })
       if (!updatedGroupTree) return
       setCurrentGroupTree(updatedGroupTree)
@@ -356,46 +366,46 @@ export default function DevLogView({
   }, [temporarySelectedGroup, selectedDevLog, selectedGroup, currentPostList])
 
   // 검색 결과에서 키워드 주변 텍스트를 추출하는 함수
-const getContextText = (text: string, keyword: string) => {
-  if (!text || !keyword) return ''
-  
-  const lowerText = text.toLowerCase()
-  const lowerKeyword = keyword.toLowerCase()
-  const keywordIndex = lowerText.indexOf(lowerKeyword)
-  
-  if (keywordIndex === -1) return ''
-  
-  // 키워드 시작 위치와 끝 위치
-  const start = keywordIndex
-  const end = start + keyword.length
-  
-  // 이전 3단어와 이후 3단어를 포함한 범위 계산
-  const words = text.split(/\s+/)
-  let startWordIndex = 0
-  let endWordIndex = words.length - 1
+  const getContextText = (text: string, keyword: string) => {
+    if (!text || !keyword) return ''
 
-  // 키워드가 포함된 단어의 인덱스 찾기
-  let currentPos = 0
-  for (let i = 0; i < words.length; i++) {
-    const wordLength = words[i].length
-    if (currentPos <= start && start < currentPos + wordLength) {
-      startWordIndex = Math.max(0, i - 5)
-      endWordIndex = Math.min(words.length - 1, i + 5)
-      break
+    const lowerText = text.toLowerCase()
+    const lowerKeyword = keyword.toLowerCase()
+    const keywordIndex = lowerText.indexOf(lowerKeyword)
+
+    if (keywordIndex === -1) return ''
+
+    // 키워드 시작 위치와 끝 위치
+    const start = keywordIndex
+    const end = start + keyword.length
+
+    // 이전 3단어와 이후 3단어를 포함한 범위 계산
+    const words = text.split(/\s+/)
+    let startWordIndex = 0
+    let endWordIndex = words.length - 1
+
+    // 키워드가 포함된 단어의 인덱스 찾기
+    let currentPos = 0
+    for (let i = 0; i < words.length; i++) {
+      const wordLength = words[i].length
+      if (currentPos <= start && start < currentPos + wordLength) {
+        startWordIndex = Math.max(0, i - 5)
+        endWordIndex = Math.min(words.length - 1, i + 5)
+        break
+      }
+      currentPos += wordLength + 1 // 공백 고려
     }
-    currentPos += wordLength + 1 // 공백 고려
-  }
-  
-  // 범위 내 단어들을 조합
-  const contextWords = words.slice(startWordIndex, endWordIndex + 1)
-  let contextText = contextWords.join(' ')
 
-  return contextText
-}
+    // 범위 내 단어들을 조합
+    const contextWords = words.slice(startWordIndex, endWordIndex + 1)
+    let contextText = contextWords.join(' ')
+
+    return contextText
+  }
 
   const handleSearch = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(e.target.value)
-    if(e.target.value === '') {
+    if (e.target.value === '') {
       setSearchResult([])
       return
     }
@@ -416,7 +426,7 @@ const getContextText = (text: string, keyword: string) => {
     for (let i = 0; i < groupPks.length; i++) {
       const groupPk = groupPks[i]
       const elem = document.getElementById(groupPk.toString())
-      if(elem) {
+      if (elem) {
         // Folder 내부의 button 태그를 찾아서 클릭
         const button = elem.querySelector('button')
         if (button) {
@@ -467,7 +477,7 @@ const getContextText = (text: string, keyword: string) => {
             ) : searchResult.length > 0 ? (
               searchResult.map((resultItem: any, i: number) => {
                 const contextText = getContextText(resultItem.text, searchKeyword)
-                if(contextText === '') return
+                if (contextText === '') return
                 return (
                   <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
                     <Row gap={1} className={'items-center'}>
@@ -499,7 +509,7 @@ const getContextText = (text: string, keyword: string) => {
                 <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               </Row>
               {isMobile && (
-                <IconButton 
+                <IconButton
                   onClick={() => setDevLogListDrawerOpen(false)}
                   className={'text-[#ddd]'}
                 >
@@ -515,16 +525,16 @@ const getContextText = (text: string, keyword: string) => {
                 <Skeleton variant='rounded' className={'w-full h-[24px]'} />
               </Column>
             ) : (
-              <Tree 
+              <Tree
                 ref={treeRef}
-                className={'text-[#ddd] !h-fit'} 
+                className={'text-[#ddd] !h-fit'}
                 initialExpandedItems={Array.from(expandedGroups).map(String)}
               >
                 {GroupTreeComponent}
               </Tree>
             )}
           </Column>
-          {selectedGroup && (
+          {selectedGroup && user && (
             <Row
               className={
                 'absolute right-0 top-16 opacity-0 group-hover/navigation:opacity-100'
@@ -560,26 +570,28 @@ const getContextText = (text: string, keyword: string) => {
                     <Row gap={1} className={'w-full items-center'}>
                       <FileIcon className='size-4 mt-[1px]' />
                       <p className='w-full break-all line-clamp-1'>
-                      {item.title}
+                        {item.title}
                       </p>
                     </Row>
                     <Row
                       className={
-                        'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1]'
+                        'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1] h-10'
                       }
                     >
-                      <CustomPopper
-                        buttons={[
-                          {
-                            icon: <IconTrashFilled />,
-                            function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
-                          },
-                          {
-                            icon: <FolderInputIcon />,
-                            function: () => setChangeGroupModalOpen(true)
-                          }
-                        ]}
-                      />
+                      {Boolean(user) && (
+                        <CustomPopper
+                          buttons={[
+                            {
+                              icon: <IconTrashFilled />,
+                              function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
+                            },
+                            {
+                              icon: <FolderInputIcon />,
+                              function: () => setChangeGroupModalOpen(true)
+                            }
+                          ]}
+                        />
+                      )}
                     </Row>
                   </Row>
                 )
@@ -625,7 +637,7 @@ const getContextText = (text: string, keyword: string) => {
             }
           }}
         >
-          <Box className={'bg-[#111]'}> 
+          <Box className={'bg-[#111]'}>
             {NavigationArea}
           </Box>
         </Drawer>
