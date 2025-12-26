@@ -16,10 +16,12 @@ import Row from '@/components/flexBox/row'
 import { CircularProgress, useMediaQuery, useTheme } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
-import { CheckIcon } from 'lucide-react'
+import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { Skeleton } from '@mui/material'
 import { getUser } from '@/actions/session/getUser'
+import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
+import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -71,6 +73,7 @@ export default function DevLogDetailView({
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
   const [user, setUser] = useState<any>(null)
+  const [isPrivate, setIsPrivate] = useState(false)
 
   useEffect(() => {
     (async () => {
@@ -227,6 +230,21 @@ export default function DevLogDetailView({
     })
   }, [])
 
+  useEffect(() => {
+    setIsPrivate(selectedDevLog?.isPrivate ?? false)
+  }, [selectedDevLog])
+
+  const togglePrivacy = useCallback(() => {
+    try {
+      let newIsPrivate = !isPrivate
+      toggleDevLogPrivacy(selectedDevLog?.pk ?? 0, newIsPrivate)
+      setIsPrivate(newIsPrivate)
+    } catch (error) {
+      console.error('Failed to toggle group privacy:', error)
+      toast.error('Failed to toggle group privacy')
+    }
+  }, [selectedDevLog, isPrivate])
+
   return (
     <>
       <Column
@@ -238,7 +256,7 @@ export default function DevLogDetailView({
       >
         <div className={'sticky top-0 z-[100] right-0'}>
           <div
-            className={'absolute h-full w-full pointer-events-none'}
+            className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none'}
             id={'absolute-area'}
           >
             {/*  자동저장 관련  */}
@@ -257,6 +275,18 @@ export default function DevLogDetailView({
                   <CircularProgress className={`!text-white`} />
                 ) : (
                   <CheckIcon />
+                )}
+              </div>
+            )
+            }
+
+            {/* 공개 여부 관련 */}
+            {Boolean(user) && (
+                <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[201] pointer-events-auto' : 'h-[30px] absolute top-0 ml-[90%] pr-4 z-[201] pointer-events-auto'}>
+                {isPrivate ? (
+                  <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+                ) : (
+                  <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
                 )}
               </div>
             )
