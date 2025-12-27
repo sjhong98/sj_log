@@ -44,6 +44,7 @@ export default function DevLogView({
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
     null
   )
+
   const [temporarySelectedGroup, setTemporarySelectedGroup] =
     useState<devLogGroupType | null>(null)
   const [currentGroupTree, setCurrentGroupTree] =
@@ -515,7 +516,7 @@ export default function DevLogView({
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4'}>
+      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
@@ -674,7 +675,7 @@ export default function DevLogView({
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }} className='h-[calc(100vh-130px)]'>
+      <Box sx={{ display: 'flex', width: '100%' }} className='h-screen overflow-hidden'>
         {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
         {!isMobile ? (
           <Row fullWidth gap={4} className={'min-w-[200px]'}>

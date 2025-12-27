@@ -251,7 +251,7 @@ export default function DevLogDetailView({
         className={
           isMobile
             ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-            : `w-full max-w-[calc(100vw-600px)] h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
+            : `w-full max-w-[calc(100vw-600px)] h-screen pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
         }
       >
         <div className={'sticky top-0 z-[100] right-0'}>
@@ -299,7 +299,7 @@ export default function DevLogDetailView({
                 className={
                   isMobile
                     ? 'bg-[#ddd] rounded-full p-2 shadow-lg cursor-pointer absolute bottom-4 right-4 z-[9999] pointer-events-auto'
-                    : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto'
+                    : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
                 }
               >
                 <IconPlus color={'#333'} />
