@@ -251,7 +251,7 @@ export default function DevLogDetailView({
         className={
           isMobile
             ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-            : `w-full max-w-[calc(100vw-600px)] h-screen pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
+            : `w-full max-w-[calc(100vw-600px)] h-[calc(100vh-110px)] pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
         }
       >
         <div className={'sticky top-0 z-[100] right-0'}>
