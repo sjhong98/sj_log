@@ -362,14 +362,16 @@ export default function DevLogDetailView({
                           style={{
                             fontSize:
                               level === 1
-                                ? '14px'
+                                ? '16px'
                                 : level === 2
-                                  ? '13px'
+                                  ? '14px'
                                   : '12px',
                             marginLeft:
                               level === 1 ? '0px' : level === 2 ? '8px' : '16px',
                             marginTop:
-                              level === 1 ? '8px' : level === 2 ? '6px' : '0px'
+                              level === 1 ? '8px' : level === 2 ? '6px' : '0px',
+                            fontWeight:
+                              level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
                           }}
                         >
                           {`${block.content[0]?.text ?? ''}`}
