@@ -637,7 +637,7 @@ export default function DevLogView({
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading, isPrivate])
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading, isPrivate, togglePrivacy])
 
   const RenderedDevLogList = useMemo(() => {
     return (

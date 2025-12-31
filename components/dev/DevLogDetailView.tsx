@@ -367,7 +367,9 @@ export default function DevLogDetailView({
                                   ? '13px'
                                   : '12px',
                             marginLeft:
-                              level === 1 ? '0px' : level === 2 ? '8px' : '16px'
+                              level === 1 ? '0px' : level === 2 ? '8px' : '16px',
+                            marginTop:
+                              level === 1 ? '8px' : level === 2 ? '6px' : '0px'
                           }}
                         >
                           {`${block.content[0]?.text ?? ''}`}
