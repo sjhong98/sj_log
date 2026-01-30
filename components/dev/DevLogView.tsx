@@ -11,7 +11,7 @@ import { FileIcon, FolderInputIcon, LockIcon, PlusIcon, LockOpenIcon } from 'luc
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
-import { Dialog, Skeleton, Typography, useMediaQuery, useTheme, Box, Drawer, IconButton } from '@mui/material'
+import { Dialog, Skeleton, Typography, useMediaQuery, useTheme, Box, Drawer, IconButton, Button } from '@mui/material'
 import CustomPopper from '@/components/popper/CustomPopper'
 import { IconTrashFilled, IconList } from '@tabler/icons-react'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
@@ -211,9 +211,7 @@ export default function DevLogView({
               e.stopPropagation()
               if (!group?.pk) return
 
-              if (temporarySelectedGroup?.pk !== group.pk)
-                setTemporarySelectedGroup(group)
-              else handleUpdateDevLogParentGroup()
+              setTemporarySelectedGroup(group)
             }}
             isSelectable
             isSelect={temporarySelectedGroup?.pk === group.pk}
@@ -231,9 +229,7 @@ export default function DevLogView({
             e.stopPropagation()
             if (!group?.pk) return
 
-            if (temporarySelectedGroup?.pk !== group.pk)
-              setTemporarySelectedGroup(group)
-            else handleUpdateDevLogParentGroup()
+            setTemporarySelectedGroup(group)
           }}
           isSelectable
           isSelect={temporarySelectedGroup?.pk === group.pk}
@@ -245,7 +241,7 @@ export default function DevLogView({
     [currentGroupTree, temporarySelectedGroup]
   )
 
-  const IndependentGroupTreeComponent = useMemo(() => {
+  const ParentUpdateableGroupTreeComponent = useMemo(() => {
     if (treeLoading) {
       return (
         <Column gap={2} className={'fade-in'}>
@@ -260,7 +256,7 @@ export default function DevLogView({
 
   const handleCreateGroup = useCallback(async () => {
     if (!selectedGroup) return
-    setTreeLoading(true)
+    // setTreeLoading(true)
     try {
       const updatedGroupTree = await createGroup({
         parentGroupPk: selectedGroup.pk ?? 0,
@@ -275,7 +271,7 @@ export default function DevLogView({
       toast.error('Failed to create new group.')
     } finally {
       setNewGroupName('')
-      setTreeLoading(false)
+      // setTreeLoading(false)
     }
   }, [selectedGroup, newGroupName])
 
@@ -288,7 +284,7 @@ export default function DevLogView({
       return
     }
 
-    setTreeLoading(true)
+    // setTreeLoading(true)
     try {
       const updatedGroupTree = await deleteGroup(selectedGroup?.pk ?? 0)
       if (updatedGroupTree) {
@@ -301,7 +297,7 @@ export default function DevLogView({
       console.error(e)
       toast.error('Failed to delete group.')
     } finally {
-      setTreeLoading(false)
+      // setTreeLoading(false)
     }
   }, [selectedGroup, currentPostList])
 
@@ -339,7 +335,7 @@ export default function DevLogView({
     )
       return
 
-    setTreeLoading(true)
+    // setTreeLoading(true)
     try {
       const updated = await updateParentGroupPk(
         selectedDevLog.pk,
@@ -364,7 +360,7 @@ export default function DevLogView({
       console.error('Failed to update parent group:', error)
       toast.error('Failed to move dev log')
     } finally {
-      setTreeLoading(false)
+      // setTreeLoading(false)
     }
   }, [temporarySelectedGroup, selectedDevLog, selectedGroup, currentPostList])
 
@@ -603,23 +599,11 @@ export default function DevLogView({
                     </Row>
                     <Row
                       className={
-                        'group-hover/item:opacity-100 opacity-0 scale-[0.8] hover:scale-[1] h-10'
+                        'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
                       }
                     >
-                      {Boolean(user) && (
-                        <CustomPopper
-                          buttons={[
-                            {
-                              icon: <IconTrashFilled />,
-                              function: () => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)
-                            },
-                            {
-                              icon: <FolderInputIcon />,
-                              function: () => setChangeGroupModalOpen(true)
-                            }
-                          ]}
-                        />
-                      )}
+                      <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
+                      <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
                     </Row>
                   </Row>
                 )
@@ -745,9 +729,10 @@ export default function DevLogView({
             </Column>
           ) : (
             <Tree className={'text-[#ddd] !h-fit'}>
-              {IndependentGroupTreeComponent}
+              {ParentUpdateableGroupTreeComponent}
             </Tree>
           )}
+          <Button fullWidth variant='contained' size='small' className='!mt-auto' color='primary' onClick={handleUpdateDevLogParentGroup}>Update Parent Group</Button>
         </Column>
       </Dialog>
     </>
