@@ -178,7 +178,7 @@ export function PlaceholdersAndVanishInput({
   };
   return (
     <div
-      className="w-full relative max-w-xl mx-auto bg-zinc-800 h-12 rounded-full overflow-hidden shadow-[0px_0px_0px_1px_rgba(255,255,255,0.06)] transition duration-200"
+      className="w-full relative max-w-xl mx-auto bg-zinc-800 h-12 rounded-full shadow-[0px_0px_0px_1px_rgba(255,255,255,0.06)] transition duration-200"
       // onSubmit={handleSubmit}
     >
       <canvas
@@ -198,7 +198,7 @@ export function PlaceholdersAndVanishInput({
         onKeyDown={handleKeyDown}
         ref={inputRef}
         value={value}
-        type={type || 'text'}
+        type={type}
         className={cn(
           "w-full relative text-sm sm:text-base z-50 border-none text-white bg-transparent h-full rounded-full focus:outline-none focus:ring-0 pl-4 sm:pl-10 pr-20",
           animating && "text-transparent"

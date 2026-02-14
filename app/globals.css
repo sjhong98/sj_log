@@ -7,7 +7,7 @@
     --color-background: var(--background);
     --color-sub-background: var(--subbackground);
     --color-foreground: var(--foreground);
-    --font-sans: var(--font-geist-sans);
+    --font-sans: 'Pretendard', var(--font-geist-sans), sans-serif;
     --font-mono: var(--font-geist-mono);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -56,6 +56,54 @@
         }
     }
 }
+
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 200;
+    font-style: normal;
+    src: url('/fonts/Pretendard-ExtraLight.otf') format('opentype');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 300;
+    font-style: normal;
+    src: url('/fonts/Pretendard-Light.otf') format('opentype');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 400;
+    font-style: normal;
+    src: url('/fonts/Pretendard-Regular.otf') format('opentype');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 500;
+    font-style: normal;
+    src: url('/fonts/Pretendard-Medium.otf') format('opentype');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 700;
+    font-style: normal;
+    src: url('/fonts/Pretendard-Bold.otf') format('opentype');
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Pretendard';
+    font-weight: 800;
+    font-style: normal;
+    src: url('/fonts/Pretendard-ExtraBold.otf') format('opentype');
+    font-display: swap;
+  }
 
 input,
 input[type],
@@ -130,8 +178,8 @@ label.Mui-error {
     min-height: 100%;
   }
   body {
-    @apply bg-background text-foreground;
-    }
+    @apply bg-background text-foreground font-sans;
+  }
 }
 
 input::-webkit-outer-spin-button,
@@ -236,8 +284,41 @@ input[type=number] {
 }
 
 .opacity-up-appear {
-    animation: opacity-up-appear 0.2s ease-in-out forwards;
+  animation: opacity-up-appear 0.2s ease-in-out forwards;
 }
+
+.opacity-up-appear-1s {
+  animation: opacity-up-appear 1s ease-in-out forwards;
+}
+
+@keyframes opacity-half-up-appear {
+  0% {
+      opacity: 0.5
+  }
+  100% {
+      opacity: 1
+  }
+}
+
+.opacity-half-up-appear {
+  animation: opacity-half-up-appear 2s ease-in-out forwards;
+}
+
+@keyframes translateY-opacity-half-up-appear {
+  0% {
+      transform: translateY(50%);
+      opacity: 0.5;
+  }
+  100% {
+      transform: translateY(0);
+      opacity: 1;
+  }
+}
+
+.translateY-opacity-half-up-appear {
+  animation: translateY-opacity-half-up-appear 2s ease-in-out forwards;
+}
+
 
 h1 {
     font-size: 30px;
