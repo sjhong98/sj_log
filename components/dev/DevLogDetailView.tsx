@@ -19,7 +19,7 @@ import updateDevLog from '@/actions/dev/log/updateDevLog'
 import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { Skeleton } from '@mui/material'
-import { getUser } from '@/actions/session/getUser'
+import useUser from '@/hooks/useUser'
 import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
 import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
 
@@ -59,6 +59,8 @@ export default function DevLogDetailView({
     text: null,
     isPrivate: false
   }
+  const { user } = useUser()
+  
   const [blocks, setBlocks] = useState<any>([])
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
   const [editorStatus, setEditorStatus] = useState(0)
@@ -72,15 +74,7 @@ export default function DevLogDetailView({
   )
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
-  const [user, setUser] = useState<any>(null)
   const [isPrivate, setIsPrivate] = useState(false)
-
-  useEffect(() => {
-    (async () => {
-      let user: any = await getUser()
-      setUser(user)
-    })()
-  }, [])
 
   useEffect(() => {
     let _overview: any = []

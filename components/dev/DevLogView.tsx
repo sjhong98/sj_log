@@ -21,7 +21,7 @@ import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import SearchInput from '../search/searchInput'
 import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
-import { getUser } from '@/actions/session/getUser'
+import useUser from '@/hooks/useUser'
 import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
 
 const drawerWidth = 380
@@ -61,14 +61,7 @@ export default function DevLogView({
   const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
   const [treeLoading, setTreeLoading] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    (async () => {
-      let user: any = await getUser()
-      setUser(user)
-    })()
-  }, [])
+  const { user } = useUser()
 
   // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
   useEffect(() => {
@@ -303,7 +296,7 @@ export default function DevLogView({
 
   const handleDeleteDevLog = useCallback(
     async (devLog: devLogType) => {
-      if (!devLog.pk) return
+      if (!devLog.pk || !user) return
 
       try {
         const deleted = await deleteDevLog(devLog.pk)
@@ -324,14 +317,15 @@ export default function DevLogView({
         toast.error('Failed to delete group')
       }
     },
-    [currentPostList]
+    [currentPostList, user]
   )
 
   const handleUpdateDevLogParentGroup = useCallback(async () => {
     if (
       !temporarySelectedGroup?.pk ||
       !selectedDevLog?.pk ||
-      !selectedGroup?.pk
+      !selectedGroup?.pk ||
+      !user
     )
       return
 
@@ -362,7 +356,7 @@ export default function DevLogView({
     } finally {
       // setTreeLoading(false)
     }
-  }, [temporarySelectedGroup, selectedDevLog, selectedGroup, currentPostList])
+  }, [temporarySelectedGroup, selectedDevLog, selectedGroup, currentPostList, user])
 
   // 검색 결과에서 키워드 주변 텍스트를 추출하는 함수
   const getContextText = (text: string, keyword: string) => {
@@ -455,6 +449,8 @@ export default function DevLogView({
   }, [handleClickDevLog, groupList, treeRef, expandSelectedGroupTree])
 
   const togglePrivacy = useCallback(() => {
+    if(!user) return
+
     try {
       let newIsPrivate = !isPrivate
       toggleGroupPrivacy(selectedGroup?.pk ?? 0, !isPrivate)
@@ -464,7 +460,7 @@ export default function DevLogView({
       console.error('Failed to toggle group privacy:', error)
       toast.error('Failed to toggle group privacy')
     }
-  }, [isPrivate, selectedGroup])
+  }, [isPrivate, selectedGroup, user])
 
   const SearchDialog = useMemo(() => {
     return (
@@ -602,7 +598,9 @@ export default function DevLogView({
                         'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
                       }
                     >
+                      {/* Delete Dev Log */}
                       <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
+                      {/* Change Parent Group */}
                       <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
                     </Row>
                   </Row>

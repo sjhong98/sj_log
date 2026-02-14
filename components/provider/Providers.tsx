@@ -1,5 +1,6 @@
 'use client'
 
+import { UserProvider } from '@/context/UserContext'
 import { ReactNode } from 'react'
 import { createTheme, ThemeProvider } from '@mui/material'
 
@@ -11,9 +12,9 @@ const Providers = ({ children }: { children: ReactNode }) => {
   })
 
   return (
-    <>
-      <ThemeProvider theme={darkTheme}>{children}</ThemeProvider>
-    </>
+    <ThemeProvider theme={darkTheme}>
+      <UserProvider>{children}</UserProvider>
+    </ThemeProvider>
   )
 }
 
