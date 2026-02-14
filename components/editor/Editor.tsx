@@ -26,7 +26,7 @@ export default function Editor({
   const editor = useCreateBlockNote()
 
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const currentTheme = {
     colors: {

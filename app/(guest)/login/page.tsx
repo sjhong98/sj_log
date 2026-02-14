@@ -20,7 +20,7 @@ import signIn from '../../../actions/session/signIn'
 export default function Page() {
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loginClicked, setLoginClicked] = useState<boolean>(false)

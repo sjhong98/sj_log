@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const theme = useTheme()
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const pathname = usePathname()
 
     const [overflow, setOverflow] = useState(false)

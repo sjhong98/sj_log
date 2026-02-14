@@ -37,7 +37,7 @@ export default function DevLogView({
 }) {
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const searchInputRef = useRef<any>(null)
   const [currentPostList, setCurrentPostList] = useState<{ pk: number; title: string }[]>([])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)

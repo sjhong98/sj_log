@@ -14,10 +14,7 @@ import {
   useTheme
 } from '@mui/material'
 import { User } from '@supabase/supabase-js'
-import {
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand
-} from '@tabler/icons-react'
+import { IconLayoutSidebarLeftExpand } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -29,11 +26,10 @@ interface MenuProps {
 const AuthMainSidebar = ({ user }: { user: User }) => {
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [open, setOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
 
-  const drawerWidth = collapsed ? 56 : 250
+  const drawerWidth = 250
 
   const menu: MenuProps[] = [
     {
@@ -74,62 +70,39 @@ const AuthMainSidebar = ({ user }: { user: User }) => {
         onClose={() => setOpen(false)}
         variant={!isMobile ? 'permanent' : 'temporary'}
         sx={{
-          width: !isMobile ? drawerWidth : 250,
+          width: drawerWidth,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: !isMobile ? drawerWidth : 250,
+            width: drawerWidth,
             boxSizing: 'border-box',
-            overflow: 'hidden',
-            transition: theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen
-            })
+            overflow: 'hidden'
           }
         }}
       >
         <Box
           sx={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column'
+            width: 250,
+            height: '100%'
           }}
           role='presentation'
         >
-          {!isMobile && (
-            <Box sx={{ p: 0.5, display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end' }}>
-              <IconButton
-                onClick={() => setCollapsed((c) => !c)}
-                size="small"
-                sx={{ color: 'var(--color-foreground)' }}
-              >
-                {collapsed ? (
-                  <IconLayoutSidebarLeftExpand size={20} />
-                ) : (
-                  <IconLayoutSidebarLeftCollapse size={20} />
-                )}
-              </IconButton>
-            </Box>
-          )}
-          {(!isMobile && !collapsed) || isMobile ? (
-            <>
-              <List sx={{ flex: 1 }}>
-                {menu.map((menuItem) => (
-                  <ListItem key={menuItem.text} disablePadding>
-                    <ListItemButton
-                      onClick={() => {
-                        router.push(menuItem.route)
-                      }}
-                    >
-                      <ListItemIcon />
-                      <ListItemText primary={menuItem.text} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-              <Divider />
-            </>
-          ) : null}
+          <List>
+            {menu.map((menuItem, index) => (
+              <ListItem key={menuItem.text} disablePadding>
+                <ListItemButton
+                  onClick={() => {
+                    router.push(menuItem.route)
+                  }}
+                >
+                  <ListItemIcon>
+                    {/*{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}*/}
+                  </ListItemIcon>
+                  <ListItemText primary={menuItem.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+          <Divider />
         </Box>
       </Drawer>
     </>

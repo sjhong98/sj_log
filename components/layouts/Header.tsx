@@ -24,7 +24,7 @@ import { toast } from 'react-toastify'
 export default function Header({ user }: { user: User }) {
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   // States
   const [open, setOpen] = useState<boolean>(false)

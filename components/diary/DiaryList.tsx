@@ -42,7 +42,7 @@ const drawerWidth = 250
 export default function DiaryList({ list }: any) {
   const router = useRouter()
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const [diaryList, setDiaryList] = useState<DiaryType[]>(list)
   const [diaryListDrawerOpen, setDiaryListDrawerOpen] = useState<boolean>(false)

@@ -34,7 +34,7 @@ export default function CreateFinanceAccountDialog({
   refreshData: any
 }) {
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const [open, setOpen] = useState<boolean>(false)
   const [pickerOpen, setPickerOpen] = useState<boolean>(false)

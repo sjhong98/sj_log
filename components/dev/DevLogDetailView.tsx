@@ -46,7 +46,7 @@ export default function DevLogDetailView({
   devLogLoading: boolean
 }) {
   const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
     title: 'New Title',
