@@ -173,6 +173,7 @@ export default function DevLogDetailView({
 
     if (isEmpty) {
       console.log('문서 초기화를 차단하였습니다.')
+      return
       _devLogForm.content = undefined
       _devLogForm.text = undefined
     }
