@@ -85,7 +85,6 @@ label.Mui-error {
 }
 
 :root {
-    background-color: #050505;
     min-height: 100%;
     --radius: 0.625rem;
     --card: oklch(1 0 0);
