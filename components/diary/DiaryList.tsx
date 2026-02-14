@@ -321,7 +321,7 @@ export default function DiaryList({ list }: any) {
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }}>
+      <Box sx={{ display: 'flex', width: '100%' }} className='bg-amber-300'>
         {renderedDiaryList}
 
         <Column gap={10} fullWidth>
