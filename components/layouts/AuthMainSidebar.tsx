@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Avatar,
   Box,
   Divider,
   Drawer,
@@ -20,6 +21,7 @@ import { useState } from 'react'
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import { IconNotebook, IconCode, IconBrandCashapp, IconUser, IconChartLine } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import useUser from '@/hooks/useUser'
 
 interface MenuProps {
   text: string
@@ -113,6 +115,7 @@ const AuthMainSidebar = ({ user }: { user: User }) => {
 }
 
 const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useUser()
   const [open, setOpen] = useState(false)
 
   const links = [
@@ -174,15 +177,11 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
           <div>
             <SidebarLink
               link={{
-                label: "Manu Arora",
-                href: "#",
+                label: (user && user.email) ? user.email : '로그인',
+                href: user ? '#' : '/login',
                 icon: (
-                  <img
-                    src="https://assets.aceternity.com/manu.png"
-                    className="h-7 w-7 shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
+                  <Avatar
+                    className='cursor-pointer bs-[30px] is-[30px]'
                   />
                 ),
               }}
@@ -190,8 +189,10 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className='bg-red-500 w-full'>
-      {children}
+      <div className='w-full h-screen overflow-hidden bg-neutral-900 md:p-2 p-0'>
+        <div className='w-full h-full md:rounded-2xl rounded-none overflow-hidden bg-black'>
+          {children}
+        </div>
       </div>
     </div>
   )

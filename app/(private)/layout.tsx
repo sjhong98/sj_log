@@ -4,6 +4,7 @@ import AuthMainSidebarWrapper from '@/components/layouts/AuthMainSidebar'
 import { Box } from '@mui/material'
 import { ReactNode } from 'react'
 import ClientLayout from './clientLayout'
+import Row from '@/components/flexBox/row'
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const user = await getUser()
@@ -11,20 +12,23 @@ export default async function Layout({ children }: { children: ReactNode }) {
     <>
       <Box className='min-h-screen'>
         <AuthMainSidebarWrapper>
-          <Box className={'flex p-6'}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100%'
-              }}
-            >
-              <Header user={user} />
-              <ClientLayout>
-                {children}
-              </ClientLayout>
+          <Row fullWidth>
+            <div id='root-portal' />
+            <Box className={'flex p-6 w-full'}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  width: '100%'
+                }}
+              >
+                <Header user={user} />
+                <ClientLayout>
+                  {children}
+                </ClientLayout>
+              </Box>
             </Box>
-          </Box>
+          </Row>
         </AuthMainSidebarWrapper >
       </Box>
     </>

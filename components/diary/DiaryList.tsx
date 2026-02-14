@@ -36,6 +36,7 @@ import ModifyPopper from '@/components/popper/ModifyPopper'
 import modifyComment from '@/actions/diary/comment/modifyComment'
 import deleteComment from '@/actions/diary/comment/deleteComment'
 import deleteDiary from '@/actions/diary/deleteDiary'
+import DiaryListPortal from './DiaryListPortal'
 
 const drawerWidth = 250
 
@@ -209,120 +210,84 @@ export default function DiaryList({ list }: any) {
 
     return (
       <>
-        {isMobile && (
+        {/* {isMobile && (
           <Box className={'absolute top-12 left-2 z-[10]'}>
             <IconButton onClick={() => setDiaryListDrawerOpen(true)}>
               <IconList color={'var(--color-foreground)'} />
             </IconButton>
           </Box>
-        )}
-        <Drawer
-          open={diaryListDrawerOpen}
-          onClose={() => setDiaryListDrawerOpen(false)}
-          variant={!isMobile ? 'permanent' : 'temporary'}
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-              left: isMobile ? '0px' : '250px',
-              overflow: 'hidden'
-            }
-          }}
-        >
-          <Column className={'w-full h-full'}>
-            <Box
-              sx={{
-                width: 250,
-                height: '100%'
-              }}
-              role='presentation'
-            >
-              <List>
-                <PerfectScrollbar
-                  options={{ wheelPropagation: false, suppressScrollX: true }}
-                  className={'w-full max-h-screen pb-10'}
-                >
-                  {diaryList.map((diary: DiaryType, index: number) => (
-                    <Fragment key={index}>
-                      {diary.isNewMonth && (
-                        <Column
-                          fullWidth
-                          className={
-                            'justify-center items-center mt-4 py-1 gap-2 bg-[var(--color-background)]'
-                          }
-                        >
-                          {diary.isNewYear && (
-                            <Typography variant={'body1'}>
-                              {dayjs(diary.date).format('YYYY')}
-                            </Typography>
-                          )}
-                          <Typography variant={'body2'}>
-                            {dayjs(diary.date).format('M월')}
-                          </Typography>
-                        </Column>
-                      )}
-                      <ListItem disablePadding>
-                        <ListItemButton
-                          onClick={async () => {
-                            if (!diary.pk) return
+        )} */}
 
-                            await handleClickDiary(diary.pk)
-                          }}
-                        >
-                          <Row
-                            fullWidth
-                            gap={1}
-                            className={'justify-between items-center h-[50px]'}
-                          >
-                            <Typography variant={'subtitle2'}>
-                              {dayjs(diary.date).get('date')}
-                            </Typography>
-                            <ListItemText
-                              color={'var(--color-foreground)'}
-                              className={'line-clamp-1'}
-                              primary={diary.title}
-                            />
-                            {diary.thumbnail && (
-                              <Image
-                                src={diary.thumbnail}
-                                alt={diary.title}
-                                width={35}
-                                height={35}
-                                className={
-                                  'object-cover rounded-md aspect-square'
-                                }
-                              />
-                            )}
-                          </Row>
-                        </ListItemButton>
-                      </ListItem>
-                    </Fragment>
-                  ))}
-                </PerfectScrollbar>
-              </List>
-            </Box>
+        <Column className='w-[150px] h-screen bg-gray-900 overflow-y-auto custom-scrollbar'>
+          <Column className='w-full flex-shrink-0'>
+            {diaryList.map((diary: DiaryType, index: number) => (
+              <Fragment key={index}>
+                {diary.isNewMonth && (
+                  <Column
+                    fullWidth
+                    className={
+                      'justify-center items-center mt-4 py-1 gap-2 bg-[var(--color-background)]'
+                    }
+                  >
+                    {diary.isNewYear && (
+                      <Typography variant={'body1'}>
+                        {dayjs(diary.date).format('YYYY')}
+                      </Typography>
+                    )}
+                    <Typography variant={'body2'}>
+                      {dayjs(diary.date).format('M월')}
+                    </Typography>
+                  </Column>
+                )}
+                <ListItem disablePadding>
+                  <ListItemButton
+                    onClick={async () => {
+                      if (!diary.pk) return
+
+                      await handleClickDiary(diary.pk)
+                    }}
+                  >
+                    <Row
+                      fullWidth
+                      gap={1}
+                      className={'justify-between items-center h-[50px]'}
+                    >
+                      <Typography variant={'subtitle2'}>
+                        {dayjs(diary.date).get('date')}
+                      </Typography>
+                      <ListItemText
+                        color={'var(--color-foreground)'}
+                        className={'line-clamp-1'}
+                        primary={diary.title}
+                      />
+                      {diary.thumbnail && (
+                        <Image
+                          src={diary.thumbnail}
+                          alt={diary.title}
+                          width={35}
+                          height={35}
+                          className={
+                            'object-cover rounded-md aspect-square'
+                          }
+                        />
+                      )}
+                    </Row>
+                  </ListItemButton>
+                </ListItem>
+              </Fragment>
+            ))}
           </Column>
-          <Box className={'absolute right-4 bottom-4'}>
-            <button
-              onClick={handleClickAdd}
-              className={
-                'bg-[#ddd] rounded-full p-1 shadow-lg z-[10] cursor-pointer'
-              }
-            >
-              <IconPlus />
-            </button>
-          </Box>
-        </Drawer>
+        </Column>
       </>
     )
   }, [diaryList, diaryListDrawerOpen])
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }} className='bg-amber-300'>
-        {renderedDiaryList}
+      <DiaryListPortal diaryList={diaryList} onDiaryClick={handleClickDiary} />
+      
+      <Box sx={{ display: 'flex', width: '100%' }}>
+        {/* {renderedDiaryList} */}
 
         <Column gap={10} fullWidth>
           {selectedDiary && (
