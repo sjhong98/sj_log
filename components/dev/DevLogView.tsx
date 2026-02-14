@@ -1,28 +1,27 @@
 'use client'
 
-import Column from '@/components/flexBox/column'
-import { devLogGroupType, devLogType } from '@/types/schemaType'
-import Row from '@/components/flexBox/row'
-import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import BoardType from '@/types/dev/BoardType'
-import { Folder, Tree } from '@/components/magicui/file-tree'
-import GroupTreeType from '@/types/dev/GroupTreeType'
-import { FileIcon, FolderInputIcon, LockIcon, PlusIcon, LockOpenIcon } from 'lucide-react'
-import DevLogDetailView from '@/components/dev/DevLogDetailView'
-import { toast } from 'react-toastify'
 import createGroup from '@/actions/dev/group/createGroup'
-import { Dialog, Skeleton, Typography, useMediaQuery, useTheme, Box, Drawer, IconButton, Button } from '@mui/material'
-import CustomPopper from '@/components/popper/CustomPopper'
-import { IconTrashFilled, IconList } from '@tabler/icons-react'
-import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
 import deleteGroup from '@/actions/dev/group/deleteGroup'
-import deleteDevLog from '@/actions/dev/log/deleteDevLog'
 import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
-import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
-import SearchInput from '../search/searchInput'
-import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
-import useUser from '@/hooks/useUser'
 import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
+import deleteDevLog from '@/actions/dev/log/deleteDevLog'
+import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
+import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
+import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
+import DevLogDetailView from '@/components/dev/DevLogDetailView'
+import Column from '@/components/flexBox/column'
+import Row from '@/components/flexBox/row'
+import { Folder, Tree } from '@/components/magicui/file-tree'
+import useUser from '@/hooks/useUser'
+import BoardType from '@/types/dev/BoardType'
+import GroupTreeType from '@/types/dev/GroupTreeType'
+import { devLogGroupType, devLogType } from '@/types/schemaType'
+import { Box, Button, Dialog, Drawer, IconButton, Skeleton, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { IconList, IconTrashFilled } from '@tabler/icons-react'
+import { FileIcon, FolderInputIcon, LockIcon, LockOpenIcon, PlusIcon } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'react-toastify'
+import SearchInput from '../search/searchInput'
 
 const drawerWidth = 380
 
@@ -508,7 +507,7 @@ export default function DevLogView({
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] min-h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
+      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
@@ -572,7 +571,7 @@ export default function DevLogView({
           )}
         </Row>
 
-        <Column fullWidth gap={4} className={''}>
+        <Column fullWidth gap={4} className={'flex-shrink-0'}>
           {/*  File List  */}
           <Column fullWidth>
             {!postListLoading ? (

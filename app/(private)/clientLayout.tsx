@@ -15,6 +15,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     useEffect(() => {
         if(pathname.includes('/dev')) {
             setOverflow(true)
+            window.scrollTo(0, 0)
             document.body.style.overflow = 'hidden'
         } else {
             setOverflow(false)
