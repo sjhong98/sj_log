@@ -38,8 +38,8 @@ export const AuroraBackground = ({
               '--blue-500': '#3b82f6',
               '--indigo-300': '#a5b4fc',
               '--violet-200': '#ddd6fe',
-              '--black': '#000',
-              '--white': '#fff',
+              // '--black': '#000',
+              // '--white': '#fff',
               '--transparent': 'transparent'
             } as React.CSSProperties
           }
