@@ -62,13 +62,6 @@ export default function DevLogView({
   const [searchLoading, setSearchLoading] = useState(false)
   const { user } = useUser()
 
-  // selectedDevLog가 변경될 때 devLogLoading을 false로 설정
-  useEffect(() => {
-    if (selectedDevLog) {
-      setDevLogLoading(false)
-    }
-  }, [selectedDevLog])
-
   // 선택된 그룹이 변경될 때 부모 디렉토리들을 자동으로 열기
   useEffect(() => {
     if (selectedGroup) {
@@ -95,8 +88,17 @@ export default function DevLogView({
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
 
-    setDevLogLoading(true)
     try {
+      if(selectedDevLog) {
+        // 구조 분해 할당으로, 새로운 객체를 생성하여 참조하게 해야함.
+        // let _selectedDevLog: devLogType = selectedDevLog
+        // 위 코드는 기존 객체를 참조하게 되므로, 상태값이 변경된 것으로 인식되지 않음.
+
+        let _selectedDevLog: devLogType = {...selectedDevLog, title: item?.title || ''}
+        setSelectedDevLog(_selectedDevLog)
+        setDevLogLoading(true)
+      }
+
       const devLogData = await getDevLogByPk(item.pk)
       if (devLogData) {
         setSelectedDevLog(devLogData)
@@ -112,7 +114,7 @@ export default function DevLogView({
     } finally {
       setDevLogLoading(false)
     }
-  }, [isMobile])
+  }, [isMobile, selectedDevLog])
 
   const getPostList = useCallback(async (groupPk?: number) => {
     if (!groupPk) return
@@ -448,7 +450,7 @@ export default function DevLogView({
   }, [handleClickDevLog, groupList, treeRef, expandSelectedGroupTree])
 
   const togglePrivacy = useCallback(() => {
-    if(!user) return
+    if (!user) return
 
     try {
       let newIsPrivate = !isPrivate
@@ -507,7 +509,7 @@ export default function DevLogView({
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column gap={4} fullWidth className={'min-w-[380px] max-w-[380px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
+      <Column gap={4} fullWidth className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
@@ -656,21 +658,21 @@ export default function DevLogView({
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }} className='h-screen overflow-hidden'>
+      <Box sx={{ display: 'flex', width: '100%' }} className='h-screen'>
         {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
-        {!isMobile ? (
-          <Row fullWidth gap={4} className={'min-w-[200px]'}>
+        {isMobile ? (
+          RenderedDevLogList
+        ) : (
+          <Row fullWidth gap={4} className={'flex-[0.3] w-full'}>
             {NavigationArea}
           </Row>
-        ) : (
-          RenderedDevLogList
         )}
 
         {/*  File View Area  */}
         <Column
           gap={4}
           fullWidth
-          className={isMobile ? 'w-[90vw]' : 'max-w-[calc(100vw-750px)] min-w-[calc(100vw-750px)]'}
+          className={isMobile ? 'w-[90vw]' : 'flex-[1] max-w-[70%] min-w-[70%]'}
         >
           <DevLogDetailView
             selectedDevLog={selectedDevLog}

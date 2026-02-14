@@ -159,7 +159,7 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
   return (
     <div
       className={cn(
-        "mx-auto flex w-full h-screen flex-1 flex-col overflow-hidden md:flex-row bg-transparent",
+        "mx-auto flex w-full h-screen flex-1 flex-col md:flex-row overflow-visible bg-transparent",
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -189,8 +189,8 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className='w-full h-screen overflow-hidden bg-neutral-900 md:p-2 p-0'>
-        <div className='w-full h-full md:rounded-2xl rounded-none overflow-hidden bg-black'>
+      <div className='w-full h-screen overflow-visible bg-neutral-900 md:p-2 p-0'>
+        <div className='w-full h-full md:rounded-2xl rounded-none overflow-visible bg-black'>
           {children}
         </div>
       </div>

@@ -32,7 +32,7 @@ export default function Editor({
     colors: {
       editor: {
         text: '#ddd',
-        background: '#050505'
+        background: '#000'
       },
       menu: {
         text: '#ddd',
@@ -60,7 +60,8 @@ export default function Editor({
       highlights: '#111'
     },
     borderRadius: 4,
-    fontFamily: 'Helvetica Neue, sans-serif'
+    fontFamily: 'Helvetica Neue, sans-serif',
+    paddingLeft: 0
   }
 
   // 선택된 log 가 바뀌는 경우 -> block 갱신
@@ -97,7 +98,7 @@ export default function Editor({
       id={id.toString()}
       editor={editor}
       editable={!disabled}
-      className={`${isMobile ? 'w-[90vw]' : 'w-full'} z-[3]`}
+      className={`z-[3] md:w-full w-[calc(100%+60px)] md:ml-0 ml-[-30px]`}
       theme={{
         // @ts-ignore
         light: currentTheme,

@@ -49,7 +49,7 @@ export default function DevLogDetailView({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const timerRef = useRef<any>(null)
   const initialValue: editableDevLogType = {
-    title: 'New Title',
+    title: '',
     blocks: null,
     content: '',
     date: new Date().toISOString(),
@@ -74,6 +74,15 @@ export default function DevLogDetailView({
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
   const [isPrivate, setIsPrivate] = useState(false)
+
+  const TITLE_HEIGHT_EXPANDED = 80
+  const [titleHeight, setTitleHeight] = useState(TITLE_HEIGHT_EXPANDED)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const lastScrollTopRef = useRef(0)
+
+  useEffect(() => {
+    setOverview([])
+  }, [devLogLoading])
 
   useEffect(() => {
     let _overview: any = []
@@ -244,6 +253,28 @@ export default function DevLogDetailView({
     setIsPrivate(selectedDevLog?.isPrivate ?? false)
   }, [selectedDevLog])
 
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+
+    const handleScroll = () => {
+      const scrollTop = el.scrollTop
+      const lastScrollTop = lastScrollTopRef.current
+
+      if (scrollTop <= 20) {
+        setTitleHeight(TITLE_HEIGHT_EXPANDED)
+      } else if (scrollTop > lastScrollTop) {
+        setTitleHeight(0)
+      } else {
+        setTitleHeight(TITLE_HEIGHT_EXPANDED)
+      }
+      lastScrollTopRef.current = scrollTop
+    }
+
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const togglePrivacy = useCallback(() => {
     try {
       let newIsPrivate = !isPrivate
@@ -255,23 +286,34 @@ export default function DevLogDetailView({
     }
   }, [selectedDevLog, isPrivate])
 
+  useEffect(() => {
+    console.log('selectedDevLog', selectedDevLog)
+  }, [selectedDevLog])
+
   return (
     <>
-      <Column
+      <div
+        ref={scrollContainerRef}
         className={
           isMobile
             ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-            : `w-full max-w-[calc(100vw-600px)] h-[calc(100vh-110px)] pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative`
+            : 'max-w-[100%] w-full h-[calc(100vh-110px)] pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
         }
       >
-        <div className={'sticky top-0 z-[100] right-0'}>
+      <Column className="w-full">
+        {/* 고정 영역 */}
+        <div
+          className={
+            'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
+          }
+        >
           <div
-            className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none'}
+            className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
             id={'absolute-area'}
           >
             {/*  자동저장 관련  */}
             {Boolean(user) && (
-              <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[200]' : 'h-[30px] absolute top-0 ml-[95%] pr-4 z-[200]'}>
+              <div className='h-[30px] absolute top-0 right-8 z-[200]'>
                 {editorStatus === 0 ? (
                   <button
                     onClick={autoSave}
@@ -292,7 +334,7 @@ export default function DevLogDetailView({
 
             {/* 공개 여부 관련 */}
             {Boolean(user) && (
-              <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[201] pointer-events-auto' : 'h-[30px] absolute top-0 ml-[90%] pr-4 z-[201] pointer-events-auto'}>
+              <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
                 {isPrivate ? (
                   <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
                 ) : (
@@ -306,11 +348,7 @@ export default function DevLogDetailView({
             {Boolean(user) && (
               <button
                 onClick={handleCreateNewDevLog}
-                className={
-                  isMobile
-                    ? 'bg-[#ddd] rounded-full p-2 shadow-lg cursor-pointer absolute bottom-4 right-4 z-[9999] pointer-events-auto'
-                    : 'bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[95%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
-                }
+                className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
               >
                 <IconPlus color={'#333'} />
               </button>
@@ -319,10 +357,47 @@ export default function DevLogDetailView({
           </div>
         </div>
 
+        <div
+          className={
+            'sticky top-[-5px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
+          }
+          style={{
+            height: `${titleHeight}px`
+          }}
+        >
+          {devLogForm.title !== '' && (
+            <>
+              {/* 경로 */}
+              <Row
+                fullWidth
+                className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
+              >
+                <p
+                  className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
+                >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
+              </Row>
+              {/*  title  */}
+              <input
+                name={'title'}
+                value={devLogForm.title}
+                onChange={handleChange}
+                placeholder={'New Title'}
+                autoComplete={'off'}
+                disabled={!Boolean(user)}
+                className={
+                  isMobile
+                    ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
+                    : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                }
+              />
+            </>
+          )}
+        </div>
+
         <Column
           gap={4}
           fullWidth
-          className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative'}
+          className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
         >
           {devLogLoading ? (
             // DevLog 로딩 중일 때만 skeleton 표시
@@ -335,31 +410,9 @@ export default function DevLogDetailView({
             </Column>
           ) : selectedDevLog ? (
             <>
-              <Row
-                fullWidth
-                className={isMobile ? 'justify-between px-0 relative' : 'justify-between pl-[55px] pr-4 relative'}
-              >
-                <p
-                  className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
-                >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
-              </Row>
               <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
-                {/*  title  */}
-                <input
-                  name={'title'}
-                  value={devLogForm.title}
-                  onChange={handleChange}
-                  placeholder={'Title'}
-                  autoComplete={'off'}
-                  disabled={!Boolean(user)}
-                  className={
-                    isMobile
-                      ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
-                      : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
-                  }
-                />
 
-                {/*  overview - 모바일에서는 더 간결하게 표시 */}
+                {/*  목차 */}
                 <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
                   {overview.map((block: any) => {
                     const level = block.props.level
@@ -404,6 +457,7 @@ export default function DevLogDetailView({
           ) : null}
         </Column>
       </Column>
+      </div>
     </>
   )
 }

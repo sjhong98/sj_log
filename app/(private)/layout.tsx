@@ -14,7 +14,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         <AuthMainSidebarWrapper>
           <Row fullWidth>
             <div id='root-portal' />
-            <Box className={'flex p-6 w-full'}>
+            <Box className={'flex p-6 w-full overflow-visible'}>
               <Box
                 sx={{
                   display: 'flex',
