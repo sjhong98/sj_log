@@ -18,8 +18,6 @@ export const getUser = async (accessToken?: any) => {
   let user = await supabase.auth.getUser(_accessToken)
   let returnData: any = {}
 
-  console.log('\n\n\ngetUser: ', user)
-
   if (user.error) {
     return
   } else {

@@ -26,7 +26,6 @@ export async function getDbInstance(): Promise<any> {
         
         // 사용자 정보 확인 (선택사항)
         const user = await getUser()
-        console.log('\n\n\ngotUserInfo: ', user)
         
         if (!user) {
             throw new Error('사용자 인증 정보가 없습니다.')

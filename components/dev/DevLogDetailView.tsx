@@ -1,27 +1,25 @@
 'use client'
 
+import createDevLog from '@/actions/dev/log/createDevLog'
+import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
+import updateDevLog from '@/actions/dev/log/updateDevLog'
+import Editor from '@/components/editor/Editor'
 import Column from '@/components/flexBox/column'
-import React, {
+import Row from '@/components/flexBox/row'
+import useUser from '@/hooks/useUser'
+import GroupTreeType from '@/types/dev/GroupTreeType'
+import { devLogGroupType, devLogType } from '@/types/schemaType'
+import { CircularProgress, Skeleton, useMediaQuery, useTheme } from '@mui/material'
+import { IconPlus } from '@tabler/icons-react'
+import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
+import {
   ChangeEvent,
   useCallback,
   useEffect,
   useRef,
   useState
 } from 'react'
-import Editor from '@/components/editor/Editor'
-import { devLogGroupType, devLogType } from '@/types/schemaType'
-import createDevLog from '@/actions/dev/log/createDevLog'
 import { toast } from 'react-toastify'
-import Row from '@/components/flexBox/row'
-import { CircularProgress, useMediaQuery, useTheme } from '@mui/material'
-import { IconPlus } from '@tabler/icons-react'
-import updateDevLog from '@/actions/dev/log/updateDevLog'
-import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
-import GroupTreeType from '@/types/dev/GroupTreeType'
-import { Skeleton } from '@mui/material'
-import useUser from '@/hooks/useUser'
-import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
-import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -60,8 +58,9 @@ export default function DevLogDetailView({
     isPrivate: false
   }
   const { user } = useUser()
-  
+
   const [blocks, setBlocks] = useState<any>([])
+  const [blockInitializing, setBlockInitializing] = useState(false)
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
   const [editorStatus, setEditorStatus] = useState(0)
   const [devLogForm, setDevLogForm] = useState<editableDevLogType>(
@@ -110,20 +109,6 @@ export default function DevLogDetailView({
     setBlocks(JSON.parse(selectedDevLog.content))
   }, [selectedDevLog])
 
-  // 3초마다 자동저장 (수정의 경우)
-  useEffect(() => {
-    (async () => {
-      if (!selectedDevLog || !user) return
-
-      if (timerRef.current) clearTimeout(timerRef.current)
-
-      timerRef.current = setTimeout(async () => {
-        setEditorStatus(1)
-        await autoSave()
-      }, 2000)
-    })()
-  }, [devLogForm, blocks])
-
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (!selectedDevLog?.pk) return
@@ -143,6 +128,38 @@ export default function DevLogDetailView({
     [devLogForm, currentPostList, selectedDevLog]
   )
 
+  // 3초마다 자동저장 (수정의 경우)
+  useEffect(() => {
+    (async () => {
+      if (!selectedDevLog || !user) return
+
+      // 블럭 초기화된 경우 -> 자동저장 X
+      if (blockInitializing) {
+        clearTimeout(timerRef.current)
+        setBlockInitializing(false)
+        return
+      }
+
+      if (timerRef.current) clearTimeout(timerRef.current)
+
+      timerRef.current = setTimeout(async () => {
+        setEditorStatus(1)
+        await autoSave()
+      }, 2000)
+    })()
+  }, [devLogForm, blocks])
+
+  // 선택된 devLog가 변경될 때 기존 타이머 제거
+  useEffect(() => {
+    if (!timerRef.current) return
+
+    clearTimeout(timerRef.current)
+  }, [selectedDevLog])
+
+  useEffect(() => {
+    setBlockInitializing(true)
+  }, [selectedDevLog])
+
   const autoSave = useCallback(async () => {
     if (timerRef.current) clearTimeout(timerRef.current)
 
@@ -161,19 +178,17 @@ export default function DevLogDetailView({
     }
 
     const updated = await updateDevLog(_devLogForm)
+
+    // 업데이트 종료
     setEditorStatus(2)
+
     if (updated) {
       return true
     } else {
       toast.error('자동 저장 실패')
       return false
     }
-  }, [devLogForm, blocks, timerRef])
-
-  // editor 수정 이벤트 핸들링
-  useEffect(() => {
-    setEditorStatus(0)
-  }, [devLogForm, blocks])
+  }, [devLogForm, blocks, timerRef, blockInitializing])
 
   // 새로운 devLog row 생성
   const handleCreateNewDevLog = useCallback(async () => {
@@ -276,7 +291,7 @@ export default function DevLogDetailView({
 
             {/* 공개 여부 관련 */}
             {Boolean(user) && (
-                <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[201] pointer-events-auto' : 'h-[30px] absolute top-0 ml-[90%] pr-4 z-[201] pointer-events-auto'}>
+              <div className={isMobile ? 'h-[30px] absolute top-0 right-4 pr-2 z-[201] pointer-events-auto' : 'h-[30px] absolute top-0 ml-[90%] pr-4 z-[201] pointer-events-auto'}>
                 {isPrivate ? (
                   <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
                 ) : (
@@ -378,10 +393,12 @@ export default function DevLogDetailView({
                 {/*  editor  */}
                 {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
                 <Editor
+                  id={selectedDevLog?.pk ?? 0}
                   selectedDevLog={selectedDevLog}
                   blocks={blocks}
                   setBlocks={setBlocks}
                   disabled={!Boolean(user)}
+                  setBlockInitializing={setBlockInitializing}
                 />
               </Column>
             </>

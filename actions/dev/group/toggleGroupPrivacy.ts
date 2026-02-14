@@ -6,8 +6,6 @@ import { devLogGroup } from "@/supabase/schema"
 import { eq } from "drizzle-orm"
 
 export default async function toggleGroupPrivacy(pk: number, isPrivate: boolean) {
-    console.log('\n\n\npk', pk)
-
     const user = await getUser()
     if (!user) return
 

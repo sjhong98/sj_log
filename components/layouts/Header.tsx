@@ -69,7 +69,6 @@ export default function Header({ user }: { user: User }) {
     setOpen(false)
 
     try {
-      console.log('hi')
       const result = await signOut()
 
       if (result.success) {

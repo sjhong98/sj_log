@@ -9,15 +9,19 @@ import { devLogType } from '@/types/schemaType'
 import { useMediaQuery, useTheme } from '@mui/material'
 
 export default function Editor({
+  id,
   selectedDevLog,
   blocks,
   setBlocks,
-  disabled
+  disabled,
+  setBlockInitializing
 }: {
+  id: number
   selectedDevLog: devLogType | null
   blocks: any
   setBlocks: any
   disabled: boolean
+  setBlockInitializing: any
 }) {
   const editor = useCreateBlockNote()
 
@@ -63,6 +67,8 @@ export default function Editor({
   useEffect(() => {
     if (!selectedDevLog) return
 
+    // setBlockInitializing(true)
+
     const _blocks = JSON.parse(selectedDevLog?.content ?? '')
     if (!_blocks || _blocks.length === 0) return
 
@@ -70,7 +76,6 @@ export default function Editor({
 
     // 새로운 block 삽입 후, 기존 blocks 삭제
     const initialBlockId = currentBlocks[0].id
-    console.log('inserting block : ',_blocks)
     editor.insertBlocks(_blocks, initialBlockId, 'before')
     editor.removeBlocks([...currentBlocks.map((block: any) => block.id)])
   }, [selectedDevLog])
@@ -89,6 +94,7 @@ export default function Editor({
 
   return (
     <BlockNoteView
+      id={id.toString()}
       editor={editor}
       editable={!disabled}
       className={`${isMobile ? 'w-[90vw]' : 'w-full'} z-[3]`}

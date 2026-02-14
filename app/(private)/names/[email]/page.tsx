@@ -277,7 +277,6 @@ export default function Page() {
     const processTags = async (namePk: number) => {
         try {
             for (const tag of tagList) {
-                console.log('추가 중인 태그: ', tag.name)
                 if (tag.name) {
                     const result = await nameTagging({
                         namePk,

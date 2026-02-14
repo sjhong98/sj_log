@@ -74,8 +74,6 @@ export default async function getGroupTreeAndPostsByPk(pk?: number) {
 
   const userId = user ? user.id : (await getUserByEmail(userEmail))?.uid
 
-  console.log('\n\n\nuserId(getGroupTreeAndPostsByPk)', userId)
-
   // pk 가 없는 경우 -> 아무 group 도 지정되지 않은 상태 -> 최상단 groupList 반환
   if (!pk) {
     let whereConditions: any[] = [eq(devLogGroup.uid, userId), isNull(devLogGroup.parentGroupPk)];

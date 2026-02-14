@@ -33,7 +33,6 @@ export default async function nameTagging(taggingData: NameTaggingData) {
     tagPk = existingTag.pk
   } else {
 
-    console.log('\n\n\ntagName', tagName)
     // 기존 태그가 없으면 새로 생성
     const [newTag] = await db
       .insert(nameTag)

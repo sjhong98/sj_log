@@ -30,6 +30,5 @@ export default async function getNameListGroupByTags() {
         })
     )
 
-    console.log('\n\n\nnameTagListByTag', nameTagListByTag)
     return nameTagListByTag
 }

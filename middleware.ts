@@ -9,20 +9,20 @@ export default async function middleware(request: NextRequest) {
   response.headers.set('x-url', request.url)
 
   if (user?.newSession) {
-    console.log('\nSession Refreshed')
+    // console.log('\nSession Refreshed')
     response.cookies.set('logToken', user.newSession?.newAccessToken ?? '')
     response.cookies.set('refreshToken', user.newSession?.newRefreshToken ?? '')
 
-    console.log(
-      '\n\n\nToken Updated at Middleware : \n',
-      user.newSession,
-      '\n\n\n'
-    )
+    // console.log(
+    //   '\n\n\nToken Updated at Middleware : \n',
+    //   user.newSession,
+    //   '\n\n\n'
+    // )
     return response
   } else if (user) {
-    console.log('\nSession Exist')
+    // console.log('\nSession Exist')
   } else if (!user) {
-    console.log('\nFailed to refresh session')
+    // console.log('\nFailed to refresh session')
     // return NextResponse.redirect(new URL('/login', request.url))
   }
 
