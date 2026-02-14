@@ -359,36 +359,34 @@ export default function DevLogDetailView({
                 />
 
                 {/*  overview - 모바일에서는 더 간결하게 표시 */}
-                {!isMobile && (
-                  <Column className={'pl-[55px] cursor-pointer font-bold'}>
-                    {overview.map((block: any) => {
-                      const level = block.props.level
-                      return (
-                        <Row
-                          key={block.id}
-                          onClick={() => handleScrollToBlock(block)}
-                          className={'mt-[-2px]'}
-                          style={{
-                            fontSize:
-                              level === 1
-                                ? '16px'
-                                : level === 2
-                                  ? '14px'
-                                  : '12px',
-                            marginLeft:
-                              level === 1 ? '0px' : level === 2 ? '8px' : '16px',
-                            marginTop:
-                              level === 1 ? '8px' : level === 2 ? '6px' : '0px',
-                            fontWeight:
-                              level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
-                          }}
-                        >
-                          {`${block.content[0]?.text ?? ''}`}
-                        </Row>
-                      )
-                    })}
-                  </Column>
-                )}
+                <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
+                  {overview.map((block: any) => {
+                    const level = block.props.level
+                    return (
+                      <Row
+                        key={block.id}
+                        onClick={() => handleScrollToBlock(block)}
+                        className={'mt-[-2px]'}
+                        style={{
+                          fontSize:
+                            level === 1
+                              ? '16px'
+                              : level === 2
+                                ? '14px'
+                                : '12px',
+                          marginLeft:
+                            level === 1 ? '0px' : level === 2 ? '8px' : '16px',
+                          marginTop:
+                            level === 1 ? '8px' : level === 2 ? '6px' : '0px',
+                          fontWeight:
+                            level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
+                        }}
+                      >
+                        {`${block.content[0]?.text ?? ''}`}
+                      </Row>
+                    )
+                  })}
+                </Column>
 
                 {/*  editor  */}
                 {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
