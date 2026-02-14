@@ -178,7 +178,7 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
             <SidebarLink
               link={{
                 label: (user && user.email) ? user.email : '로그인',
-                href: user ? '#' : '/login',
+                href: user ? '/logout' : '/login',
                 icon: (
                   <Avatar
                     className='cursor-pointer bs-[30px] is-[30px]'
