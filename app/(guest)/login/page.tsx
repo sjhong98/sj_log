@@ -1,20 +1,21 @@
 'use client'
 
+import Column from '@/components/flexBox/column'
+import Row from '@/components/flexBox/row'
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
+import { Button as StatefulButton } from "@/components/ui/stateful-button"
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import {
   Box,
-  Button,
   TextField,
   Typography,
   useMediaQuery,
-  useTheme,
-  CircularProgress
+  useTheme
 } from '@mui/material'
-import { useCallback, useState } from 'react'
-import Column from '@/components/flexBox/column'
 import { useRouter } from 'next/navigation'
-import 'react-toastify/dist/ReactToastify.css'
-import { AuroraBackground } from '@/components/ui/aurora-background'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import signIn from '../../../actions/session/signIn'
 
 export default function Page() {
@@ -25,25 +26,35 @@ export default function Page() {
   const [password, setPassword] = useState<string>('')
   const [loginClicked, setLoginClicked] = useState<boolean>(false)
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.body.style.overflow = 'hidden'
+    const gradientElem = document.getElementById('background-gradient-animation')
+    if (gradientElem) gradientElem.classList.add('opacity-up-appear')
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [])
+
   const handleSignIn = useCallback(
     async (e: any) => {
       try {
         e.preventDefault()
 
         setLoginClicked(true)
-  
+
         const result = await signIn({ email, password })
-        console.log('login result: ', result)
-        
+
         if (result.success && result.user) {
           toast.success('로그인 성공')
           // 클라이언트에서 사용할 정보만 저장
           sessionStorage.setItem('userId', email)
-          console.log('user.email', result.user.email)
           router.push(`/dev/${result.user.email}`)
+          return true
         } else {
           toast.error(result.error || '로그인에 실패했습니다.')
           setLoginClicked(false)
+          return false
         }
       } catch (error) {
         console.error('로그인 오류: ', error)
@@ -56,58 +67,48 @@ export default function Page() {
 
   return (
     <>
-      <Box className={'overflow-hidden'}>
-        <AuroraBackground>
-          <Column gap={6} className={'items-center'}>
-            <Box className={'w-full flex justify-center'}>
-              <Typography variant={'h4'} className={'!font-dune dune'}>
-                {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
-              </Typography>
-            </Box>
-            {/*  form 태그로 감싸고 onSubmit 이벤트 핸들러로 받기 */}
-            {/*  -> 엔터 입력 등 이벤트를 모두 받을 수 있음  */}
-            <Column
-              component={'form'}
-              gap={2}
-              onSubmit={handleSignIn}
-              className={'max-w-[500px] w-full'}
-            >
-              <TextField
-                color={'primary'}
-                label={'Email'}
-                value={email}
+      <Column gap={3} className='w-screen max-h-screen overflow-hidden p-6'>
+        <Row className={'w-full flex justify-center'}>
+          <Typography variant={'h4'} className={'!font-dune dune'}>
+            {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
+          </Typography>
+        </Row>
+        <Row gap={4} className='h-[calc(100vh-100px)]'>
+          <Row
+            id='background-gradient-animation'
+            className='w-full h-full rounded-2xl overflow-hidden'
+          >
+            <BackgroundGradientAnimation className='h-full' />
+          </Row>
+          <Column
+            id='login-form'
+            fullWidth
+            component={'form'}
+            gap={4}
+            onSubmit={handleSignIn}
+            className={'max-w-[300px] w-full items-center justify-center'}
+          >
+            <p>Login</p>
+            <Column fullWidth gap={2}>
+              <PlaceholdersAndVanishInput
+                placeholders={['Email']}
                 onChange={e => setEmail(e.target.value)}
-                fullWidth
-                autoComplete='off'
               />
-              <TextField
-                color={'primary'}
-                label={'Password'}
-                value={password}
+              <PlaceholdersAndVanishInput
+                placeholders={['Password']}
                 onChange={e => setPassword(e.target.value)}
-                fullWidth
                 type={'password'}
-                autoComplete='off'
               />
-              <Button
-                title={'Sign In'}
-                variant={'outlined'}
-                fullWidth
-                type={'submit'}
-                color={'inherit'}
-                disabled={loginClicked}
-                className='h-10'
-              >
-                {loginClicked ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
             </Column>
+            <StatefulButton type='submit' className='z-[9999] w-full' onClick={handleSignIn}>
+              Sign In
+            </StatefulButton>
           </Column>
-        </AuroraBackground>
-      </Box>
+        </Row>
+        <Column>
+        </Column>
+      </Column>
     </>
   )
 }
+
