@@ -73,7 +73,7 @@ export default function DiaryListPortal({
                     </Typography>
                     <ListItemText
                       color={'var(--color-foreground)'}
-                      className={'line-clamp-1 md:block hidden'}
+                      className={'!line-clamp-1 md:block hidden'}
                       primary={diary.title}
                     />
                     {diary.thumbnail && (
