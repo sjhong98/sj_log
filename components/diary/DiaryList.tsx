@@ -1,16 +1,22 @@
 'use client'
 
+import createComment from '@/actions/diary/comment/createComment'
+import deleteComment from '@/actions/diary/comment/deleteComment'
+import modifyComment from '@/actions/diary/comment/modifyComment'
+import deleteDiary from '@/actions/diary/deleteDiary'
+import getDiaryDetail from '@/actions/diary/getDiaryDetail'
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
+import ModifyPopper from '@/components/popper/ModifyPopper'
+import CommentType from '@/types/CommentType'
+import DiaryType from '@/types/DiaryType'
 import {
   Box,
   Button,
   Dialog,
   DialogContent,
   DialogTitle,
-  Drawer,
   IconButton,
-  List,
   ListItem,
   ListItemButton,
   ListItemText,
@@ -20,22 +26,13 @@ import {
   useMediaQuery,
   useTheme
 } from '@mui/material'
+import { IconPencil } from '@tabler/icons-react'
 import dayjs from 'dayjs'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { IconList, IconPencil, IconPlus } from '@tabler/icons-react'
-import { useRouter } from 'next/navigation'
-import getDiaryDetail from '@/actions/diary/getDiaryDetail'
-import 'react-perfect-scrollbar/dist/css/styles.css'
-import CommentType from '@/types/CommentType'
-import createComment from '@/actions/diary/comment/createComment'
-import { toast } from 'react-toastify'
-import PerfectScrollbar from 'react-perfect-scrollbar'
-import DiaryType from '@/types/DiaryType'
 import Image from 'next/image'
-import ModifyPopper from '@/components/popper/ModifyPopper'
-import modifyComment from '@/actions/diary/comment/modifyComment'
-import deleteComment from '@/actions/diary/comment/deleteComment'
-import deleteDiary from '@/actions/diary/deleteDiary'
+import { useRouter } from 'next/navigation'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import 'react-perfect-scrollbar/dist/css/styles.css'
+import { toast } from 'react-toastify'
 import DiaryListPortal from './DiaryListPortal'
 
 const drawerWidth = 250
@@ -204,83 +201,6 @@ export default function DiaryList({ list }: any) {
       <Column dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
     )
   }, [selectedDiary?.content])
-
-  const renderedDiaryList = useMemo(() => {
-    if (!diaryList || !Array.isArray(diaryList)) return
-
-    return (
-      <>
-        {/* {isMobile && (
-          <Box className={'absolute top-12 left-2 z-[10]'}>
-            <IconButton onClick={() => setDiaryListDrawerOpen(true)}>
-              <IconList color={'var(--color-foreground)'} />
-            </IconButton>
-          </Box>
-        )} */}
-
-        <Column className='w-[150px] h-screen bg-gray-900 overflow-y-auto custom-scrollbar'>
-          <Column className='w-full flex-shrink-0'>
-            {diaryList.map((diary: DiaryType, index: number) => (
-              <Fragment key={index}>
-                {diary.isNewMonth && (
-                  <Column
-                    fullWidth
-                    className={
-                      'justify-center items-center mt-4 py-1 gap-2 bg-[var(--color-background)]'
-                    }
-                  >
-                    {diary.isNewYear && (
-                      <Typography variant={'body1'}>
-                        {dayjs(diary.date).format('YYYY')}
-                      </Typography>
-                    )}
-                    <Typography variant={'body2'}>
-                      {dayjs(diary.date).format('M월')}
-                    </Typography>
-                  </Column>
-                )}
-                <ListItem disablePadding>
-                  <ListItemButton
-                    onClick={async () => {
-                      if (!diary.pk) return
-
-                      await handleClickDiary(diary.pk)
-                    }}
-                  >
-                    <Row
-                      fullWidth
-                      gap={1}
-                      className={'justify-between items-center h-[50px]'}
-                    >
-                      <Typography variant={'subtitle2'}>
-                        {dayjs(diary.date).get('date')}
-                      </Typography>
-                      <ListItemText
-                        color={'var(--color-foreground)'}
-                        className={'line-clamp-1'}
-                        primary={diary.title}
-                      />
-                      {diary.thumbnail && (
-                        <Image
-                          src={diary.thumbnail}
-                          alt={diary.title}
-                          width={35}
-                          height={35}
-                          className={
-                            'object-cover rounded-md aspect-square'
-                          }
-                        />
-                      )}
-                    </Row>
-                  </ListItemButton>
-                </ListItem>
-              </Fragment>
-            ))}
-          </Column>
-        </Column>
-      </>
-    )
-  }, [diaryList, diaryListDrawerOpen])
 
   return (
     <>

@@ -190,7 +190,7 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
         </SidebarBody>
       </Sidebar>
       <div className='w-full h-screen overflow-visible bg-neutral-900 md:p-2 p-0'>
-        <div className='w-full h-full md:rounded-2xl rounded-none overflow-visible bg-black'>
+        <div className='w-full h-full md:rounded-2xl rounded-none overflow-visible !overflow-hidden bg-black'>
           {children}
         </div>
       </div>
