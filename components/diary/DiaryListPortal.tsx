@@ -13,17 +13,20 @@ import {
 import dayjs from 'dayjs'
 import Image from 'next/image'
 import DiaryType from '@/types/DiaryType'
+import { IconPlus } from '@tabler/icons-react'
 
 const PORTAL_ID = 'root-portal'
 
 type DiaryListPortalProps = {
   diaryList: DiaryType[] | null | undefined
   onDiaryClick: (diaryPk: number) => void | Promise<void>
+  handleClickAdd: () => void | Promise<void>
 }
 
 export default function DiaryListPortal({
   diaryList,
-  onDiaryClick
+  onDiaryClick,
+  handleClickAdd
 }: DiaryListPortalProps) {
   const [mounted, setMounted] = useState(false)
 
@@ -35,7 +38,7 @@ export default function DiaryListPortal({
     if (!diaryList || !Array.isArray(diaryList)) return null
 
     return (
-      <Column className='md:w-[240px] w-[60px] h-screen bg-neutral-950 overflow-y-auto custom-scrollbar'>
+      <Column className='md:w-[240px] w-[60px] h-[calc(100vh-16px)] bg-neutral-950 overflow-y-auto custom-scrollbar relative'>
         <Column className='w-full flex-shrink-0'>
           {diaryList.map((diary: DiaryType, index: number) => (
             <Fragment key={index}>
@@ -93,6 +96,9 @@ export default function DiaryListPortal({
             </Fragment>
           ))}
         </Column>
+        <button onClick={handleClickAdd} className='absolute bottom-3 right-3 rounded-full cursor-pointer p-1 hover:bg-neutral-300 duration-100'>
+          <IconPlus className='hover:text-neutral-700 duration-100' />
+        </button>
       </Column>
     )
   }, [diaryList, onDiaryClick])

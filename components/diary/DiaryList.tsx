@@ -204,7 +204,7 @@ export default function DiaryList({ list }: any) {
 
   return (
     <>
-      <DiaryListPortal diaryList={diaryList} onDiaryClick={handleClickDiary} />
+      <DiaryListPortal diaryList={diaryList} onDiaryClick={handleClickDiary} handleClickAdd={handleClickAdd} />
       
       <Box sx={{ display: 'flex', width: '100%' }}>
         {/* {renderedDiaryList} */}
