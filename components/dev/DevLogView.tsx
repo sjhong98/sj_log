@@ -312,6 +312,8 @@ export default function DevLogView({
             _currentPostList.splice(idx, 1)
             setCurrentPostList(_currentPostList)
           }
+
+          setSelectedDevLog(null)
         } else toast.error('Failed to delete group')
       } catch (e) {
         console.error(e)
