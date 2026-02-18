@@ -255,7 +255,7 @@ export default function DevLogDetailView({
     setIsPrivate(selectedDevLog?.isPrivate ?? false)
   }, [selectedDevLog])
 
-  const SCROLL_THRESHOLD = 20
+  const SCROLL_THRESHOLD = 10
 
   useEffect(() => {
     const el = scrollContainerRef.current
