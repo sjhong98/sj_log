@@ -9,7 +9,7 @@ import Row from '@/components/flexBox/row'
 import useUser from '@/hooks/useUser'
 import GroupTreeType from '@/types/dev/GroupTreeType'
 import { devLogGroupType, devLogType } from '@/types/schemaType'
-import { CircularProgress, Skeleton, useMediaQuery, useTheme } from '@mui/material'
+import { Skeleton, useMediaQuery, useTheme } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import {
@@ -133,6 +133,7 @@ export default function DevLogDetailView({
       )
       _currentPostList[idx].title = e.target.value
       setCurrentPostList(_currentPostList)
+      setEditorStatus(0)
     },
     [devLogForm, currentPostList, selectedDevLog]
   )
@@ -285,10 +286,6 @@ export default function DevLogDetailView({
       toast.error('Failed to toggle group privacy')
     }
   }, [selectedDevLog, isPrivate])
-
-  useEffect(() => {
-    console.log('selectedDevLog', selectedDevLog)
-  }, [selectedDevLog])
 
   return (
     <>
