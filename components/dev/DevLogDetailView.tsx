@@ -133,7 +133,6 @@ export default function DevLogDetailView({
       )
       _currentPostList[idx].title = e.target.value
       setCurrentPostList(_currentPostList)
-      setEditorStatus(0)
     },
     [devLogForm, currentPostList, selectedDevLog]
   )
@@ -149,6 +148,8 @@ export default function DevLogDetailView({
         setBlockInitializing(false)
         return
       }
+
+      setEditorStatus(0)
 
       if (timerRef.current) clearTimeout(timerRef.current)
 
