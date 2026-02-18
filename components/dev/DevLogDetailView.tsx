@@ -255,6 +255,8 @@ export default function DevLogDetailView({
     setIsPrivate(selectedDevLog?.isPrivate ?? false)
   }, [selectedDevLog])
 
+  const SCROLL_THRESHOLD = 20
+
   useEffect(() => {
     const el = scrollContainerRef.current
     if (!el) return
@@ -262,12 +264,13 @@ export default function DevLogDetailView({
     const handleScroll = () => {
       const scrollTop = el.scrollTop
       const lastScrollTop = lastScrollTopRef.current
+      const delta = scrollTop - lastScrollTop
 
       if (scrollTop <= 20) {
         setTitleHeight(TITLE_HEIGHT_EXPANDED)
-      } else if (scrollTop > lastScrollTop) {
+      } else if (delta >= SCROLL_THRESHOLD) {
         setTitleHeight(0)
-      } else {
+      } else if (delta <= -SCROLL_THRESHOLD) {
         setTitleHeight(TITLE_HEIGHT_EXPANDED)
       }
       lastScrollTopRef.current = scrollTop

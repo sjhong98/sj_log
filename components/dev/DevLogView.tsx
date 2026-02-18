@@ -304,6 +304,7 @@ export default function DevLogView({
         if (deleted) {
           toast.success('Deleted successfully!')
 
+          // 낙관적 업데이트 - 배열에서 삭제된 포스트 제거
           let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
           const idx = _currentPostList.findIndex(
             post => post.pk === deleted.pk
@@ -313,6 +314,7 @@ export default function DevLogView({
             setCurrentPostList(_currentPostList)
           }
 
+          // 선택된 포스트 초기화
           setSelectedDevLog(null)
         } else toast.error('Failed to delete group')
       } catch (e) {
