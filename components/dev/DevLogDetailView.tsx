@@ -365,7 +365,7 @@ export default function DevLogDetailView({
             height: `${titleHeight}px`
           }}
         >
-          {devLogForm.title !== '' && (
+          {selectedDevLog && (
             <>
               {/* 경로 */}
               <Row
