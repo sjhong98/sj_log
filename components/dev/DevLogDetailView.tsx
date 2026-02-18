@@ -300,163 +300,161 @@ export default function DevLogDetailView({
             : 'max-w-[100%] w-full h-[calc(100vh-110px)] pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
         }
       >
-      <Column className="w-full">
-        {/* 고정 영역 */}
-        <div
-          className={
-            'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
-          }
-        >
+        <Column className="w-full">
+          {/* 고정 영역 */}
           <div
-            className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
-            id={'absolute-area'}
+            className={
+              'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
+            }
           >
-            {/*  자동저장 관련  */}
-            {Boolean(user) && (
-              <div className='h-[30px] absolute top-0 right-8 z-[200]'>
-                {editorStatus === 0 ? (
-                  <button
-                    onClick={autoSave}
-                    className={
-                      'whitespace-nowrap pointer-events-auto cursor-pointer'
-                    }
-                  >
-                    저장
-                  </button>
-                ) : editorStatus === 1 ? (
-                  <CircularProgress className={`!text-white`} />
-                ) : (
-                  <CheckIcon />
-                )}
-              </div>
-            )
-            }
+            <div
+              className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
+              id={'absolute-area'}
+            >
+              {/*  자동저장 관련  */}
+              {Boolean(user) && (
+                <div className='h-[30px] absolute top-0 right-8 z-[200]'>
+                  {editorStatus === 0 ? (
+                    <button
+                      onClick={autoSave}
+                      className={
+                        'whitespace-nowrap pointer-events-auto cursor-pointer'
+                      }
+                    >
+                      저장
+                    </button>
+                  ) : (
+                    <CheckIcon />
+                  )}
+                </div>
+              )
+              }
 
-            {/* 공개 여부 관련 */}
-            {Boolean(user) && (
-              <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
-                {isPrivate ? (
-                  <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
-                ) : (
-                  <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
-                )}
-              </div>
-            )
-            }
+              {/* 공개 여부 관련 */}
+              {Boolean(user) && (
+                <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
+                  {isPrivate ? (
+                    <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+                  ) : (
+                    <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+                  )}
+                </div>
+              )
+              }
 
-            {/*  새로운 dev log 생성 버튼  */}
-            {Boolean(user) && (
-              <button
-                onClick={handleCreateNewDevLog}
-                className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
-              >
-                <IconPlus color={'#333'} />
-              </button>
-            )
-            }
+              {/*  새로운 dev log 생성 버튼  */}
+              {Boolean(user) && (
+                <button
+                  onClick={handleCreateNewDevLog}
+                  className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
+                >
+                  <IconPlus color={'#333'} />
+                </button>
+              )
+              }
+            </div>
           </div>
-        </div>
 
-        <div
-          className={
-            'sticky top-[-5px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
-          }
-          style={{
-            height: `${titleHeight}px`
-          }}
-        >
-          {selectedDevLog && (
-            <>
-              {/* 경로 */}
-              <Row
-                fullWidth
-                className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
-              >
-                <p
-                  className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
-                >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
-              </Row>
-              {/*  title  */}
-              <input
-                name={'title'}
-                value={devLogForm.title}
-                onChange={handleChange}
-                placeholder={'New Title'}
-                autoComplete={'off'}
-                disabled={!Boolean(user)}
-                className={
-                  isMobile
-                    ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
-                    : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
-                }
-              />
-            </>
-          )}
-        </div>
-
-        <Column
-          gap={4}
-          fullWidth
-          className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
-        >
-          {devLogLoading ? (
-            // DevLog 로딩 중일 때만 skeleton 표시
-            <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
-              <Column gap={2} className={'mt-4'}>
-                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-              </Column>
-            </Column>
-          ) : selectedDevLog ? (
-            <>
-              <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
-
-                {/*  목차 */}
-                <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
-                  {overview.map((block: any) => {
-                    const level = block.props.level
-                    return (
-                      <Row
-                        key={block.id}
-                        onClick={() => handleScrollToBlock(block)}
-                        className={'mt-[-2px]'}
-                        style={{
-                          fontSize:
-                            level === 1
-                              ? '16px'
-                              : level === 2
-                                ? '14px'
-                                : '12px',
-                          marginLeft:
-                            level === 1 ? '0px' : level === 2 ? '8px' : '16px',
-                          marginTop:
-                            level === 1 ? '8px' : level === 2 ? '6px' : '0px',
-                          fontWeight:
-                            level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
-                        }}
-                      >
-                        {`${block.content[0]?.text ?? ''}`}
-                      </Row>
-                    )
-                  })}
-                </Column>
-
-                {/*  editor  */}
-                {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
-                <Editor
-                  id={selectedDevLog?.pk ?? 0}
-                  selectedDevLog={selectedDevLog}
-                  blocks={blocks}
-                  setBlocks={setBlocks}
+          <div
+            className={
+              'sticky top-[-5px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
+            }
+            style={{
+              height: `${titleHeight}px`
+            }}
+          >
+            {selectedDevLog && (
+              <>
+                {/* 경로 */}
+                <Row
+                  fullWidth
+                  className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
+                >
+                  <p
+                    className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
+                  >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
+                </Row>
+                {/*  title  */}
+                <input
+                  name={'title'}
+                  value={devLogForm.title}
+                  onChange={handleChange}
+                  placeholder={'New Title'}
+                  autoComplete={'off'}
                   disabled={!Boolean(user)}
-                  setBlockInitializing={setBlockInitializing}
+                  className={
+                    isMobile
+                      ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
+                      : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                  }
                 />
+              </>
+            )}
+          </div>
+
+          <Column
+            gap={4}
+            fullWidth
+            className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
+          >
+            {devLogLoading ? (
+              // DevLog 로딩 중일 때만 skeleton 표시
+              <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
+                <Column gap={2} className={'mt-4'}>
+                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                </Column>
               </Column>
-            </>
-          ) : null}
+            ) : selectedDevLog ? (
+              <>
+                <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
+
+                  {/*  목차 */}
+                  <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
+                    {overview.map((block: any) => {
+                      const level = block.props.level
+                      return (
+                        <Row
+                          key={block.id}
+                          onClick={() => handleScrollToBlock(block)}
+                          className={'mt-[-2px]'}
+                          style={{
+                            fontSize:
+                              level === 1
+                                ? '16px'
+                                : level === 2
+                                  ? '14px'
+                                  : '12px',
+                            marginLeft:
+                              level === 1 ? '0px' : level === 2 ? '8px' : '16px',
+                            marginTop:
+                              level === 1 ? '8px' : level === 2 ? '6px' : '0px',
+                            fontWeight:
+                              level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
+                          }}
+                        >
+                          {`${block.content[0]?.text ?? ''}`}
+                        </Row>
+                      )
+                    })}
+                  </Column>
+
+                  {/*  editor  */}
+                  {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
+                  <Editor
+                    id={selectedDevLog?.pk ?? 0}
+                    selectedDevLog={selectedDevLog}
+                    blocks={blocks}
+                    setBlocks={setBlocks}
+                    disabled={!Boolean(user)}
+                    setBlockInitializing={setBlockInitializing}
+                  />
+                </Column>
+              </>
+            ) : null}
+          </Column>
         </Column>
-      </Column>
       </div>
     </>
   )
