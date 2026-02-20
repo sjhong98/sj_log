@@ -89,12 +89,12 @@ export default function DevLogView({
     if (!item?.pk) return
 
     try {
-      if(selectedDevLog) {
+      if (selectedDevLog) {
         // 구조 분해 할당으로, 새로운 객체를 생성하여 참조하게 해야함.
         // let _selectedDevLog: devLogType = selectedDevLog
         // 위 코드는 기존 객체를 참조하게 되므로, 상태값이 변경된 것으로 인식되지 않음.
 
-        let _selectedDevLog: devLogType = {...selectedDevLog, title: item?.title || ''}
+        let _selectedDevLog: devLogType = { ...selectedDevLog, title: item?.title || '' }
         setSelectedDevLog(_selectedDevLog)
         setDevLogLoading(true)
       }
@@ -598,18 +598,20 @@ export default function DevLogView({
                         {item.title}
                       </p>
                     </Row>
-                    { user && (
-                      <Row
+                    <Row
                       className={
                         'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
                       }
                     >
-                      {/* Delete Dev Log */}
-                      <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
-                      {/* Change Parent Group */}
-                      <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
+                      {user && (
+                        <>
+                          {/* Delete Dev Log */}
+                          <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
+                          {/* Change Parent Group */}
+                          <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
+                        </>
+                      )}
                     </Row>
-                    )}
                   </Row>
                 )
               })
