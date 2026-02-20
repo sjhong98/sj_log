@@ -598,7 +598,8 @@ export default function DevLogView({
                         {item.title}
                       </p>
                     </Row>
-                    <Row
+                    { user && (
+                      <Row
                       className={
                         'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
                       }
@@ -608,6 +609,7 @@ export default function DevLogView({
                       {/* Change Parent Group */}
                       <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
                     </Row>
+                    )}
                   </Row>
                 )
               })

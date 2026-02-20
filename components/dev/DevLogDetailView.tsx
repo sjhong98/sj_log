@@ -79,6 +79,7 @@ export default function DevLogDetailView({
   const [titleHeight, setTitleHeight] = useState(TITLE_HEIGHT_EXPANDED)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const lastScrollTopRef = useRef(0)
+  const titleHeightRef = useRef(TITLE_HEIGHT_EXPANDED)
 
   useEffect(() => {
     setOverview([])
@@ -255,6 +256,13 @@ export default function DevLogDetailView({
     setIsPrivate(selectedDevLog?.isPrivate ?? false)
   }, [selectedDevLog])
 
+  const SCROLL_THRESHOLD = 15
+
+  // titleHeight 변경 시 ref도 업데이트
+  useEffect(() => {
+    titleHeightRef.current = titleHeight
+  }, [titleHeight])
+
   useEffect(() => {
     const el = scrollContainerRef.current
     if (!el) return
@@ -262,14 +270,51 @@ export default function DevLogDetailView({
     const handleScroll = () => {
       const scrollTop = el.scrollTop
       const lastScrollTop = lastScrollTopRef.current
+      const delta = scrollTop - lastScrollTop
+      const currentHeight = titleHeightRef.current
 
+      // 맨 위에서는 항상 확장
       if (scrollTop <= 20) {
-        setTitleHeight(TITLE_HEIGHT_EXPANDED)
-      } else if (scrollTop > lastScrollTop) {
+        if (currentHeight !== TITLE_HEIGHT_EXPANDED) {
+          setTitleHeight(TITLE_HEIGHT_EXPANDED)
+        }
+        lastScrollTopRef.current = scrollTop
+        return
+      }
+
+      // 이미 완전히 접혀있거나 펼쳐져 있으면 스크롤 방향과 무관하게 유지
+      const isFullyCollapsed = currentHeight === 0
+      const isFullyExpanded = currentHeight === TITLE_HEIGHT_EXPANDED
+
+      // 완전히 접혀있을 때: 위로 스크롤할 때만 확장
+      if (isFullyCollapsed) {
+        if (delta <= -SCROLL_THRESHOLD) {
+          setTitleHeight(TITLE_HEIGHT_EXPANDED)
+        }
+        lastScrollTopRef.current = scrollTop
+        return
+      }
+
+      // 완전히 펼쳐져 있을 때: 아래로 스크롤할 때만 접기
+      if (isFullyExpanded) {
+        if (delta >= SCROLL_THRESHOLD) {
+          setTitleHeight(0)
+        }
+        lastScrollTopRef.current = scrollTop
+        return
+      }
+
+      // 중간 상태일 때만 스크롤 방향에 따라 결정
+      const isMoreThanHalfway = currentHeight < TITLE_HEIGHT_EXPANDED / 2
+      
+      if (delta >= SCROLL_THRESHOLD) {
+        // 아래로 스크롤: 중간 이상 접혔으면 완전히 접기
         setTitleHeight(0)
-      } else {
+      } else if (delta <= -SCROLL_THRESHOLD) {
+        // 위로 스크롤: 중간 이상 펼쳐졌으면 완전히 펼치기
         setTitleHeight(TITLE_HEIGHT_EXPANDED)
       }
+      
       lastScrollTopRef.current = scrollTop
     }
 
