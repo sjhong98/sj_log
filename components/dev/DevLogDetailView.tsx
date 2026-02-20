@@ -306,7 +306,7 @@ export default function DevLogDetailView({
 
       // 중간 상태일 때만 스크롤 방향에 따라 결정
       const isMoreThanHalfway = currentHeight < TITLE_HEIGHT_EXPANDED / 2
-      
+
       if (delta >= SCROLL_THRESHOLD) {
         // 아래로 스크롤: 중간 이상 접혔으면 완전히 접기
         setTitleHeight(0)
@@ -314,7 +314,7 @@ export default function DevLogDetailView({
         // 위로 스크롤: 중간 이상 펼쳐졌으면 완전히 펼치기
         setTitleHeight(TITLE_HEIGHT_EXPANDED)
       }
-      
+
       lastScrollTopRef.current = scrollTop
     }
 
@@ -399,8 +399,9 @@ export default function DevLogDetailView({
           </div>
 
           <div
+            aria-label='title-area'
             className={
-              'sticky top-[-5px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
+              'sticky top-[0px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
             }
             style={{
               height: `${titleHeight}px`
