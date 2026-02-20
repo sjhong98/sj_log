@@ -3,12 +3,9 @@
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
 import { Button as StatefulButton } from "@/components/ui/stateful-button"
-import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
-import { LampContainer } from "@/components/ui/lamp";
 import {
-  Box,
-  TextField,
   Typography,
   useMediaQuery,
   useTheme
@@ -18,11 +15,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import signIn from '../../../actions/session/signIn'
+import useUser from '@/hooks/useUser'
 
 export default function Page() {
   const router = useRouter()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const { getUser } = useUser()
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loginClicked, setLoginClicked] = useState<boolean>(false)
@@ -52,6 +51,7 @@ export default function Page() {
           toast.success('로그인 성공')
           // 클라이언트에서 사용할 정보만 저장
           sessionStorage.setItem('userId', email)
+          getUser()
           router.push(`/dev/${result.user.email}`)
           return true
         } else {

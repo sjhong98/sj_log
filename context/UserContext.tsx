@@ -18,21 +18,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const getUser = useCallback(async (accessToken?: any) => {
     const result = await fetchUser(accessToken)
     setUser(result ?? null)
+    setIsLoading(false)
     return result
   }, [])
 
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      const result = await fetchUser()
-      if (mounted) {
-        setUser(result ?? null)
-        setIsLoading(false)
-      }
-    })()
-    return () => {
-      mounted = false
-    }
+    getUser()
   }, [])
 
   const value: UserContextValue = {

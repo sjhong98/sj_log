@@ -48,7 +48,7 @@ export default function DevLogView({
     useState<devLogGroupType | null>(null)
   const [currentGroupTree, setCurrentGroupTree] =
     useState<GroupTreeType[]>(groupTree)
-  const [isPrivate, setIsPrivate] = useState(false)
+  const [isDevLogGroupPrivate, setIsDevLogGroupPrivate] = useState(false)
   const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
   const [newGroupName, setNewGroupName] = useState<string>('')
@@ -58,7 +58,6 @@ export default function DevLogView({
   const [searchResult, setSearchResult] = useState<any[]>([])
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
   const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
-  const [treeLoading, setTreeLoading] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
   const { user } = useUser()
 
@@ -85,6 +84,13 @@ export default function DevLogView({
     }
   }, [selectedGroup, currentGroupTree])
 
+  const handleClickDevLogGroup = useCallback((e: React.MouseEvent<HTMLDivElement>, group: GroupTreeType) => {
+    e.stopPropagation()
+    getPostList(group.pk)
+    setIsDevLogGroupPrivate(group.isPrivate ?? false)
+    setSelectedGroup(group)
+  }, [])
+
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
     if (!item?.pk) return
 
@@ -93,7 +99,6 @@ export default function DevLogView({
         // 구조 분해 할당으로, 새로운 객체를 생성하여 참조하게 해야함.
         // let _selectedDevLog: devLogType = selectedDevLog
         // 위 코드는 기존 객체를 참조하게 되므로, 상태값이 변경된 것으로 인식되지 않음.
-
         let _selectedDevLog: devLogType = { ...selectedDevLog, title: item?.title || '' }
         setSelectedDevLog(_selectedDevLog)
         setDevLogLoading(true)
@@ -101,6 +106,7 @@ export default function DevLogView({
 
       const devLogData = await getDevLogByPk(item.pk)
       if (devLogData) {
+        // checkDevLogPrivacy(devLogData)
         setSelectedDevLog(devLogData)
         // 모바일에서 devLog 선택 시 drawer 닫기
         if (isMobile) {
@@ -160,11 +166,7 @@ export default function DevLogView({
           id={group.pk?.toString() ?? ''}
           element={group?.name ?? ''}
           value={group?.name ?? ''}
-          onClick={e => {
-            e.stopPropagation()
-            getPostList(group.pk)
-            setSelectedGroup(group)
-          }}
+          onClick={(e) => handleClickDevLogGroup(e, group)}
           isSelectable
           isSelect={selectedGroup?.pk === group.pk}
         >
@@ -176,18 +178,8 @@ export default function DevLogView({
   )
 
   const GroupTreeComponent = useMemo(() => {
-    if (treeLoading) {
-      return (
-        <Column gap={2} className={'fade-in'}>
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-        </Column>
-      )
-    }
     return currentGroupTree.map(child => returnFolder(child))
-  }, [currentGroupTree, selectedGroup, returnFolder, treeLoading])
+  }, [currentGroupTree, selectedGroup, returnFolder])
 
   // Recursive Tree for Select Group
   const returnIndependentFolder = useCallback(
@@ -236,17 +228,8 @@ export default function DevLogView({
   )
 
   const ParentUpdateableGroupTreeComponent = useMemo(() => {
-    if (treeLoading) {
-      return (
-        <Column gap={2} className={'fade-in'}>
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-          <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-        </Column>
-      )
-    }
     return currentGroupTree.map(child => returnIndependentFolder(child))
-  }, [currentGroupTree, temporarySelectedGroup, returnIndependentFolder, treeLoading])
+  }, [currentGroupTree, temporarySelectedGroup, returnIndependentFolder])
 
   const handleCreateGroup = useCallback(async () => {
     if (!selectedGroup) return
@@ -457,15 +440,15 @@ export default function DevLogView({
     if (!user) return
 
     try {
-      let newIsPrivate = !isPrivate
-      toggleGroupPrivacy(selectedGroup?.pk ?? 0, !isPrivate)
-      setIsPrivate(newIsPrivate)
+      let newIsPrivate = !isDevLogGroupPrivate
+      toggleGroupPrivacy(selectedGroup?.pk ?? 0, !isDevLogGroupPrivate)
+      setIsDevLogGroupPrivate(newIsPrivate)
       toast.success('Group privacy toggled successfully!')
     } catch (error) {
       console.error('Failed to toggle group privacy:', error)
       toast.error('Failed to toggle group privacy')
     }
-  }, [isPrivate, selectedGroup, user])
+  }, [isDevLogGroupPrivate, selectedGroup, user])
 
   const SearchDialog = useMemo(() => {
     return (
@@ -513,11 +496,11 @@ export default function DevLogView({
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column gap={4} fullWidth className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
+      <Column area-label='navigation-area' gap={4} fullWidth className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
-              <Row fullWidth className={'flex-1'}>
+              <Row aria-label='search-input-area' fullWidth className={'flex-1'}>
                 <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               </Row>
               {isMobile && (
@@ -529,25 +512,18 @@ export default function DevLogView({
                 </IconButton>
               )}
             </Row>
-            {treeLoading ? (
-              <Column gap={2} className={'fade-in'}>
-                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-              </Column>
-            ) : (
-              <Tree
-                ref={treeRef}
-                className={'text-[#ddd] !h-fit'}
-                initialExpandedItems={Array.from(expandedGroups).map(String)}
-              >
-                {GroupTreeComponent}
-              </Tree>
-            )}
+            <Tree
+              aria-label='group-tree'
+              ref={treeRef}
+              className={'text-[#ddd] !h-fit'}
+              initialExpandedItems={Array.from(expandedGroups).map(String)}
+            >
+              {GroupTreeComponent}
+            </Tree>
           </Column>
           {selectedGroup && user && (
             <Row
+              aria-label='group-tree-button-area'
               className={
                 'absolute right-0 top-16 opacity-0 group-hover/navigation:opacity-100'
               }
@@ -560,7 +536,7 @@ export default function DevLogView({
                 className={'cursor-pointer rotate-[45deg]'}
                 onClick={handleDeleteGroup}
               />
-              {isPrivate ? (
+              {isDevLogGroupPrivate ? (
                 <LockIcon
                   className={'cursor-pointer size-4 mt-1 ml-[3px]'}
                   onClick={togglePrivacy}
@@ -628,7 +604,7 @@ export default function DevLogView({
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, treeLoading, isPrivate, togglePrivacy])
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, isDevLogGroupPrivate, togglePrivacy])
 
   const RenderedDevLogList = useMemo(() => {
     return (
@@ -727,18 +703,9 @@ export default function DevLogView({
         onClose={() => setChangeGroupModalOpen(false)}
       >
         <Column className={'min-w-[300px] min-h-[400px] p-2'}>
-          {treeLoading ? (
-            <Column gap={2} className={'fade-in'}>
-              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-              <Skeleton variant='rounded' className={'w-full h-[24px]'} />
-            </Column>
-          ) : (
-            <Tree className={'text-[#ddd] !h-fit'}>
-              {ParentUpdateableGroupTreeComponent}
-            </Tree>
-          )}
+          <Tree className={'text-[#ddd] !h-fit'}>
+            {ParentUpdateableGroupTreeComponent}
+          </Tree>
           <Button fullWidth variant='contained' size='small' className='!mt-auto' color='primary' onClick={handleUpdateDevLogParentGroup}>Update Parent Group</Button>
         </Column>
       </Dialog>

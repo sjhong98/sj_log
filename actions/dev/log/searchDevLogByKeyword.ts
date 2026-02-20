@@ -31,6 +31,7 @@ export default async function searchDevLogByKeyword(keyword: string, signal?: Ab
   ]
 
   if(!user) {
+    console.log('guest is searching')
     whereConditions.push(eq(devLog.isPrivate, false))
   }
 
