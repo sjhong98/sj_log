@@ -1,12 +1,15 @@
 'use client'
 
-import '@blocknote/core/fonts/inter.css'
 import { BlockNoteView } from '@blocknote/mantine'
-import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
+import { BlockNoteSchema, createCodeBlockSpec } from '@blocknote/core'
 import { useEffect } from 'react'
 import { devLogType } from '@/types/schemaType'
 import { useMediaQuery, useTheme } from '@mui/material'
+import { createHighlighter } from "../../shiki.bundle";
+import '@blocknote/core/fonts/inter.css'
+import '@blocknote/mantine/style.css'
+
 
 export default function Editor({
   id,
@@ -23,7 +26,39 @@ export default function Editor({
   disabled: boolean
   setBlockInitializing: any
 }) {
-  const editor = useCreateBlockNote()
+  const editor = useCreateBlockNote({
+    schema: BlockNoteSchema.create().extend({
+      blockSpecs: {
+        codeBlock: createCodeBlockSpec({
+          indentLineWithTab: true,
+          defaultLanguage: "typescript",
+          supportedLanguages: {
+            typescript: {
+              name: "TypeScript",
+              aliases: ["ts"],
+            },
+            javascript: {
+              name: "JavaScript",
+              aliases: ["js"],
+            },
+            react: {
+              name: "React",
+              aliases: ["react"],
+            },
+            jsx: {
+              name: "JSX",
+              aliases: ["jsx"],
+            }
+          },
+          createHighlighter: () =>
+            createHighlighter({
+              themes: ["dark-plus", "light-plus"],
+              langs: [],
+            }) as any,
+        }),
+      },
+    }),
+  })
 
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -61,7 +96,7 @@ export default function Editor({
     },
     borderRadius: 4,
     fontFamily: 'Helvetica Neue, sans-serif',
-    paddingLeft: 0
+    paddingLeft: 0,
   }
 
   // 선택된 log 가 바뀌는 경우 -> block 갱신
@@ -95,7 +130,6 @@ export default function Editor({
 
   return (
     <BlockNoteView
-      id={id.toString()}
       editor={editor}
       editable={!disabled}
       className={`z-[3] md:w-full w-[calc(100%+60px)] md:ml-0 ml-[-30px]`}
