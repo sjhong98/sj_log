@@ -37,18 +37,6 @@ export default function Editor({
               name: "TypeScript",
               aliases: ["ts"],
             },
-            javascript: {
-              name: "JavaScript",
-              aliases: ["js"],
-            },
-            react: {
-              name: "React",
-              aliases: ["react"],
-            },
-            jsx: {
-              name: "JSX",
-              aliases: ["jsx"],
-            }
           },
           createHighlighter: () =>
             createHighlighter({
