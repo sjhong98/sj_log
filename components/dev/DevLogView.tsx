@@ -149,11 +149,7 @@ export default function DevLogView({
             id={group.pk?.toString() ?? ''}
             value={group.name}
             element={group.name}
-            onClick={e => {
-              e.stopPropagation()
-              // getPostList(group.pk)
-              setSelectedGroup(group)
-            }}
+            onClick={(e) => handleClickDevLogGroup(e, group)}
             isSelectable
             isSelect={selectedGroup?.pk === group.pk}
           />

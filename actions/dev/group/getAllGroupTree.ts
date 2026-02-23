@@ -20,7 +20,7 @@ export default async function getAllGroupTree(userEmailParam: string) {
     params.set('order', 'created_at.desc')
 
     // 비로그인 회원 -> 공개된 그룹만 조회
-    if (!user) params.set('is_private', 'false')
+    if (!user) params.set('is_private', 'eq.false')
 
     const result = await fetch(`${process.env.SUPABASE_REST_URL}/dev_log_group?${params.toString()}`, {
       headers: {
@@ -35,9 +35,7 @@ export default async function getAllGroupTree(userEmailParam: string) {
     let allGroupList = await result.json()
     allGroupList = snakeToCamel(allGroupList)
 
-    let whereConditions: any[] = [eq(devLogGroup.uid, userId)];
-    // 비로그인 회원 -> 공개된 그룹만 조회
-    if (!user) whereConditions.push(eq(devLogGroup.isPrivate, false));
+    console.log('allGroupList', allGroupList)
 
     const newGroupTree = createGroupTree(allGroupList)
 

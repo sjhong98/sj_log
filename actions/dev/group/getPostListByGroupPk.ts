@@ -19,7 +19,7 @@ export default async function getPostListByGroupPk(groupPk: number) {
 
   const params = new URLSearchParams()
   params.set('group_pk', `eq.${groupPk}`)
-  if(!user) params.set('is_private', 'false')
+  if(!user) params.set('is_private', 'eq.false')
   params.set('limit', '100')
   params.set('order', 'created_at.desc')
 
@@ -35,6 +35,8 @@ export default async function getPostListByGroupPk(groupPk: number) {
   })
   let postList = await result.json()
   postList = snakeToCamel(postList)
+
+  console.log('postList', postList)
     
   return postList
 }
