@@ -1,11 +1,10 @@
-import { getUser } from "@/actions/session/getUser"
+'use server'
 
-export default async function getPinnedDevLogList() {
-    const user = await getUser()
-    if (!user) return []
+import getUserByEmail from "@/actions/user/getUserByEmail"
 
+export default async function getPinnedDevLogList(userId: string) {
     const params = new URLSearchParams()
-    params.set('uid', `eq.${user.id}`)
+    params.set('uid', `eq.${(await getUserByEmail(userId))?.uid}`)
     params.set('is_pinned', 'eq.true')
     params.set('is_private', 'eq.false')
     params.set('limit', '10')
@@ -16,6 +15,10 @@ export default async function getPinnedDevLogList() {
             'apikey': process.env.SUPABASE_KEY ?? '',
             'Authorization': `Bearer ${process.env.SUPABASE_KEY ?? ''}`
         },
+        cache: 'force-cache',
+        next: {
+            tags: ['dev-log']
+        }
     })
 
     const pinnedDevLogList = await result.json()

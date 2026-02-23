@@ -38,8 +38,9 @@ export default async function Page({
     devLog = devLogPk ? await getDevLogByPk(Number(devLogPk)) : null
   }
 
-  if (!devLogPk) {
-    pinnedDevLogList = await getPinnedDevLogList()
+  if (!devLogPk && decodedEmail) {
+    pinnedDevLogList = await getPinnedDevLogList(decodedEmail)
+    console.log('pinnedDevLogList: ', pinnedDevLogList)
   }
 
   if (!boardList || !groupTree) return
