@@ -2,6 +2,7 @@
 
 import createDevLog from '@/actions/dev/log/createDevLog'
 import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
+import toggleDevLogPin from '@/actions/dev/log/toggleDevLogPin'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
 import dynamic from 'next/dynamic'
 
@@ -22,6 +23,11 @@ import {
   useState
 } from 'react'
 import { toast } from 'react-toastify'
+import { cn } from '@/lib/utils'
+import { DevLogDashboardItem } from './DevLogDashboard'
+import useQueryString from '@/hooks/useQueryString'
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -36,16 +42,18 @@ export default function DevLogDetailView({
   setCurrentPostList,
   groupTree,
   groupList,
-  devLogLoading
+  devLogLoading,
+  pinnedDevLogList
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
-  selectedGroup: devLogGroupType | null
-  currentPostList: { pk: number; title: string }[]
-  setCurrentPostList: any
-  groupTree: GroupTreeType[]
-  groupList: devLogGroupType[]
-  devLogLoading: boolean
+  selectedGroup?: devLogGroupType | null
+  currentPostList?: { pk: number; title: string }[]
+  setCurrentPostList?: any
+  groupTree?: GroupTreeType[]
+  groupList?: devLogGroupType[]
+  devLogLoading?: boolean
+  pinnedDevLogList?: devLogType[]
 }) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -57,9 +65,11 @@ export default function DevLogDetailView({
     date: new Date().toISOString(),
     groupPk: 0,
     text: null,
-    isPrivate: false
+    isPrivate: false,
+    isPinned: false
   }
   const { user } = useUser()
+  const { addQueryString } = useQueryString()
 
   const [blocks, setBlocks] = useState<any>([])
   const [blockInitializing, setBlockInitializing] = useState(false)
@@ -76,6 +86,7 @@ export default function DevLogDetailView({
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
   const [isPrivate, setIsPrivate] = useState(false)
+  const [isPinned, setIsPinned] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
   const TITLE_HEIGHT_EXPANDED = 80
@@ -110,7 +121,7 @@ export default function DevLogDetailView({
         : initialValue
     )
 
-    if (!selectedDevLog?.groupPk) return
+    if (!selectedDevLog?.groupPk || !groupList) return
 
     // 조상 리스트 생성
     let parentGroupPk = selectedDevLog.groupPk
@@ -128,7 +139,7 @@ export default function DevLogDetailView({
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      if (!selectedDevLog?.pk) return
+      if (!selectedDevLog?.pk || !currentPostList) return
 
       let _devLogForm: editableDevLogType = { ...devLogForm }
       // @ts-ignore
@@ -212,6 +223,8 @@ export default function DevLogDetailView({
 
   // 새로운 devLog row 생성
   const handleCreateNewDevLog = useCallback(async () => {
+    if (!currentPostList) return
+
     let _devLogForm: editableDevLogType = { ...devLogForm }
     _devLogForm.title = 'New Title'
     _devLogForm.content = JSON.stringify([
@@ -261,6 +274,7 @@ export default function DevLogDetailView({
 
   useEffect(() => {
     setIsPrivate(selectedDevLog?.isPrivate ?? false)
+    setIsPinned(selectedDevLog?.isPinned ?? false)
   }, [selectedDevLog])
 
   const SCROLL_THRESHOLD = 15
@@ -340,6 +354,26 @@ export default function DevLogDetailView({
     }
   }, [selectedDevLog, isPrivate])
 
+  const togglePin = useCallback(() => {
+    try {
+      let newIsPinned = !isPinned
+      toggleDevLogPin(selectedDevLog?.pk ?? 0, newIsPinned)
+      setIsPinned(newIsPinned)
+      if (newIsPinned) toast.success('Dev log pinned successfully!')
+      else toast.success('Dev log unpinned successfully!')
+    } catch (error) {
+      console.error('Failed to toggle dev log pin:', error)
+      toast.error('Failed to toggle dev log pin')
+    }
+  }, [selectedDevLog, isPinned])
+
+  const handleClickDevLog = useCallback((devLog: devLogType) => {
+    if (!devLog.pk) return
+
+    addQueryString('devLogPk', devLog.pk.toString())
+    setSelectedDevLog(devLog)
+  }, [])
+
   return (
     <>
       <div
@@ -351,164 +385,192 @@ export default function DevLogDetailView({
         }
       >
         <Column className="w-full">
-          {/* 고정 영역 */}
-          <div
-            className={
-              'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
-            }
-          >
-            <div
-              className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
-              id={'absolute-area'}
-            >
-              {/*  자동저장 관련  */}
-              {Boolean(user) && (
-                <div className='h-[30px] absolute top-0 right-8 z-[200]'>
-                  {editorStatus === 0 ? (
-                    <button
-                      onClick={autoSave}
-                      className={
-                        'whitespace-nowrap pointer-events-auto cursor-pointer'
-                      }
-                    >
-                      저장
-                    </button>
-                  ) : (
-                    <CheckIcon />
-                  )}
+          {!selectedDevLog ? (
+            // 선택된 로그 없을 경우 -> 핀 목록 표시
+            <>
+              <div className='flex flex-col w-full gap-4 md:px-10'>
+                <div className='w-full'>
+                  <p className='text-xl font-bold'>Pinned Logs</p>
                 </div>
-              )
-              }
-
-              {/* 공개 여부 관련 */}
-              {Boolean(user) && (
-                <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
-                  {isPrivate ? (
-                    <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
-                  ) : (
-                    <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
-                  )}
+                <div className={cn(
+                  `w-full h-fit grid gap-4`,
+                  selectedDevLog ? 'flex-[0.4]' : '',
+                  selectedDevLog ? 'md:grid-cols-2 sm:grid-cols-1 grid-cols-1' : 'md:grid-cols-4 sm:grid-cols-3 grid-cols-2'
+                )}>
+                  {Array.isArray(pinnedDevLogList) && pinnedDevLogList.map((devLog: devLogType) => (
+                    <DevLogDashboardItem key={devLog.pk ?? 0} devLog={devLog} onClick={() => handleClickDevLog(devLog)} />
+                  ))}
                 </div>
-              )
-              }
-
-              {/*  새로운 dev log 생성 버튼  */}
-              {Boolean(user) && (
-                <button
-                  onClick={handleCreateNewDevLog}
-                  className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
-                >
-                  <IconPlus color={'#333'} />
-                </button>
-              )
-              }
-            </div>
-          </div>
-
-          <div
-            aria-label='title-area'
-            className={
-              'sticky top-[0px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
-            }
-            style={{
-              height: `${titleHeight}px`
-            }}
-          >
-            {selectedDevLog && (
-              <>
-                {/* 경로 */}
-                <Row
-                  fullWidth
-                  className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
-                >
-                  {isMounted && (
-                    <p
-                      className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
-                    >
-                      {`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}
-                    </p>
-                  )}
-                </Row>
-                {/*  title  */}
-                <input
-                  name={'title'}
-                  value={devLogForm.title}
-                  onChange={handleChange}
-                  placeholder={'New Title'}
-                  autoComplete={'off'}
-                  disabled={!Boolean(user)}
+              </div>
+            </>
+          ) : (
+            // 선택된 로그 있을 경우 -> 선택된 로그 상세 표시
+            <>
+              {/* 고정 영역 - 상단 버튼 셋 */}
+              {Boolean(user) && selectedDevLog && (
+                <div
                   className={
-                    isMobile
-                      ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
-                      : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                    'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
                   }
-                />
-              </>
-            )}
-          </div>
+                >
+                  <div
+                    className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
+                    id={'absolute-area'}
+                  >
+                    {/* 핀 버튼 */}
+                    <div className='h-[30px] absolute top-0 right-30 z-[201] pointer-events-auto active:scale-[1.3] transition-all duration-100'>
+                      {isPinned ? (
+                        <PushPinIcon className={'cursor-pointer'} sx={{ fontSize: 20 }} onClick={togglePin} />
+                      ) : (
+                        <PushPinOutlinedIcon className={'cursor-pointer'} sx={{ fontSize: 20 }} onClick={togglePin} />
+                      )}
+                    </div>
 
-          <Column
-            gap={4}
-            fullWidth
-            className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
-          >
-            {devLogLoading ? (
-              // DevLog 로딩 중일 때만 skeleton 표시
-              <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
-                <Column gap={2} className={'mt-4'}>
-                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                </Column>
-              </Column>
-            ) : selectedDevLog ? (
-              <>
-                <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
+                    {/* 공개 여부 관련 */}
+                    <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
+                      {isPrivate ? (
+                        <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+                      ) : (
+                        <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+                      )}
+                    </div>
 
-                  {/*  목차 */}
-                  <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
-                    {overview.map((block: any) => {
-                      const level = block.props.level
-                      return (
-                        <Row
-                          key={block.id}
-                          onClick={() => handleScrollToBlock(block)}
-                          className={'mt-[-2px]'}
-                          style={{
-                            fontSize:
-                              level === 1
-                                ? '16px'
-                                : level === 2
-                                  ? '14px'
-                                  : '12px',
-                            marginLeft:
-                              level === 1 ? '0px' : level === 2 ? '8px' : '16px',
-                            marginTop:
-                              level === 1 ? '8px' : level === 2 ? '6px' : '0px',
-                            fontWeight:
-                              level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
-                          }}
+                    {/*  자동저장 관련  */}
+                    <div className='h-[30px] absolute top-0 right-8 z-[200]'>
+                      {editorStatus === 0 ? (
+                        <button
+                          onClick={autoSave}
+                          className={
+                            'whitespace-nowrap pointer-events-auto cursor-pointer'
+                          }
                         >
-                          {`${block.content[0]?.text ?? ''}`}
-                        </Row>
-                      )
-                    })}
-                  </Column>
+                          저장
+                        </button>
+                      ) : (
+                        <CheckIcon />
+                      )}
+                    </div>
 
-                  {/*  editor  */}
-                  {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
-                  <Editor
-                    id={selectedDevLog?.pk ?? 0}
-                    selectedDevLog={selectedDevLog}
-                    blocks={blocks}
-                    setBlocks={setBlocks}
-                    disabled={!Boolean(user)}
-                    setBlockInitializing={setBlockInitializing}
-                  />
-                </Column>
-              </>
-            ) : null}
-          </Column>
+                    {/*  새로운 dev log 생성 버튼  */}
+                    <button
+                      onClick={handleCreateNewDevLog}
+                      className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
+                    >
+                      <IconPlus color={'#333'} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div
+                aria-label='title-area'
+                className={
+                  'sticky top-[0px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
+                }
+                style={{
+                  height: `${titleHeight}px`
+                }}
+              >
+                {selectedDevLog && (
+                  <>
+                    {/* 경로 */}
+                    {parentGroupList.length > 0 && (
+                      <Row
+                        fullWidth
+                        className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
+                      >
+                        {isMounted && (
+                          <p
+                            className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
+                          >
+                            {`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}
+                          </p>
+                        )}
+                      </Row>
+                    )}
+                    {/*  title  */}
+                    <input
+                      name={'title'}
+                      value={devLogForm.title}
+                      onChange={handleChange}
+                      placeholder={'New Title'}
+                      autoComplete={'off'}
+                      disabled={!Boolean(user)}
+                      className={
+                        isMobile
+                          ? 'w-full !outline-none !text-[24px] px-4 placeholder:text-[#aaa]'
+                          : 'w-full !outline-none !text-[30px] ml-[55px] placeholder:text-[#aaa]'
+                      }
+                    />
+                  </>
+                )}
+              </div>
+
+              <Column
+                gap={4}
+                fullWidth
+                className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
+              >
+                {devLogLoading ? (
+                  // DevLog 로딩 중일 때만 skeleton 표시
+                  <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
+                    <Column gap={2} className={'mt-4'}>
+                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                    </Column>
+                  </Column>
+                ) : selectedDevLog ? (
+                  <>
+                    <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
+
+                      {/*  목차 */}
+                      <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
+                        {overview.map((block: any) => {
+                          const level = block.props.level
+                          return (
+                            <Row
+                              key={block.id}
+                              onClick={() => handleScrollToBlock(block)}
+                              className={'mt-[-2px]'}
+                              style={{
+                                fontSize:
+                                  level === 1
+                                    ? '16px'
+                                    : level === 2
+                                      ? '14px'
+                                      : '12px',
+                                marginLeft:
+                                  level === 1 ? '0px' : level === 2 ? '8px' : '16px',
+                                marginTop:
+                                  level === 1 ? '8px' : level === 2 ? '6px' : '0px',
+                                fontWeight:
+                                  level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
+                              }}
+                            >
+                              {`${block.content[0]?.text ?? ''}`}
+                            </Row>
+                          )
+                        })}
+                      </Column>
+
+                      {/*  editor  */}
+                      {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
+                      <Editor
+                        id={selectedDevLog?.pk ?? 0}
+                        selectedDevLog={selectedDevLog}
+                        blocks={blocks}
+                        setBlocks={setBlocks}
+                        disabled={!Boolean(user)}
+                        setBlockInitializing={setBlockInitializing}
+                      />
+                    </Column>
+                  </>
+                ) : null}
+              </Column>
+            </>
+          )}
+
         </Column>
       </div>
     </>

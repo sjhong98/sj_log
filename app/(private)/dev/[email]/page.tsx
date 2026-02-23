@@ -4,9 +4,11 @@ import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
 import getPostListByGroupPk, { simpleDevLogType } from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
+import getPinnedDevLogList from '@/actions/dev/log/getPinnedDevLogList'
 import DevLogView from '@/components/dev/DevLogView'
 import BoardType from '@/types/dev/BoardType'
 import { devLogType } from '@/types/schemaType'
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 export default async function Page({
   params,
@@ -26,6 +28,7 @@ export default async function Page({
   // url query string 로부터 devLogGroupPk / devLogPk 조회하여 패치
   let devLogList: simpleDevLogType[] = []
   let devLog: devLogType | null = null
+  let pinnedDevLogList: devLogType[] = []
 
   if (devLogGroupPk) {
     devLogList = await getPostListByGroupPk(Number(devLogGroupPk))
@@ -33,6 +36,10 @@ export default async function Page({
 
   if (devLogPk) {
     devLog = devLogPk ? await getDevLogByPk(Number(devLogPk)) : null
+  }
+
+  if (!devLogPk) {
+    pinnedDevLogList = await getPinnedDevLogList()
   }
 
   if (!boardList || !groupTree) return
@@ -44,6 +51,7 @@ export default async function Page({
         groupListProp={groupTree.groupList}
         currentPostListProp={devLogList}
         selectedDevLogProp={devLog}
+        pinnedDevLogListProp={pinnedDevLogList}
       />
     </>
   )

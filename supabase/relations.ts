@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, name, nameTag, financeAccount, financeLog, diary, comment, user, devLogGroup, devLog, devLogTagRelation, devLogTag, nameTagRelation } from "./schema";
+import { usersInAuth, name, nameTag, financeAccount, financeLog, diary, comment, devLogGroup, devLog, user, devLogTagRelation, devLogTag, nameTagRelation } from "./schema";
 
 export const nameRelations = relations(name, ({one, many}) => ({
 	usersInAuth: one(usersInAuth, {
@@ -16,9 +16,9 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	financeLogs: many(financeLog),
 	comments: many(comment),
 	financeAccounts: many(financeAccount),
-	users: many(user),
 	devLogs: many(devLog),
 	devLogGroups: many(devLogGroup),
+	users: many(user),
 }));
 
 export const nameTagRelations = relations(nameTag, ({one, many}) => ({
@@ -63,13 +63,6 @@ export const diaryRelations = relations(diary, ({many}) => ({
 	comments: many(comment),
 }));
 
-export const userRelations = relations(user, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [user.uid],
-		references: [usersInAuth.id]
-	}),
-}));
-
 export const devLogRelations = relations(devLog, ({one, many}) => ({
 	devLogGroup: one(devLogGroup, {
 		fields: [devLog.groupPk],
@@ -79,6 +72,10 @@ export const devLogRelations = relations(devLog, ({one, many}) => ({
 		fields: [devLog.uid],
 		references: [usersInAuth.id]
 	}),
+	user: one(user, {
+		fields: [devLog.uid],
+		references: [user.uid]
+	}),
 	devLogTagRelations: many(devLogTagRelation),
 }));
 
@@ -86,6 +83,14 @@ export const devLogGroupRelations = relations(devLogGroup, ({one, many}) => ({
 	devLogs: many(devLog),
 	usersInAuth: one(usersInAuth, {
 		fields: [devLogGroup.uid],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const userRelations = relations(user, ({one, many}) => ({
+	devLogs: many(devLog),
+	usersInAuth: one(usersInAuth, {
+		fields: [user.uid],
 		references: [usersInAuth.id]
 	}),
 }));

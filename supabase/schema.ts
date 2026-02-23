@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { pgTable, foreignKey, bigint, varchar, text, timestamp, uuid, pgPolicy, boolean } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, bigint, varchar, text, timestamp, uuid, pgPolicy, boolean, primaryKey, unique } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -98,8 +98,8 @@ export const diary = pgTable("diary", {
 	contentText: text(),
 	thumbnail: text(),
 }, (table) => [
-	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["authenticated"] }),
+	pgPolicy("Enable insert for authenticated users only", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`true`  }),
+	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
 export const financeAccount = pgTable("finance_account", {
@@ -121,20 +121,6 @@ export const financeAccount = pgTable("finance_account", {
 		}),
 ]);
 
-export const user = pgTable("user", {
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "user_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	uid: uuid().defaultRandom(),
-	id: text(),
-}, (table) => [
-	foreignKey({
-			columns: [table.uid],
-			foreignColumns: [users.id],
-			name: "user_uid_fkey"
-		}),
-]);
-
 export const devLog = pgTable("dev_log", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	pk: bigint({ mode: "number" }).primaryKey().generatedByDefaultAsIdentity({ name: "dev_log_pk_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
@@ -147,7 +133,8 @@ export const devLog = pgTable("dev_log", {
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	groupPk: bigint("group_pk", { mode: "number" }).notNull(),
 	text: text(),
-	isPrivate: boolean().default(false),
+	isPrivate: boolean("is_private").default(false),
+	isPinned: boolean("is_pinned").default(false),
 }, (table) => [
 	foreignKey({
 			columns: [table.groupPk],
@@ -159,7 +146,12 @@ export const devLog = pgTable("dev_log", {
 			foreignColumns: [users.id],
 			name: "dev_log_uid_fkey"
 		}),
-	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = uid)` }),
+	foreignKey({
+			columns: [table.uid],
+			foreignColumns: [user.uid],
+			name: "dev_log_uid_fkey1"
+		}),
+	pgPolicy("Enable read access for all users", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
 ]);
 
 export const devLogTagRelation = pgTable("dev_log_tag_relation", {
@@ -226,4 +218,22 @@ export const devLogGroup = pgTable("dev_log_group", {
 			foreignColumns: [users.id],
 			name: "dev_log_group_uid_fkey"
 		}),
+	pgPolicy("dev_log_group_policy", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
+]);
+
+export const user = pgTable("user", {
+	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
+	pk: bigint({ mode: "number" }).generatedByDefaultAsIdentity({ name: "user_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 9223372036854775807, cache: 1 }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	uid: uuid().defaultRandom().notNull(),
+	id: text(),
+	nickname: text(),
+}, (table) => [
+	foreignKey({
+			columns: [table.uid],
+			foreignColumns: [users.id],
+			name: "user_uid_fkey"
+		}),
+	primaryKey({ columns: [table.pk, table.uid], name: "user_pkey"}),
+	unique("user_uid_key").on(table.uid),
 ]);

@@ -1,19 +1,12 @@
-'use client'
+'use server'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import getGlobalRecentDevLogList from "@/actions/dev/log/getGlobalRecentDevLogList"
+import DevLogDashboard from "@/components/dev/DevLogDashboard"
 
-const Page = () => {
-  const router = useRouter()
+const Page = async () => {
+  const devLogList = await getGlobalRecentDevLogList()
 
-  useEffect(() => {
-    const userId = sessionStorage.getItem('userId')
-    if (!userId) return
-
-    router.push(`/dev/${userId}`)
-  }, [])
-
-  return <></>
+  return <DevLogDashboard devLogList={devLogList} />
 }
 
 export default Page

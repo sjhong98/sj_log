@@ -30,13 +30,15 @@ export default function DevLogView({
   groupTreeProp,
   groupListProp,
   currentPostListProp,
-  selectedDevLogProp
+  selectedDevLogProp,
+  pinnedDevLogListProp
 }: {
   list: BoardType
   groupTreeProp: GroupTreeType[]
   groupListProp: devLogGroupType[]
   currentPostListProp: simpleDevLogType[] | null
-  selectedDevLogProp: devLogType | null
+  selectedDevLogProp: devLogType | null,
+  pinnedDevLogListProp: devLogType[] | null
 }) {
   const { addQueryString, clearQueryString } = useQueryString()
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
@@ -517,6 +519,7 @@ export default function DevLogView({
               {GroupTreeComponent}
             </Tree>
           </Column>
+          {/* Dev Log Group 버튼 셋 */}
           {selectedGroup && user && (
             <Row
               aria-label='group-tree-button-area'
@@ -543,7 +546,6 @@ export default function DevLogView({
                   onClick={togglePrivacy}
                 />
               )
-
               }
             </Row>
           )}
@@ -665,6 +667,7 @@ export default function DevLogView({
             groupTree={currentGroupTree}
             groupList={groupListProp}
             devLogLoading={devLogLoading}
+            pinnedDevLogList={pinnedDevLogListProp ?? []}
           />
         </Column>
       </Box>
