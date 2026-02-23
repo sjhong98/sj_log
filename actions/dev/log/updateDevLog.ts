@@ -5,6 +5,7 @@ import { devLog } from '@/supabase/schema'
 import { getUser } from '@/actions/session/getUser'
 import { devLogType } from '@/types/schemaType'
 import { eq } from 'drizzle-orm'
+import { revalidateTag } from 'next/cache'
 
 export default async function updateDevLog(devLogItem: devLogType) {
   let user: any = await getUser()
@@ -21,6 +22,8 @@ export default async function updateDevLog(devLogItem: devLogType) {
       })
       .where(eq(devLog.pk, devLogItem.pk))
       .returning()
+
+      revalidateTag('dev-log')
     return result
   } catch (e) {
     console.error(e)

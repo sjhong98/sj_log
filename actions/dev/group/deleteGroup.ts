@@ -4,6 +4,7 @@ import db from '@/supabase'
 import { devLogGroup } from '@/supabase/schema'
 import { eq } from 'drizzle-orm'
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
+import { revalidateTag } from 'next/cache'
 
 export default async function deleteGroup(pk: number) {
   try {
@@ -11,6 +12,8 @@ export default async function deleteGroup(pk: number) {
       .delete(devLogGroup)
       .where(eq(devLogGroup.pk, pk))
       .returning()
+
+    revalidateTag('dev-log-group')
     if (!deletedGroup.parentGroupPk) return
     const updatedGroupTree = await getAllGroupTree('')
     return updatedGroupTree?.groupTree

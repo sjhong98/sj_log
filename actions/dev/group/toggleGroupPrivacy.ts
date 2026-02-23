@@ -5,6 +5,7 @@ import db from "@/supabase"
 import { devLog, devLogGroup } from "@/supabase/schema"
 import { devLogGroupType, devLogType } from "@/types/schemaType"
 import { eq, inArray } from "drizzle-orm"
+import { revalidateTag } from "next/cache"
 
 export default async function toggleGroupPrivacy(pk: number, isPrivate: boolean) {
   try {
@@ -52,6 +53,9 @@ export default async function toggleGroupPrivacy(pk: number, isPrivate: boolean)
       .update(devLog)
       .set({ isPrivate })
       .where(inArray(devLog.pk, devLogListToTogglePrivacy.map(item => item.pk ?? -1)))
+
+    revalidateTag('dev-log-group')
+    revalidateTag('dev-log')
 
     return newGroup
   } catch (error) {

@@ -4,6 +4,7 @@ import db from '@/supabase'
 import { devLog } from '@/supabase/schema'
 import { eq } from 'drizzle-orm'
 import getSiblingDevLogList from '@/actions/dev/log/getSiblingDevLogList'
+import { revalidateTag } from 'next/cache'
 
 export default async function updateParentGroupPk(
   pk: number,
@@ -17,6 +18,7 @@ export default async function updateParentGroupPk(
     .where(eq(devLog.pk, pk))
     .returning()
 
+  revalidateTag('dev-log')
   if (!updated) return
   return updated
 }
