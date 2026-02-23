@@ -3,7 +3,9 @@
 import createDevLog from '@/actions/dev/log/createDevLog'
 import toggleDevLogPrivacy from '@/actions/dev/log/toggleDevLogPrivacy'
 import updateDevLog from '@/actions/dev/log/updateDevLog'
-import Editor from '@/components/editor/Editor'
+import dynamic from 'next/dynamic'
+
+const Editor = dynamic(() => import('@/components/editor/Editor'), { ssr: false })
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
 import useUser from '@/hooks/useUser'
@@ -74,12 +76,17 @@ export default function DevLogDetailView({
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
   const [isPrivate, setIsPrivate] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
   const TITLE_HEIGHT_EXPANDED = 80
   const [titleHeight, setTitleHeight] = useState(TITLE_HEIGHT_EXPANDED)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const lastScrollTopRef = useRef(0)
   const titleHeightRef = useRef(TITLE_HEIGHT_EXPANDED)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     setOverview([])
@@ -414,9 +421,13 @@ export default function DevLogDetailView({
                   fullWidth
                   className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
                 >
-                  <p
-                    className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
-                  >{`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}</p>
+                  {isMounted && (
+                    <p
+                      className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
+                    >
+                      {`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}
+                    </p>
+                  )}
                 </Row>
                 {/*  title  */}
                 <input

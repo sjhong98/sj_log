@@ -2,24 +2,48 @@
 
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
 import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsByPk'
-import { getUser } from '@/actions/session/getUser'
+import getPostListByGroupPk, { simpleDevLogType } from '@/actions/dev/group/getPostListByGroupPk'
+import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import DevLogView from '@/components/dev/DevLogView'
 import BoardType from '@/types/dev/BoardType'
+import { devLogType } from '@/types/schemaType'
 
-export default async function Page() {
-  let user: any = await getUser()
-  // if (!user) return
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ email: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const { email } = await params
+  const { devLogPk, devLogGroupPk } = await searchParams
+
+  const decodedEmail = decodeURIComponent(email)
 
   const boardList: BoardType | null = await getGroupTreeAndPostsByPk()
-  const groupTree = await getAllGroupTree()
+  const groupTree = await getAllGroupTree(decodedEmail)
+
+  // url query string 로부터 devLogGroupPk / devLogPk 조회하여 패치
+  let devLogList: simpleDevLogType[] = []
+  let devLog: devLogType | null = null
+
+  if (devLogGroupPk) {
+    devLogList = await getPostListByGroupPk(Number(devLogGroupPk))
+  }
+
+  if (devLogPk) {
+    devLog = devLogPk ? await getDevLogByPk(Number(devLogPk)) : null
+  }
 
   if (!boardList || !groupTree) return
   return (
     <>
       <DevLogView
         list={boardList}
-        groupTree={groupTree.groupTree}
-        groupList={groupTree.groupList}
+        groupTreeProp={groupTree.groupTree}
+        groupListProp={groupTree.groupList}
+        currentPostListProp={devLogList}
+        selectedDevLogProp={devLog}
       />
     </>
   )

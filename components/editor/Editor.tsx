@@ -1,15 +1,14 @@
 'use client'
 
-import { BlockNoteView } from '@blocknote/mantine'
-import { useCreateBlockNote } from '@blocknote/react'
-import { BlockNoteSchema, createCodeBlockSpec } from '@blocknote/core'
-import { useEffect } from 'react'
 import { devLogType } from '@/types/schemaType'
-import { useMediaQuery, useTheme } from '@mui/material'
-import { createHighlighter } from "../../shiki.bundle";
+import { BlockNoteSchema, createCodeBlockSpec } from '@blocknote/core'
 import '@blocknote/core/fonts/inter.css'
+import { BlockNoteView } from '@blocknote/mantine'
 import '@blocknote/mantine/style.css'
-
+import { useCreateBlockNote } from '@blocknote/react'
+import { useMediaQuery, useTheme } from '@mui/material'
+import { useEffect } from 'react'
+import { createHighlighter } from "../../shiki.bundle"
 
 export default function Editor({
   id,
@@ -26,7 +25,7 @@ export default function Editor({
   disabled: boolean
   setBlockInitializing: any
 }) {
-  const editor = useCreateBlockNote({
+  const blockNoteEditorOption = {
     schema: BlockNoteSchema.create().extend({
       blockSpecs: {
         codeBlock: createCodeBlockSpec({
@@ -46,7 +45,9 @@ export default function Editor({
         }),
       },
     }),
-  })
+  }
+
+  const editor = useCreateBlockNote(blockNoteEditorOption)
 
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -107,7 +108,9 @@ export default function Editor({
   // onChange 이벤틑 헨들러
   // 기존 값과 동일하지 않은 경우에만 상태 변경
   useEffect(() => {
-    editor.onChange((editor, { getChanges }) => {
+    if (!editor) return
+
+    editor.onChange((editor: any, { getChanges }: any) => {
       const blocks = editor.document
       setBlocks((prev: any) => {
         const isEqual = JSON.stringify(prev) === JSON.stringify(blocks)

@@ -2,16 +2,16 @@
 
 import createGroup from '@/actions/dev/group/createGroup'
 import deleteGroup from '@/actions/dev/group/deleteGroup'
-import getPostListByGroupPk from '@/actions/dev/group/getPostListByGroupPk'
+import { simpleDevLogType } from '@/actions/dev/group/getPostListByGroupPk'
 import toggleGroupPrivacy from '@/actions/dev/group/toggleGroupPrivacy'
 import deleteDevLog from '@/actions/dev/log/deleteDevLog'
-import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import searchDevLogByKeyword from '@/actions/dev/log/searchDevLogByKeyword'
 import updateParentGroupPk from '@/actions/dev/log/updateParentGroupPk'
 import DevLogDetailView from '@/components/dev/DevLogDetailView'
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
 import { Folder, Tree } from '@/components/magicui/file-tree'
+import useQueryString from '@/hooks/useQueryString'
 import useUser from '@/hooks/useUser'
 import BoardType from '@/types/dev/BoardType'
 import GroupTreeType from '@/types/dev/GroupTreeType'
@@ -23,23 +23,28 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import SearchInput from '../search/searchInput'
 
-const drawerWidth = 380
+const DRAWER_WIDTH = 380
 
 export default function DevLogView({
   list,
-  groupTree,
-  groupList
+  groupTreeProp,
+  groupListProp,
+  currentPostListProp,
+  selectedDevLogProp
 }: {
   list: BoardType
-  groupTree: GroupTreeType[]
-  groupList: devLogGroupType[]
+  groupTreeProp: GroupTreeType[]
+  groupListProp: devLogGroupType[]
+  currentPostListProp: simpleDevLogType[] | null
+  selectedDevLogProp: devLogType | null
 }) {
+  const { addQueryString, clearQueryString } = useQueryString()
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const searchInputRef = useRef<any>(null)
-  const [currentPostList, setCurrentPostList] = useState<{ pk: number; title: string }[]>([])
-  const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(null)
+  const [currentPostList, setCurrentPostList] = useState<simpleDevLogType[]>(currentPostListProp ?? [])
+  const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(selectedDevLogProp ?? null)
   const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
     null
   )
@@ -47,7 +52,7 @@ export default function DevLogView({
   const [temporarySelectedGroup, setTemporarySelectedGroup] =
     useState<devLogGroupType | null>(null)
   const [currentGroupTree, setCurrentGroupTree] =
-    useState<GroupTreeType[]>(groupTree)
+    useState<GroupTreeType[]>(groupTreeProp)
   const [isDevLogGroupPrivate, setIsDevLogGroupPrivate] = useState(false)
   const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
@@ -59,7 +64,12 @@ export default function DevLogView({
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
   const [devLogListDrawerOpen, setDevLogListDrawerOpen] = useState<boolean>(false)
   const [searchLoading, setSearchLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const { user } = useUser()
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // 선택된 그룹이 변경될 때 부모 디렉토리들을 자동으로 열기
   useEffect(() => {
@@ -84,58 +94,48 @@ export default function DevLogView({
     }
   }, [selectedGroup, currentGroupTree])
 
+  // DevLogGroup 요청 핸들러
   const handleClickDevLogGroup = useCallback((e: React.MouseEvent<HTMLDivElement>, group: GroupTreeType) => {
     e.stopPropagation()
-    getPostList(group.pk)
+
+    if (!group?.pk) {
+      console.error('Group pk is not found')
+      return
+    }
+
+    addQueryString('devLogGroupPk', group.pk.toString())
+    // getPostList(group.pk)
     setIsDevLogGroupPrivate(group.isPrivate ?? false)
     setSelectedGroup(group)
   }, [])
 
+  // DevLogGroup 리시브 핸들러
+  useEffect(() => {
+    if (currentPostListProp) {
+      setCurrentPostList(currentPostListProp)
+    }
+  }, [currentPostListProp])
+
+  // DevLog 요청 핸들러
   const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
-    if (!item?.pk) return
+    if (!item?.pk) {
+      console.error('Dev log pk is not found')
+      return
+    }
 
-    try {
-      if (selectedDevLog) {
-        // 구조 분해 할당으로, 새로운 객체를 생성하여 참조하게 해야함.
-        // let _selectedDevLog: devLogType = selectedDevLog
-        // 위 코드는 기존 객체를 참조하게 되므로, 상태값이 변경된 것으로 인식되지 않음.
-        let _selectedDevLog: devLogType = { ...selectedDevLog, title: item?.title || '' }
-        setSelectedDevLog(_selectedDevLog)
-        setDevLogLoading(true)
-      }
+    addQueryString('devLogPk', item.pk.toString())
+    setDevLogLoading(true)
 
-      const devLogData = await getDevLogByPk(item.pk)
-      if (devLogData) {
-        // checkDevLogPrivacy(devLogData)
-        setSelectedDevLog(devLogData)
-        // 모바일에서 devLog 선택 시 drawer 닫기
-        if (isMobile) {
-          setDevLogListDrawerOpen(false)
-        }
-      }
-      return devLogData
-    } catch (error) {
-      console.error('Failed to fetch dev log:', error)
-      toast.error('Failed to load dev log')
-    } finally {
-      setDevLogLoading(false)
+    if (isMobile) {
+      setDevLogListDrawerOpen(false)
     }
   }, [isMobile, selectedDevLog])
 
-  const getPostList = useCallback(async (groupPk?: number) => {
-    if (!groupPk) return
-
-    setPostListLoading(true)
-    try {
-      const postList = await getPostListByGroupPk(groupPk)
-      setCurrentPostList(postList)
-    } catch (error) {
-      console.error('Failed to fetch post list:', error)
-      toast.error('Failed to load post list')
-    } finally {
-      setPostListLoading(false)
-    }
-  }, [])
+  // DevLog 리시브 핸들러
+  useEffect(() => {
+    setSelectedDevLog(selectedDevLogProp)
+    setDevLogLoading(false)
+  }, [selectedDevLogProp])
 
   // Recursive Tree for Navigator
   const returnFolder = useCallback(
@@ -151,7 +151,7 @@ export default function DevLogView({
             element={group.name}
             onClick={e => {
               e.stopPropagation()
-              getPostList(group.pk)
+              // getPostList(group.pk)
               setSelectedGroup(group)
             }}
             isSelectable
@@ -174,7 +174,7 @@ export default function DevLogView({
         </Folder>
       )
     },
-    [currentGroupTree, selectedGroup, getPostList]
+    [currentGroupTree, selectedGroup]
   )
 
   const GroupTreeComponent = useMemo(() => {
@@ -430,11 +430,11 @@ export default function DevLogView({
   }, [])
 
   const handleClickResultItem = useCallback(async (resultItem: any) => {
-    const _devLogData = await handleClickDevLog(resultItem)
+    const _devLogData: any = await handleClickDevLog(resultItem)
     expandSelectedGroupTree(_devLogData.group.map((group: any) => group.pk))
     searchInputRef.current?.close()
-    setSelectedGroup(groupList.find(group => group.pk === resultItem.groupPk) ?? null)
-  }, [handleClickDevLog, groupList, treeRef, expandSelectedGroupTree])
+    setSelectedGroup(groupListProp.find(group => group.pk === resultItem.groupPk) ?? null)
+  }, [handleClickDevLog, groupListProp, treeRef, expandSelectedGroupTree])
 
   const togglePrivacy = useCallback(() => {
     if (!user) return
@@ -555,56 +555,58 @@ export default function DevLogView({
 
         <Column fullWidth gap={4} className={'flex-shrink-0'}>
           {/*  File List  */}
-          <Column fullWidth>
-            {!postListLoading ? (
-              currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
-                return (
-                  <Row
-                    key={i}
-                    gap={1}
-                    fullWidth
-                    className={
-                      'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
-                    }
-                    onClick={() => handleClickDevLog(item)}
-                  >
-                    <Row gap={1} className={'w-full items-center'}>
-                      <FileIcon className='size-4 mt-[1px]' />
-                      <p className='w-full break-all line-clamp-1'>
-                        {item.title}
-                      </p>
-                    </Row>
+          {isMounted && (
+            <Column fullWidth>
+              {!postListLoading ? (
+                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
+                  return (
                     <Row
+                      key={i}
+                      gap={1}
+                      fullWidth
                       className={
-                        'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
+                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
                       }
+                      onClick={() => handleClickDevLog(item)}
                     >
-                      {user && (
-                        <>
-                          {/* Delete Dev Log */}
-                          <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
-                          {/* Change Parent Group */}
-                          <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
-                        </>
-                      )}
+                      <Row gap={1} className={'w-full items-center'}>
+                        <FileIcon className='size-4 mt-[1px]' />
+                        <p className='w-full break-all line-clamp-1'>
+                          {item.title}
+                        </p>
+                      </Row>
+                      <Row
+                        className={
+                          'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
+                        }
+                      >
+                        {user && (
+                          <>
+                            {/* Delete Dev Log */}
+                            <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
+                            {/* Change Parent Group */}
+                            <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
+                          </>
+                        )}
+                      </Row>
                     </Row>
-                  </Row>
-                )
-              })
-            ) : (
-              <Column gap={1} className={'fade-in'}>
-                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-              </Column>
-            )}
-          </Column>
+                  )
+                })
+              ) : (
+                <Column gap={1} className={'fade-in'}>
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                </Column>
+              )}
+            </Column>
+          )}
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, isDevLogGroupPrivate, togglePrivacy])
+  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, isDevLogGroupPrivate, togglePrivacy, isMounted])
 
   const RenderedDevLogList = useMemo(() => {
     return (
@@ -621,10 +623,10 @@ export default function DevLogView({
           onClose={() => setDevLogListDrawerOpen(false)}
           variant={!isMobile ? 'permanent' : 'temporary'}
           sx={{
-            width: drawerWidth,
+            width: DRAWER_WIDTH,
             flexShrink: 0,
             '& .MuiDrawer-paper': {
-              width: drawerWidth,
+              width: DRAWER_WIDTH,
               boxSizing: 'border-box',
               left: isMobile ? '0px' : '0px',
               overflow: 'hidden',
@@ -665,7 +667,7 @@ export default function DevLogView({
             currentPostList={currentPostList}
             setCurrentPostList={setCurrentPostList}
             groupTree={currentGroupTree}
-            groupList={groupList}
+            groupList={groupListProp}
             devLogLoading={devLogLoading}
           />
         </Column>

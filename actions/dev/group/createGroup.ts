@@ -5,6 +5,7 @@ import { devLogGroup } from '@/supabase/schema'
 import { devLogGroupType } from '@/types/schemaType'
 import { getUser } from '@/actions/session/getUser'
 import getAllGroupTree from '@/actions/dev/group/getAllGroupTree'
+import { revalidateTag } from 'next/cache'
 
 export default async function createGroup(group: devLogGroupType) {
   try {
@@ -20,7 +21,8 @@ export default async function createGroup(group: devLogGroupType) {
       })
       .returning()
 
-    const updatedGroupTree = await getAllGroupTree()
+    revalidateTag('dev-log-group')
+    const updatedGroupTree = await getAllGroupTree('')
     return updatedGroupTree?.groupTree
   } catch (e) {
     console.error(e)
