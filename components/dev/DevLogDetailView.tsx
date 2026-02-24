@@ -94,6 +94,9 @@ export default function DevLogDetailView({
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const lastScrollTopRef = useRef(0)
   const titleHeightRef = useRef(TITLE_HEIGHT_EXPANDED)
+  /** 스크롤이 실제로 동작 중일 때만 true. 콘텐츠 변경 등으로 인한 단발성 scroll 이벤트에서는 height를 바꾸지 않기 위함 */
+  const lastScrollEventTimeRef = useRef(0)
+  const SCROLL_ACTIVE_MS = 120
 
   useEffect(() => {
     setIsMounted(true)
@@ -289,7 +292,20 @@ export default function DevLogDetailView({
     if (!el) return
 
     const handleScroll = () => {
+      const now = Date.now()
       const scrollTop = el.scrollTop
+      const prevScrollTime = lastScrollEventTimeRef.current
+      lastScrollEventTimeRef.current = now
+      // 첫 스크롤이거나, 직전 스크롤 이벤트로부터 SCROLL_ACTIVE_MS 이내면 '스크롤 동작 중'으로 간주
+      const timeSinceLastScroll = prevScrollTime === 0 ? 0 : now - prevScrollTime
+
+      // 스크롤이 동작 중이 아닐 때(콘텐츠 변경 등으로 인한 단발성 scroll 이벤트)는 height를 절대 변경하지 않음
+      const isScrollActive = timeSinceLastScroll <= SCROLL_ACTIVE_MS || scrollTop <= 20
+      if (!isScrollActive) {
+        lastScrollTopRef.current = scrollTop
+        return
+      }
+
       const lastScrollTop = lastScrollTopRef.current
       const delta = scrollTop - lastScrollTop
       const currentHeight = titleHeightRef.current
@@ -326,8 +342,6 @@ export default function DevLogDetailView({
       }
 
       // 중간 상태일 때만 스크롤 방향에 따라 결정
-      const isMoreThanHalfway = currentHeight < TITLE_HEIGHT_EXPANDED / 2
-
       if (delta >= SCROLL_THRESHOLD) {
         // 아래로 스크롤: 중간 이상 접혔으면 완전히 접기
         setTitleHeight(0)
