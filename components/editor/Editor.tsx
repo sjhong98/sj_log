@@ -36,11 +36,15 @@ export default function Editor({
               name: "TypeScript",
               aliases: ["ts"],
             },
+            bash: {
+              name: "Bash",
+              aliases: ["sh"],
+            },
           },
           createHighlighter: () =>
             createHighlighter({
               themes: ["dark-plus", "light-plus"],
-              langs: [],
+              langs: ["typescript", "bash"],
             }) as any,
         }),
       },
