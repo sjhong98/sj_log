@@ -44,7 +44,7 @@ export default function Editor({
           createHighlighter: () =>
             createHighlighter({
               themes: ["dark-plus", "light-plus"],
-              langs: ["typescript", "bash"],
+              langs: [],
             }) as any,
         }),
       },
