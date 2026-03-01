@@ -10,14 +10,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const pathname = usePathname()
 
-    useEffect(() => {
-        if(pathname.includes('/dev')) {
-            window.scrollTo(0, 0)
-            document.body.style.overflow = 'hidden'
-        } else {
+    // useEffect(() => {
+    //     if(pathname.includes('/dev')) {
+    //         window.scrollTo(0, 0)
+    //         document.body.style.overflow = 'hidden'
+    //     } else {
 
-            document.body.style.overflow = 'auto'
-        }
+    //         document.body.style.overflow = 'auto'
+    //     }
 
         // cleanup: 컴포넌트 언마운트 시 원래 상태로 복원
         return () => {
