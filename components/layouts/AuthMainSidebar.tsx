@@ -1,5 +1,7 @@
 'use client'
 
+import useUser from '@/hooks/useUser'
+import { cn } from '@/lib/utils'
 import {
   Avatar,
   Box,
@@ -12,16 +14,20 @@ import {
   ListItemIcon,
   ListItemText,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from '@mui/material'
 import { User } from '@supabase/supabase-js'
-import { IconChartCandle, IconLayoutSidebarLeftExpand } from '@tabler/icons-react'
+import {
+  IconBrandCashapp,
+  IconChartLine,
+  IconCode,
+  IconLayoutSidebarLeftExpand,
+  IconNotebook,
+  IconUser,
+} from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
-import { IconNotebook, IconCode, IconBrandCashapp, IconUser, IconChartLine } from '@tabler/icons-react'
-import { cn } from '@/lib/utils'
-import useUser from '@/hooks/useUser'
+import { Sidebar, SidebarBody, SidebarLink } from '../ui/sidebar'
 
 interface MenuProps {
   text: string
@@ -39,24 +45,24 @@ const AuthMainSidebar = ({ user }: { user: User }) => {
   const menu: MenuProps[] = [
     {
       text: 'Diary',
-      route: `/diary`
+      route: `/diary`,
     },
     {
       text: 'Finance',
-      route: `/finance`
+      route: `/finance`,
     },
     {
       text: 'Dev Blog',
-      route: `/dev`
+      route: `/dev`,
     },
     {
       text: 'Names',
-      route: `/names`
+      route: `/names`,
     },
     {
       text: 'Investment',
-      route: `/investment`
-    }
+      route: `/investment`,
+    },
   ]
 
   if (!user) return null
@@ -80,16 +86,16 @@ const AuthMainSidebar = ({ user }: { user: User }) => {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
-            overflow: 'hidden'
-          }
+            overflow: 'hidden',
+          },
         }}
       >
         <Box
           sx={{
             width: 250,
-            height: '100%'
+            height: '100%',
           }}
-          role='presentation'
+          role="presentation"
         >
           <List>
             {menu.map((menuItem, index) => (
@@ -99,9 +105,7 @@ const AuthMainSidebar = ({ user }: { user: User }) => {
                     router.push(menuItem.route)
                   }}
                 >
-                  <ListItemIcon>
-                    {/*{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}*/}
-                  </ListItemIcon>
+                  <ListItemIcon>{/*{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}*/}</ListItemIcon>
                   <ListItemText primary={menuItem.text} />
                 </ListItemButton>
               </ListItem>
@@ -122,52 +126,36 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
     {
       label: 'Diary',
       href: `/diary`,
-      icon: (
-        <IconNotebook className="h-5 w-5 shrink-0 text-neutral-200" />
-      )
+      icon: <IconNotebook className="h-5 w-5 shrink-0 text-neutral-200" />,
     },
     {
       label: 'Finance',
       href: `/finance`,
-      icon: (
-        <IconBrandCashapp className="h-5 w-5 shrink-0 text-neutral-200" />
-      )
+      icon: <IconBrandCashapp className="h-5 w-5 shrink-0 text-neutral-200" />,
     },
     {
       label: 'Dev Blog',
       href: `/dev`,
-      icon: (
-        <IconCode className="h-5 w-5 shrink-0 text-neutral-200" />
-      )
+      icon: <IconCode className="h-5 w-5 shrink-0 text-neutral-200" />,
     },
     {
       label: 'Names',
       href: `/names`,
-      icon: (
-        <IconUser className="h-5 w-5 shrink-0 text-neutral-200" />
-      )
+      icon: <IconUser className="h-5 w-5 shrink-0 text-neutral-200" />,
     },
     {
       label: 'Investment',
       href: `/investment`,
-      icon: (
-        <IconChartLine className="h-5 w-5 shrink-0 text-neutral-200" />
-      )
-    }
+      icon: <IconChartLine className="h-5 w-5 shrink-0 text-neutral-200" />,
+    },
   ]
 
   return (
-    <div
-      className={cn(
-        "mx-auto flex w-full h-screen flex-1 flex-col md:flex-row overflow-visible bg-transparent",
-      )}
-    >
+    <div className={cn('mx-auto flex w-full h-screen flex-1 flex-col md:flex-row overflow-visible bg-transparent')}>
       <Sidebar open={open} setOpen={setOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            <>
-              {/* <Logo /> */}
-            </>
+            <>{/* <Logo />   */}</>
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
@@ -177,26 +165,23 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
           <div>
             <SidebarLink
               link={{
-                label: (user && user.email) ? user.email : '로그인',
+                label: user && user.email ? user.email : '로그인',
                 href: user ? '/logout' : '/login',
-                icon: (
-                  <Avatar
-                    className='cursor-pointer bs-[30px] is-[30px]'
-                  />
-                ),
+                icon: <Avatar className="cursor-pointer bs-[30px] is-[30px]" />,
               }}
             />
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className='w-full h-screen overflow-visible bg-neutral-900 md:p-2 p-0'>
-        <div className='w-full h-full md:rounded-2xl rounded-none overflow-visible !overflow-hidden bg-black'>
-          {children}
+      <>
+        <div className="content-area-padding w-full h-screen overflow-visible bg-neutral-900 p-[var(--content-padding)]">
+          <div className="w-full h-full md:rounded-2xl rounded-none overflow-visible !overflow-hidden bg-black">
+            {children}
+          </div>
         </div>
-      </div>
+      </>
     </div>
   )
-
 }
 
 export default AuthMainSidebarWrapper

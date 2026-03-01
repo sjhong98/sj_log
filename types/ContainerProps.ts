@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { BoxProps } from '@mui/material'
+import { BoxProps, SxProps, Theme } from '@mui/material'
 
 interface ContainerProps extends BoxProps {
   children?: ReactNode
@@ -7,6 +7,7 @@ interface ContainerProps extends BoxProps {
   className?: string
   container?: boolean
   fullWidth?: boolean
+  sx?: SxProps<Theme>
 }
 
 export default ContainerProps

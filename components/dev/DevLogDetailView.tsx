@@ -15,19 +15,14 @@ import { devLogGroupType, devLogType } from '@/types/schemaType'
 import { Skeleton, useMediaQuery, useTheme } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
-import {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { cn } from '@/lib/utils'
 import { DevLogDashboardItem } from './DevLogDashboard'
 import useQueryString from '@/hooks/useQueryString'
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import PushPinIcon from '@mui/icons-material/PushPin'
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
+import { INNER_CONTENT_HEIGHT } from '@/constants/layout'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -43,7 +38,7 @@ export default function DevLogDetailView({
   groupTree,
   groupList,
   devLogLoading,
-  pinnedDevLogList
+  pinnedDevLogList,
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
@@ -66,7 +61,7 @@ export default function DevLogDetailView({
     groupPk: 0,
     text: null,
     isPrivate: false,
-    isPinned: false
+    isPinned: false,
   }
   const { user } = useUser()
   const { addQueryString } = useQueryString()
@@ -78,10 +73,10 @@ export default function DevLogDetailView({
   const [devLogForm, setDevLogForm] = useState<editableDevLogType>(
     selectedDevLog
       ? {
-        ...selectedDevLog,
-        blocks: JSON.parse(selectedDevLog.content)
-      }
-      : initialValue
+          ...selectedDevLog,
+          blocks: JSON.parse(selectedDevLog.content),
+        }
+      : initialValue,
   )
   const [parentGroupList, setParentGroupList] = useState<devLogGroupType[]>([])
   const [overview, setOverview] = useState([])
@@ -118,10 +113,10 @@ export default function DevLogDetailView({
     setDevLogForm(
       selectedDevLog
         ? {
-          ...selectedDevLog,
-          blocks: JSON.parse(selectedDevLog.content)
-        }
-        : initialValue
+            ...selectedDevLog,
+            blocks: JSON.parse(selectedDevLog.content),
+          }
+        : initialValue,
     )
 
     if (!selectedDevLog?.groupPk || !groupList) return
@@ -130,7 +125,7 @@ export default function DevLogDetailView({
     let parentGroupPk = selectedDevLog.groupPk
     let _parentGroupList: devLogGroupType[] = []
     while (true) {
-      const parent = groupList.find(group => group.pk === parentGroupPk)
+      const parent = groupList.find((group) => group.pk === parentGroupPk)
       if (!parent) return
       _parentGroupList.unshift(parent)
       if (!parent?.parentGroupPk) break
@@ -150,18 +145,16 @@ export default function DevLogDetailView({
       setDevLogForm(_devLogForm)
 
       let _currentPostList = [...currentPostList]
-      const idx = _currentPostList.findIndex(
-        devLog => devLog.pk === selectedDevLog.pk
-      )
+      const idx = _currentPostList.findIndex((devLog) => devLog.pk === selectedDevLog.pk)
       _currentPostList[idx].title = e.target.value
       setCurrentPostList(_currentPostList)
     },
-    [devLogForm, currentPostList, selectedDevLog]
+    [devLogForm, currentPostList, selectedDevLog],
   )
 
   // 3초마다 자동저장 (수정의 경우)
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (!selectedDevLog || !user) return
 
       // 블럭 초기화된 경우 -> 자동저장 X
@@ -199,7 +192,10 @@ export default function DevLogDetailView({
     let _devLogForm: any = { ...devLogForm }
     _devLogForm.content = JSON.stringify(blocks)
 
-    const onlyText = blocks.map((block: any) => block.content.map((content: any) => content.text)).flat().join(' ')
+    const onlyText = blocks
+      .map((block: any) => block.content.map((content: any) => content.text))
+      .flat()
+      .join(' ')
     _devLogForm.text = onlyText
 
     let isEmpty = _devLogForm.content === '[]'
@@ -237,17 +233,17 @@ export default function DevLogDetailView({
         props: {
           textColor: 'default',
           backgroundColor: 'default',
-          textAlignment: 'left'
+          textAlignment: 'left',
         },
         content: [
           {
             type: 'text',
             text: '',
-            styles: {}
-          }
+            styles: {},
+          },
         ],
-        children: []
-      }
+        children: [],
+      },
     ])
     _devLogForm.groupPk = selectedGroup?.pk ?? -1
 
@@ -258,7 +254,7 @@ export default function DevLogDetailView({
     let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
     _currentPostList.push({
       pk: inserted.pk,
-      title: inserted.title
+      title: inserted.title,
     })
     setCurrentPostList(_currentPostList)
   }, [devLogForm, blocks, selectedGroup, currentPostList])
@@ -271,7 +267,7 @@ export default function DevLogDetailView({
 
     blockElem.scrollIntoView({
       behavior: 'smooth',
-      block: 'center'
+      block: 'center',
     })
   }, [])
 
@@ -389,31 +385,51 @@ export default function DevLogDetailView({
   }, [])
 
   return (
-    <>
-      <div
-        ref={scrollContainerRef}
-        className={
-          isMobile
-            ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-            : 'max-w-[100%] w-full h-[calc(100vh-110px)] pb-[200px] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-        }
-      >
-        <Column className="w-full">
+    <div
+      ref={scrollContainerRef}
+      className={
+        isMobile
+          ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
+          : 'max-w-[100%] w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
+      }
+      style={{ height: INNER_CONTENT_HEIGHT }}
+    >
+      <Column className={'w-full rounded-sm'}>
+        {/*  새로운 dev log 생성 버튼  */}
+        <div className="fixed bottom-20 right-20 z-[100]">
+          <button
+            onClick={handleCreateNewDevLog}
+            className="bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer z-[9999] mr-2 pointer-events-auto aspect-square size-8"
+          >
+            <IconPlus color={'#333'} />
+          </button>
+        </div>
+
+        <Column className="w-full relative">
           {!selectedDevLog ? (
             // 선택된 로그 없을 경우 -> 핀 목록 표시
             <>
-              <div className='flex flex-col w-full gap-4 md:px-10'>
-                <div className='w-full'>
-                  <p className='text-xl font-bold'>Pinned Logs</p>
+              <div className="flex flex-col w-full gap-4 md:px-10">
+                <div className="w-full">
+                  <p className="text-xl font-bold">Pinned Logs</p>
                 </div>
-                <div className={cn(
-                  `w-full h-fit grid gap-4`,
-                  selectedDevLog ? 'flex-[0.4]' : '',
-                  selectedDevLog ? 'md:grid-cols-2 sm:grid-cols-1 grid-cols-1' : 'md:grid-cols-4 sm:grid-cols-3 grid-cols-2'
-                )}>
-                  {Array.isArray(pinnedDevLogList) && pinnedDevLogList.map((devLog: devLogType) => (
-                    <DevLogDashboardItem key={devLog.pk ?? 0} devLog={devLog} onClick={() => handleClickDevLog(devLog)} />
-                  ))}
+                <div
+                  className={cn(
+                    `w-full h-fit grid gap-4`,
+                    selectedDevLog ? 'flex-[0.4]' : '',
+                    selectedDevLog
+                      ? 'md:grid-cols-2 sm:grid-cols-1 grid-cols-1'
+                      : 'md:grid-cols-4 sm:grid-cols-3 grid-cols-2',
+                  )}
+                >
+                  {Array.isArray(pinnedDevLogList) &&
+                    pinnedDevLogList.map((devLog: devLogType) => (
+                      <DevLogDashboardItem
+                        key={devLog.pk ?? 0}
+                        devLog={devLog}
+                        onClick={() => handleClickDevLog(devLog)}
+                      />
+                    ))}
                 </div>
               </div>
             </>
@@ -422,17 +438,13 @@ export default function DevLogDetailView({
             <>
               {/* 고정 영역 - 상단 버튼 셋 */}
               {Boolean(user) && selectedDevLog && (
-                <div
-                  className={
-                    'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'
-                  }
-                >
+                <div className={'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'}>
                   <div
                     className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
                     id={'absolute-area'}
                   >
                     {/* 핀 버튼 */}
-                    <div className='h-[30px] absolute top-0 right-30 z-[201] pointer-events-auto active:scale-[1.3] transition-all duration-100'>
+                    <div className="h-[30px] absolute top-0 right-30 z-[201] pointer-events-auto active:scale-[1.3] transition-all duration-100">
                       {isPinned ? (
                         <PushPinIcon className={'cursor-pointer'} sx={{ fontSize: 20 }} onClick={togglePin} />
                       ) : (
@@ -441,7 +453,7 @@ export default function DevLogDetailView({
                     </div>
 
                     {/* 공개 여부 관련 */}
-                    <div className='h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto'>
+                    <div className="h-[30px] absolute top-0 right-20 z-[201] pointer-events-auto">
                       {isPrivate ? (
                         <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
                       ) : (
@@ -450,39 +462,26 @@ export default function DevLogDetailView({
                     </div>
 
                     {/*  자동저장 관련  */}
-                    <div className='h-[30px] absolute top-0 right-8 z-[200]'>
+                    <div className="h-[30px] absolute top-0 right-8 z-[200]">
                       {editorStatus === 0 ? (
-                        <button
-                          onClick={autoSave}
-                          className={
-                            'whitespace-nowrap pointer-events-auto cursor-pointer'
-                          }
-                        >
+                        <button onClick={autoSave} className={'whitespace-nowrap pointer-events-auto cursor-pointer'}>
                           저장
                         </button>
                       ) : (
                         <CheckIcon />
                       )}
                     </div>
-
-                    {/*  새로운 dev log 생성 버튼  */}
-                    <button
-                      onClick={handleCreateNewDevLog}
-                      className='bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer ml-[90%] mt-[calc(100vh-250px)] z-[9999] mr-2 pointer-events-auto aspect-square size-8'
-                    >
-                      <IconPlus color={'#333'} />
-                    </button>
                   </div>
                 </div>
               )}
 
               <div
-                aria-label='title-area'
+                aria-label="title-area"
                 className={
                   'sticky top-[0px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
                 }
                 style={{
-                  height: `${titleHeight}px`
+                  height: `${titleHeight}px`,
                 }}
               >
                 {selectedDevLog && (
@@ -491,13 +490,15 @@ export default function DevLogDetailView({
                     {parentGroupList.length > 0 && (
                       <Row
                         fullWidth
-                        className={isMobile ? 'justify-between px-0 relative' : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'}
+                        className={
+                          isMobile
+                            ? 'justify-between px-0 relative'
+                            : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'
+                        }
                       >
                         {isMounted && (
-                          <p
-                            className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}
-                          >
-                            {`${parentGroupList?.map(parentGroup => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}
+                          <p className={isMobile ? 'text-[10px] text-[#999]' : 'text-[12px]'}>
+                            {`${parentGroupList?.map((parentGroup) => parentGroup.name)?.join(' > ')} > ${selectedDevLog?.title}`}
                           </p>
                         )}
                       </Row>
@@ -520,24 +521,19 @@ export default function DevLogDetailView({
                 )}
               </div>
 
-              <Column
-                gap={4}
-                fullWidth
-                className={'w-full rounded-sm min-h-[calc(100vh-200px)] relative mt-10'}
-              >
+              <Column gap={4} fullWidth className="relative flex-shrink-0">
                 {devLogLoading ? (
                   // DevLog 로딩 중일 때만 skeleton 표시
                   <Column gap={4} className={isMobile ? 'px-4' : 'pl-[55px] pr-12'}>
                     <Column gap={2} className={'mt-4'}>
-                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
-                      <Skeleton variant='rounded' className={'w-full h-[100px]'} />
+                      <Skeleton variant="rounded" className={'w-full h-[100px]'} />
+                      <Skeleton variant="rounded" className={'w-full h-[100px]'} />
+                      <Skeleton variant="rounded" className={'w-full h-[100px]'} />
                     </Column>
                   </Column>
                 ) : selectedDevLog ? (
                   <>
                     <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[-30px]'}>
-
                       {/*  목차 */}
                       <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
                         {overview.map((block: any) => {
@@ -548,18 +544,10 @@ export default function DevLogDetailView({
                               onClick={() => handleScrollToBlock(block)}
                               className={'mt-[-2px]'}
                               style={{
-                                fontSize:
-                                  level === 1
-                                    ? '16px'
-                                    : level === 2
-                                      ? '14px'
-                                      : '12px',
-                                marginLeft:
-                                  level === 1 ? '0px' : level === 2 ? '8px' : '16px',
-                                marginTop:
-                                  level === 1 ? '8px' : level === 2 ? '6px' : '0px',
-                                fontWeight:
-                                  level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal'
+                                fontSize: level === 1 ? '16px' : level === 2 ? '14px' : '12px',
+                                marginLeft: level === 1 ? '0px' : level === 2 ? '8px' : '16px',
+                                marginTop: level === 1 ? '8px' : level === 2 ? '6px' : '0px',
+                                fontWeight: level === 1 ? 'black' : level === 2 ? 'semibold' : 'normal',
                               }}
                             >
                               {`${block.content[0]?.text ?? ''}`}
@@ -584,9 +572,8 @@ export default function DevLogDetailView({
               </Column>
             </>
           )}
-
         </Column>
-      </div>
-    </>
+      </Column>
+    </div>
   )
 }

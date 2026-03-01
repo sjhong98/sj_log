@@ -22,6 +22,7 @@ import { FileIcon, FolderInputIcon, LockIcon, LockOpenIcon, PlusIcon } from 'luc
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import SearchInput from '../search/searchInput'
+import { INNER_CONTENT_HEIGHT } from '@/constants/layout'
 
 const DRAWER_WIDTH = 380
 
@@ -31,13 +32,13 @@ export default function DevLogView({
   groupListProp,
   currentPostListProp,
   selectedDevLogProp,
-  pinnedDevLogListProp
+  pinnedDevLogListProp,
 }: {
   list: BoardType
   groupTreeProp: GroupTreeType[]
   groupListProp: devLogGroupType[]
   currentPostListProp: simpleDevLogType[] | null
-  selectedDevLogProp: devLogType | null,
+  selectedDevLogProp: devLogType | null
   pinnedDevLogListProp: devLogType[] | null
 }) {
   const { addQueryString, clearQueryString } = useQueryString()
@@ -47,14 +48,10 @@ export default function DevLogView({
   const searchInputRef = useRef<any>(null)
   const [currentPostList, setCurrentPostList] = useState<simpleDevLogType[]>(currentPostListProp ?? [])
   const [selectedDevLog, setSelectedDevLog] = useState<devLogType | null>(selectedDevLogProp ?? null)
-  const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(
-    null
-  )
+  const [selectedGroup, setSelectedGroup] = useState<devLogGroupType | null>(null)
 
-  const [temporarySelectedGroup, setTemporarySelectedGroup] =
-    useState<devLogGroupType | null>(null)
-  const [currentGroupTree, setCurrentGroupTree] =
-    useState<GroupTreeType[]>(groupTreeProp)
+  const [temporarySelectedGroup, setTemporarySelectedGroup] = useState<devLogGroupType | null>(null)
+  const [currentGroupTree, setCurrentGroupTree] = useState<GroupTreeType[]>(groupTreeProp)
   const [isDevLogGroupPrivate, setIsDevLogGroupPrivate] = useState(false)
   const [groupCreateModalOpen, setGroupCreateModalOpen] = useState(false)
   const [changeGroupModalOpen, setChangeGroupModalOpen] = useState(false)
@@ -76,7 +73,11 @@ export default function DevLogView({
   // 선택된 그룹이 변경될 때 부모 디렉토리들을 자동으로 열기
   useEffect(() => {
     if (selectedGroup) {
-      const expandParentGroups = (groupTree: GroupTreeType[], targetPk: number, path: number[] = []): number[] | null => {
+      const expandParentGroups = (
+        groupTree: GroupTreeType[],
+        targetPk: number,
+        path: number[] = [],
+      ): number[] | null => {
         for (const group of groupTree) {
           if (group.pk === targetPk) {
             return path
@@ -119,19 +120,22 @@ export default function DevLogView({
   }, [currentPostListProp])
 
   // DevLog 요청 핸들러
-  const handleClickDevLog = useCallback(async (item?: { pk: number; title: string }) => {
-    if (!item?.pk) {
-      console.error('Dev log pk is not found')
-      return
-    }
+  const handleClickDevLog = useCallback(
+    async (item?: { pk: number; title: string }) => {
+      if (!item?.pk) {
+        console.error('Dev log pk is not found')
+        return
+      }
 
-    addQueryString('devLogPk', item.pk.toString())
-    setDevLogLoading(true)
+      addQueryString('devLogPk', item.pk.toString())
+      setDevLogLoading(true)
 
-    if (isMobile) {
-      setDevLogListDrawerOpen(false)
-    }
-  }, [isMobile, selectedDevLog])
+      if (isMobile) {
+        setDevLogListDrawerOpen(false)
+      }
+    },
+    [isMobile, selectedDevLog],
+  )
 
   // DevLog 리시브 핸들러
   useEffect(() => {
@@ -168,15 +172,15 @@ export default function DevLogView({
           isSelectable
           isSelect={selectedGroup?.pk === group.pk}
         >
-          {group?.childGroupList?.map(child => returnFolder(child))}
+          {group?.childGroupList?.map((child) => returnFolder(child))}
         </Folder>
       )
     },
-    [currentGroupTree, selectedGroup]
+    [currentGroupTree, selectedGroup],
   )
 
   const GroupTreeComponent = useMemo(() => {
-    return currentGroupTree.map(child => returnFolder(child))
+    return currentGroupTree.map((child) => returnFolder(child))
   }, [currentGroupTree, selectedGroup, returnFolder])
 
   // Recursive Tree for Select Group
@@ -191,7 +195,7 @@ export default function DevLogView({
             id={group.pk?.toString() ?? ''}
             value={group.name}
             element={group.name}
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation()
               if (!group?.pk) return
 
@@ -209,7 +213,7 @@ export default function DevLogView({
           id={group.pk?.toString() ?? ''}
           element={group?.name ?? ''}
           value={group?.name ?? ''}
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             if (!group?.pk) return
 
@@ -218,15 +222,15 @@ export default function DevLogView({
           isSelectable
           isSelect={temporarySelectedGroup?.pk === group.pk}
         >
-          {group?.childGroupList?.map(child => returnIndependentFolder(child))}
+          {group?.childGroupList?.map((child) => returnIndependentFolder(child))}
         </Folder>
       )
     },
-    [currentGroupTree, temporarySelectedGroup]
+    [currentGroupTree, temporarySelectedGroup],
   )
 
   const ParentUpdateableGroupTreeComponent = useMemo(() => {
-    return currentGroupTree.map(child => returnIndependentFolder(child))
+    return currentGroupTree.map((child) => returnIndependentFolder(child))
   }, [currentGroupTree, temporarySelectedGroup, returnIndependentFolder])
 
   const handleCreateGroup = useCallback(async () => {
@@ -236,7 +240,7 @@ export default function DevLogView({
       const updatedGroupTree = await createGroup({
         parentGroupPk: selectedGroup.pk ?? 0,
         name: newGroupName,
-        isPrivate: true
+        isPrivate: true,
       })
       if (!updatedGroupTree) return
       setCurrentGroupTree(updatedGroupTree)
@@ -287,9 +291,7 @@ export default function DevLogView({
 
           // 낙관적 업데이트 - 배열에서 삭제된 포스트 제거
           let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
-          const idx = _currentPostList.findIndex(
-            post => post.pk === deleted.pk
-          )
+          const idx = _currentPostList.findIndex((post) => post.pk === deleted.pk)
           if (idx !== -1) {
             _currentPostList.splice(idx, 1)
             setCurrentPostList(_currentPostList)
@@ -303,31 +305,22 @@ export default function DevLogView({
         toast.error('Failed to delete group')
       }
     },
-    [currentPostList, user]
+    [currentPostList, user],
   )
 
   const handleUpdateDevLogParentGroup = useCallback(async () => {
-    if (
-      !temporarySelectedGroup?.pk ||
-      !selectedDevLog?.pk ||
-      !selectedGroup?.pk ||
-      !user
-    )
-      return
+    if (!temporarySelectedGroup?.pk || !selectedDevLog?.pk || !selectedGroup?.pk || !user) return
 
     // setTreeLoading(true)
     try {
-      const updated = await updateParentGroupPk(
-        selectedDevLog.pk,
-        temporarySelectedGroup.pk
-      )
+      const updated = await updateParentGroupPk(selectedDevLog.pk, temporarySelectedGroup.pk)
 
       if (updated) {
         setChangeGroupModalOpen(false)
         setTemporarySelectedGroup(null)
 
         let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
-        const idx = _currentPostList.findIndex(post => post.pk === updated.pk)
+        const idx = _currentPostList.findIndex((post) => post.pk === updated.pk)
         if (idx !== -1) {
           _currentPostList.splice(idx, 1)
           setCurrentPostList(_currentPostList)
@@ -412,7 +405,7 @@ export default function DevLogView({
           // data-state가 'closed'가 아닐 때만 클릭
           const dataState = button.getAttribute('data-state')
           if (dataState === 'closed') {
-            (button as HTMLElement).click()
+            ;(button as HTMLElement).click()
           }
         } else {
           // 버튼을 찾을 수 없으면 요소 자체를 클릭
@@ -422,17 +415,20 @@ export default function DevLogView({
 
       // 마지막 요소가 아니면 100ms 대기
       if (i < groupPks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise((resolve) => setTimeout(resolve, 100))
       }
     }
   }, [])
 
-  const handleClickResultItem = useCallback(async (resultItem: any) => {
-    const _devLogData: any = await handleClickDevLog(resultItem)
-    expandSelectedGroupTree(_devLogData.group.map((group: any) => group.pk))
-    searchInputRef.current?.close()
-    setSelectedGroup(groupListProp.find(group => group.pk === resultItem.groupPk) ?? null)
-  }, [handleClickDevLog, groupListProp, treeRef, expandSelectedGroupTree])
+  const handleClickResultItem = useCallback(
+    async (resultItem: any) => {
+      const _devLogData: any = await handleClickDevLog(resultItem)
+      expandSelectedGroupTree(_devLogData.group.map((group: any) => group.pk))
+      searchInputRef.current?.close()
+      setSelectedGroup(groupListProp.find((group) => group.pk === resultItem.groupPk) ?? null)
+    },
+    [handleClickDevLog, groupListProp, treeRef, expandSelectedGroupTree],
+  )
 
   const togglePrivacy = useCallback(() => {
     if (!user) return
@@ -452,18 +448,25 @@ export default function DevLogView({
     return (
       <>
         <Column className={`${isMobile ? 'w-[90vw]' : 'w-[600px]'} overflow-y-hidden`}>
-          <input autoFocus type="text" placeholder='Search' className='w-full h-12 outline-none px-4 bg-[#222]' value={searchKeyword} onChange={handleSearch} />
-          <Column gap={2} className='pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar'>
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search"
+            className="w-full h-12 outline-none px-4 bg-[#222]"
+            value={searchKeyword}
+            onChange={handleSearch}
+          />
+          <Column gap={2} className="pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
             {searchLoading ? (
               // 검색 로딩 skeleton
               <Column gap={2} className={'fade-in'}>
                 {[1, 2, 3].map((i) => (
-                  <Column key={i} fullWidth className='rounded-sm pr-1 pl-2 mb-[-5px]'>
+                  <Column key={i} fullWidth className="rounded-sm pr-1 pl-2 mb-[-5px]">
                     <Row gap={1} className={'items-center mb-2'}>
-                      <Skeleton variant='circular' className={'size-4'} />
-                      <Skeleton variant='rounded' className={'h-4 flex-1'} />
+                      <Skeleton variant="circular" className={'size-4'} />
+                      <Skeleton variant="rounded" className={'h-4 flex-1'} />
                     </Row>
-                    <Skeleton variant='rounded' className={'h-3 w-3/4'} />
+                    <Skeleton variant="rounded" className={'h-3 w-3/4'} />
                   </Column>
                 ))}
               </Column>
@@ -472,17 +475,22 @@ export default function DevLogView({
                 const contextText = getContextText(resultItem.text, searchKeyword)
                 if (contextText === '') return
                 return (
-                  <Column key={i} fullWidth className=' cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]' onClick={() => handleClickResultItem(resultItem)}>
+                  <Column
+                    key={i}
+                    fullWidth
+                    className=" cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]"
+                    onClick={() => handleClickResultItem(resultItem)}
+                  >
                     <Row gap={1} className={'items-center'}>
-                      <FileIcon className='size-4 mt-[1px]' />
+                      <FileIcon className="size-4 mt-[1px]" />
                       {`${resultItem.group?.name ?? ''} > ${resultItem.title}`}
                     </Row>
-                    <Typography variant='body2' className='text-[#999]'>{`...${contextText}...`}</Typography>
+                    <Typography variant="body2" className="text-[#999]">{`...${contextText}...`}</Typography>
                   </Column>
                 )
               })
             ) : searchKeyword && !searchLoading ? (
-              <Typography variant='body2' className='text-[#999] text-center py-4'>
+              <Typography variant="body2" className="text-[#999] text-center py-4">
                 검색 결과가 없습니다.
               </Typography>
             ) : null}
@@ -494,24 +502,26 @@ export default function DevLogView({
 
   const NavigationArea = useMemo(() => {
     return (
-      <Column area-label='navigation-area' gap={4} fullWidth className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}>
+      <Column
+        area-label="navigation-area"
+        gap={4}
+        fullWidth
+        className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}
+      >
         <Row className={'relative group/navigation'}>
           <Column gap={2} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
-              <Row aria-label='search-input-area' fullWidth className={'flex-1'}>
+              <Row aria-label="search-input-area" fullWidth className={'flex-1'}>
                 <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               </Row>
               {isMobile && (
-                <IconButton
-                  onClick={() => setDevLogListDrawerOpen(false)}
-                  className={'text-[#ddd]'}
-                >
+                <IconButton onClick={() => setDevLogListDrawerOpen(false)} className={'text-[#ddd]'}>
                   <IconList />
                 </IconButton>
               )}
             </Row>
             <Tree
-              aria-label='group-tree'
+              aria-label="group-tree"
               ref={treeRef}
               className={'text-[#ddd] !h-fit'}
               initialExpandedItems={Array.from(expandedGroups).map(String)}
@@ -522,31 +532,16 @@ export default function DevLogView({
           {/* Dev Log Group 버튼 셋 */}
           {selectedGroup && user && (
             <Row
-              aria-label='group-tree-button-area'
-              className={
-                'absolute right-0 top-16 opacity-0 group-hover/navigation:opacity-100'
-              }
+              aria-label="group-tree-button-area"
+              className={'absolute right-0 top-16 opacity-0 group-hover/navigation:opacity-100'}
             >
-              <PlusIcon
-                className={'cursor-pointer'}
-                onClick={() => setGroupCreateModalOpen(true)}
-              />
-              <PlusIcon
-                className={'cursor-pointer rotate-[45deg]'}
-                onClick={handleDeleteGroup}
-              />
+              <PlusIcon className={'cursor-pointer'} onClick={() => setGroupCreateModalOpen(true)} />
+              <PlusIcon className={'cursor-pointer rotate-[45deg]'} onClick={handleDeleteGroup} />
               {isDevLogGroupPrivate ? (
-                <LockIcon
-                  className={'cursor-pointer size-4 mt-1 ml-[3px]'}
-                  onClick={togglePrivacy}
-                />
+                <LockIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
               ) : (
-                <LockOpenIcon
-                  className={'cursor-pointer size-4 mt-1 ml-[3px]'}
-                  onClick={togglePrivacy}
-                />
-              )
-              }
+                <LockOpenIcon className={'cursor-pointer size-4 mt-1 ml-[3px]'} onClick={togglePrivacy} />
+              )}
             </Row>
           )}
         </Row>
@@ -556,47 +551,49 @@ export default function DevLogView({
           {isMounted && (
             <Column fullWidth>
               {!postListLoading ? (
-                currentPostList.sort((a, b) => a.title.localeCompare(b.title)).map((item: { pk: number; title: string }, i: number) => {
-                  return (
-                    <Row
-                      key={i}
-                      gap={1}
-                      fullWidth
-                      className={
-                        'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
-                      }
-                      onClick={() => handleClickDevLog(item)}
-                    >
-                      <Row gap={1} className={'w-full items-center'}>
-                        <FileIcon className='size-4 mt-[1px]' />
-                        <p className='w-full break-all line-clamp-1'>
-                          {item.title}
-                        </p>
-                      </Row>
+                currentPostList
+                  .sort((a, b) => a.title.localeCompare(b.title))
+                  .map((item: { pk: number; title: string }, i: number) => {
+                    return (
                       <Row
+                        key={i}
+                        gap={1}
+                        fullWidth
                         className={
-                          'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'
+                          'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
                         }
+                        onClick={() => handleClickDevLog(item)}
                       >
-                        {user && (
-                          <>
-                            {/* Delete Dev Log */}
-                            <IconTrashFilled className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)} />
-                            {/* Change Parent Group */}
-                            <FolderInputIcon className='cursor-pointer hover:scale-[1] scale-[0.8] duration-100' onClick={() => setChangeGroupModalOpen(true)} />
-                          </>
-                        )}
+                        <Row gap={1} className={'w-full items-center'}>
+                          <FileIcon className="size-4 mt-[1px]" />
+                          <p className="w-full break-all line-clamp-1">{item.title}</p>
+                        </Row>
+                        <Row className={'group-hover/item:opacity-100 opacity-0 h-10 flex gap-2 items-center'}>
+                          {user && (
+                            <>
+                              {/* Delete Dev Log */}
+                              <IconTrashFilled
+                                className="cursor-pointer hover:scale-[1] scale-[0.8] duration-100"
+                                onClick={() => handleDeleteDevLog({ pk: item.pk, title: item.title } as any)}
+                              />
+                              {/* Change Parent Group */}
+                              <FolderInputIcon
+                                className="cursor-pointer hover:scale-[1] scale-[0.8] duration-100"
+                                onClick={() => setChangeGroupModalOpen(true)}
+                              />
+                            </>
+                          )}
+                        </Row>
                       </Row>
-                    </Row>
-                  )
-                })
+                    )
+                  })
               ) : (
                 <Column gap={1} className={'fade-in'}>
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
-                  <Skeleton variant='rounded' className={'w-full h-[20px]'} />
+                  <Skeleton variant="rounded" className={'w-full h-[20px]'} />
+                  <Skeleton variant="rounded" className={'w-full h-[20px]'} />
+                  <Skeleton variant="rounded" className={'w-full h-[20px]'} />
+                  <Skeleton variant="rounded" className={'w-full h-[20px]'} />
+                  <Skeleton variant="rounded" className={'w-full h-[20px]'} />
                 </Column>
               )}
             </Column>
@@ -604,7 +601,20 @@ export default function DevLogView({
         </Column>
       </Column>
     )
-  }, [currentGroupTree, selectedGroup, currentPostList, postListLoading, expandedGroups, GroupTreeComponent, SearchDialog, handleClickDevLog, handleDeleteDevLog, isDevLogGroupPrivate, togglePrivacy, isMounted])
+  }, [
+    currentGroupTree,
+    selectedGroup,
+    currentPostList,
+    postListLoading,
+    expandedGroups,
+    GroupTreeComponent,
+    SearchDialog,
+    handleClickDevLog,
+    handleDeleteDevLog,
+    isDevLogGroupPrivate,
+    togglePrivacy,
+    isMounted,
+  ])
 
   const RenderedDevLogList = useMemo(() => {
     return (
@@ -628,13 +638,11 @@ export default function DevLogView({
               boxSizing: 'border-box',
               left: isMobile ? '0px' : '0px',
               overflow: 'hidden',
-              backgroundColor: '#050505'
-            }
+              backgroundColor: '#050505',
+            },
           }}
         >
-          <Box className={'bg-[#111]'}>
-            {NavigationArea}
-          </Box>
+          <Box className={'bg-[#111]'}>{NavigationArea}</Box>
         </Drawer>
       </>
     )
@@ -642,7 +650,7 @@ export default function DevLogView({
 
   return (
     <>
-      <Box sx={{ display: 'flex', width: '100%' }} className='h-screen'>
+      <Row fullWidth className="pt-4" style={{ height: INNER_CONTENT_HEIGHT }}>
         {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
         {isMobile ? (
           RenderedDevLogList
@@ -656,7 +664,8 @@ export default function DevLogView({
         <Column
           gap={4}
           fullWidth
-          className={isMobile ? 'w-[90vw]' : 'flex-[1] max-w-[70%] min-w-[70%]'}
+          className={isMobile ? 'w-[90vw]' : 'flex-[1] w-[70%] relative'}
+          style={{ height: INNER_CONTENT_HEIGHT }}
         >
           <DevLogDetailView
             selectedDevLog={selectedDevLog}
@@ -670,15 +679,12 @@ export default function DevLogView({
             pinnedDevLogList={pinnedDevLogListProp ?? []}
           />
         </Column>
-      </Box>
+      </Row>
 
       {/*  Create New Group Modal  */}
-      <Dialog
-        open={groupCreateModalOpen}
-        onClose={() => setGroupCreateModalOpen(false)}
-      >
+      <Dialog open={groupCreateModalOpen} onClose={() => setGroupCreateModalOpen(false)}>
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault()
             if (newGroupName === '') return
             handleCreateGroup()
@@ -690,24 +696,26 @@ export default function DevLogView({
             autoFocus
             placeholder={'New group name'}
             value={newGroupName}
-            onChange={e => setNewGroupName(e.target.value)}
-            className={
-              'w-full !outline-none bg-[#333] rounded-sm px-2 min-w-[150px]'
-            }
+            onChange={(e) => setNewGroupName(e.target.value)}
+            className={'w-full !outline-none bg-[#333] rounded-sm px-2 min-w-[150px]'}
           />
         </form>
       </Dialog>
 
       {/*  Create New Group Modal  */}
-      <Dialog
-        open={changeGroupModalOpen}
-        onClose={() => setChangeGroupModalOpen(false)}
-      >
+      <Dialog open={changeGroupModalOpen} onClose={() => setChangeGroupModalOpen(false)}>
         <Column className={'min-w-[300px] min-h-[400px] p-2'}>
-          <Tree className={'text-[#ddd] !h-fit'}>
-            {ParentUpdateableGroupTreeComponent}
-          </Tree>
-          <Button fullWidth variant='contained' size='small' className='!mt-auto' color='primary' onClick={handleUpdateDevLogParentGroup}>Update Parent Group</Button>
+          <Tree className={'text-[#ddd] !h-fit'}>{ParentUpdateableGroupTreeComponent}</Tree>
+          <Button
+            fullWidth
+            variant="contained"
+            size="small"
+            className="!mt-auto"
+            color="primary"
+            onClick={handleUpdateDevLogParentGroup}
+          >
+            Update Parent Group
+          </Button>
         </Column>
       </Dialog>
     </>

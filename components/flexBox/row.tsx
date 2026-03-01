@@ -1,20 +1,19 @@
-import { Box } from '@mui/material'
-import ContainerProps from '@/types/ContainerProps'
+import { HTMLAttributes, ReactNode } from 'react'
 
-export default function Row({
-  children,
-  className,
-  gap,
-  fullWidth,
-  ...rest
-}: ContainerProps) {
+export interface RowProps extends HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode
+  gap?: number
+  fullWidth?: boolean
+}
+
+export default function Row({ children, className, gap, fullWidth, style, ...rest }: RowProps) {
   return (
-    <Box
-      className={`!flex ${className ?? ''} ${fullWidth && 'w-full'}`}
-      sx={{ gap }}
+    <div
+      className={`!flex ${className ?? ''} ${fullWidth ? 'w-full' : ''}`.trim()}
+      style={{ gap: gap ?? undefined, ...style }}
       {...rest}
     >
       {children}
-    </Box>
+    </div>
   )
 }

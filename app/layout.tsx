@@ -7,55 +7,49 @@ import localFont from 'next/font/local'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin']
+  subsets: ['latin'],
 })
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
-  subsets: ['latin']
+  subsets: ['latin'],
 })
 
 const dune = localFont({
   src: [
     {
       path: '../public/Dune_Rise.otf',
-      weight: '700'
-    }
+      weight: '700',
+    },
   ],
-  variable: '--font-dune'
+  variable: '--font-dune',
 })
 
 const font2 = localFont({
   src: [
     {
       path: '../public/MillionDesign.ttf',
-      weight: '700'
-    }
+      weight: '700',
+    },
   ],
-  variable: '--font2'
+  variable: '--font2',
 })
 
 export const metadata: Metadata = {
   title: 'SJ | LOG',
-  description: ''
+  description: '',
 }
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' spellCheck='false'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${dune.variable} ${font2.variable} antialiased`}
-      >
-        <div
-          className={
-            'w-screen min-h-screen flex flex-col relative'
-          }
-        >
-          <ToastContainer 
+    <html lang="en" spellCheck="false">
+      <body className={`${geistSans.variable} ${geistMono.variable} ${dune.variable} ${font2.variable} antialiased`}>
+        <div className={'w-screen min-h-screen flex flex-col relative'}>
+          <ToastContainer
             toastClassName="!bg-transparent !backdrop-blur-md !text-white"
             position="top-right"
             autoClose={1000}
