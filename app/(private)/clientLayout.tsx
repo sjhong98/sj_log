@@ -20,10 +20,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     //     }
 
         // cleanup: 컴포넌트 언마운트 시 원래 상태로 복원
-        return () => {
-            document.body.style.overflow = 'auto'
-        }
-    }, [pathname])
+    //     return () => {
+    //         document.body.style.overflow = 'auto'
+    //     }
+    // }, [pathname])
 
     return (
         <Column className={`${isMobile ? 'w-full items-center px-0 pt-4' : 'w-full items-center px-6 pt-4'}`}>
