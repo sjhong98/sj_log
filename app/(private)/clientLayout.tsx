@@ -10,15 +10,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const isMobile = useMediaQuery(theme.breakpoints.down('md'))
     const pathname = usePathname()
 
-    const [overflow, setOverflow] = useState(false)
-
     useEffect(() => {
         if(pathname.includes('/dev')) {
-            setOverflow(true)
             window.scrollTo(0, 0)
             document.body.style.overflow = 'hidden'
         } else {
-            setOverflow(false)
+
             document.body.style.overflow = 'auto'
         }
 

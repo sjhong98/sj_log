@@ -8,7 +8,6 @@ import getPinnedDevLogList from '@/actions/dev/log/getPinnedDevLogList'
 import DevLogView from '@/components/dev/DevLogView'
 import BoardType from '@/types/dev/BoardType'
 import { devLogType } from '@/types/schemaType'
-import PushPinIcon from '@mui/icons-material/PushPin';
 
 export default async function Page({
   params,
