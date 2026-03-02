@@ -22,7 +22,7 @@ import { FileIcon, FolderInputIcon, LockIcon, LockOpenIcon, PlusIcon } from 'luc
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import SearchInput from '../search/searchInput'
-import { INNER_CONTENT_HEIGHT } from '@/constants/layout'
+import { cn } from '@/lib/utils'
 
 const DRAWER_WIDTH = 380
 
@@ -506,10 +506,10 @@ export default function DevLogView({
         area-label="navigation-area"
         gap={4}
         fullWidth
-        className={'w-full min-w-[300px] h-screen p-4 pb-[200px] overflow-auto scrollbar-thin scrollbar-left'}
+        className={'w-full h-full min-w-[300px] p-4 pb-[200px] !pt-0 overflow-auto scrollbar-thin scrollbar-left'}
       >
         <Row className={'relative group/navigation'}>
-          <Column gap={2} fullWidth>
+          <Column gap={20} fullWidth>
             <Row fullWidth gap={2} className={'items-center'}>
               <Row aria-label="search-input-area" fullWidth className={'flex-1'}>
                 <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
@@ -557,14 +557,14 @@ export default function DevLogView({
                     return (
                       <Row
                         key={i}
-                        gap={1}
+                        gap={4}
                         fullWidth
                         className={
                           'items-center justify-between cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]'
                         }
                         onClick={() => handleClickDevLog(item)}
                       >
-                        <Row gap={1} className={'w-full items-center'}>
+                        <Row gap={4} className={'w-full items-center'}>
                           <FileIcon className="size-4 mt-[1px]" />
                           <p className="w-full break-all line-clamp-1">{item.title}</p>
                         </Row>
@@ -616,44 +616,45 @@ export default function DevLogView({
     isMounted,
   ])
 
-  const RenderedDevLogList = useMemo(() => {
-    return (
-      <>
-        {isMobile && (
-          <Box className={'absolute top-12 left-2 z-[10]'}>
+  const MobileNavigationWrapper = useCallback(
+    ({ children }: { children: React.ReactNode }) => {
+      return (
+        <>
+          <Box className={'absolute top-2 left-2 z-[10]'}>
             <IconButton onClick={() => setDevLogListDrawerOpen(true)}>
               <IconList color={'#ddd'} />
             </IconButton>
           </Box>
-        )}
-        <Drawer
-          open={devLogListDrawerOpen}
-          onClose={() => setDevLogListDrawerOpen(false)}
-          variant={!isMobile ? 'permanent' : 'temporary'}
-          sx={{
-            width: DRAWER_WIDTH,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
+          <Drawer
+            open={devLogListDrawerOpen}
+            onClose={() => setDevLogListDrawerOpen(false)}
+            variant={!isMobile ? 'permanent' : 'temporary'}
+            sx={{
               width: DRAWER_WIDTH,
-              boxSizing: 'border-box',
-              left: isMobile ? '0px' : '0px',
-              overflow: 'hidden',
-              backgroundColor: '#050505',
-            },
-          }}
-        >
-          <Box className={'bg-[#111]'}>{NavigationArea}</Box>
-        </Drawer>
-      </>
-    )
-  }, [isMobile, devLogListDrawerOpen, NavigationArea])
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: DRAWER_WIDTH,
+                boxSizing: 'border-box',
+                left: isMobile ? '0px' : '0px',
+                overflow: 'hidden',
+                backgroundColor: '#050505',
+              },
+            }}
+          >
+            <Box className={'bg-[#111] h-full py-4'}>{children}</Box>
+          </Drawer>
+        </>
+      )
+    },
+    [isMobile, devLogListDrawerOpen],
+  )
 
   return (
     <>
-      <Row fullWidth className="pt-4" style={{ height: INNER_CONTENT_HEIGHT }}>
+      <Row fullWidth className="h-[var(--inner-content-height)] pt-4">
         {/* PC에서는 navigation area를 고정으로 표시, 모바일에서는 drawer로 표시 */}
         {isMobile ? (
-          RenderedDevLogList
+          <MobileNavigationWrapper>{NavigationArea}</MobileNavigationWrapper>
         ) : (
           <Row fullWidth gap={4} className={'flex-[0.3] w-full'}>
             {NavigationArea}
@@ -661,12 +662,7 @@ export default function DevLogView({
         )}
 
         {/*  File View Area  */}
-        <Column
-          gap={4}
-          fullWidth
-          className={isMobile ? 'w-[90vw]' : 'flex-[1] w-[70%] relative'}
-          style={{ height: INNER_CONTENT_HEIGHT }}
-        >
+        <Column gap={4} fullWidth className={cn('h-full', isMobile ? 'w-[90vw]' : 'flex-[1] w-[70%] relative')}>
           <DevLogDetailView
             selectedDevLog={selectedDevLog}
             setSelectedDevLog={setSelectedDevLog}

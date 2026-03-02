@@ -22,7 +22,6 @@ import { DevLogDashboardItem } from './DevLogDashboard'
 import useQueryString from '@/hooks/useQueryString'
 import PushPinIcon from '@mui/icons-material/PushPin'
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
-import { INNER_CONTENT_HEIGHT } from '@/constants/layout'
 
 interface editableDevLogType extends devLogType {
   blocks: any
@@ -387,12 +386,12 @@ export default function DevLogDetailView({
   return (
     <div
       ref={scrollContainerRef}
-      className={
+      className={cn(
+        'h-full',
         isMobile
-          ? 'w-full h-[calc(100vh-130px)] overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-          : 'max-w-[100%] w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-      }
-      style={{ height: INNER_CONTENT_HEIGHT }}
+          ? 'w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
+          : 'max-w-[100%] w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative',
+      )}
     >
       <Column className={'w-full rounded-sm'}>
         {/*  새로운 dev log 생성 버튼  */}
@@ -438,7 +437,7 @@ export default function DevLogDetailView({
             <>
               {/* 고정 영역 - 상단 버튼 셋 */}
               {Boolean(user) && selectedDevLog && (
-                <div className={'fixed top-[100px] right-[100px] z-[100] right-0 min-h-10'}>
+                <div className={'md:fixed absolute md:top-[100px] md:right-[100px] right-0 z-[100] right-0 min-h-10'}>
                   <div
                     className={'absolute flex flex-row gap-2 h-full w-full pointer-events-none pr-4'}
                     id={'absolute-area'}
@@ -478,7 +477,7 @@ export default function DevLogDetailView({
               <div
                 aria-label="title-area"
                 className={
-                  'sticky top-[0px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out'
+                  'sticky md:top-[0px] top-[-2px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out md:px-0 px-10'
                 }
                 style={{
                   height: `${titleHeight}px`,
@@ -492,7 +491,7 @@ export default function DevLogDetailView({
                         fullWidth
                         className={
                           isMobile
-                            ? 'justify-between px-0 relative'
+                            ? 'justify-between px-4 relative'
                             : 'fixed top-0 left-0 justify-between pl-[55px] pr-4 relative'
                         }
                       >

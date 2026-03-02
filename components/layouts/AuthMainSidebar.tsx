@@ -174,8 +174,8 @@ const AuthMainSidebarWrapper = ({ children }: { children: React.ReactNode }) => 
         </SidebarBody>
       </Sidebar>
       <>
-        <div className="content-area-padding w-full h-screen overflow-visible bg-neutral-900 p-[var(--content-padding)]">
-          <div className="w-full h-full md:rounded-2xl rounded-none overflow-visible !overflow-hidden bg-black">
+        <div className="content-area-padding w-full md:h-screen h-[calc(100vh-var(--content-collapsed-sidebar-height))] bg-neutral-900 p-[var(--content-padding)]">
+          <div className="w-full min-h-[var(--inner-content-height)] md:rounded-2xl rounded-none overflow-visible !overflow-hidden bg-black">
             {children}
           </div>
         </div>

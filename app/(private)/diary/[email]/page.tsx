@@ -20,7 +20,7 @@ export default async function Page() {
           pk: diary.pk,
           title: diary.title,
           date: diary.date,
-          thumbnail: diary.thumbnail
+          thumbnail: diary.thumbnail,
         })
         .from(diary)
         .where(eq(diary.uid, user.id))
@@ -28,14 +28,8 @@ export default async function Page() {
 
       list.forEach((_: any, i: number) => {
         if (i > 0) {
-          list[i].isNewYear = !dayjs(list[i - 1].date).isSame(
-            dayjs(list[i].date),
-            'year'
-          )
-          list[i].isNewMonth = !dayjs(list[i - 1].date).isSame(
-            dayjs(list[i].date),
-            'month'
-          )
+          list[i].isNewYear = !dayjs(list[i - 1].date).isSame(dayjs(list[i].date), 'year')
+          list[i].isNewMonth = !dayjs(list[i - 1].date).isSame(dayjs(list[i].date), 'month')
         } else {
           list[i].isNewYear = true
           list[i].isNewMonth = true

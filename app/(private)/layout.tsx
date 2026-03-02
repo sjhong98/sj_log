@@ -12,9 +12,11 @@ export default async function Layout({ children }: { children: ReactNode }) {
       <Box className="min-h-screen">
         <AuthMainSidebarWrapper>
           <div id="root-portal" />
-          <Column className={'overflow-visible p-[var(--content-inner-padding)]'}>
+          <Column className={'overflow-visible'}>
             <Header user={user} />
-            <Column className="w-full items-center md:px-6 px-0 relative">{children}</Column>
+            <Column className="w-full h-[var(--inner-content-height)] items-center md:px-6 px-0 relative">
+              {children}
+            </Column>
           </Column>
         </AuthMainSidebarWrapper>
       </Box>

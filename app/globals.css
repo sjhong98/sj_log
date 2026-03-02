@@ -167,12 +167,23 @@ label.Mui-error {
   --background: #000;
   --subbackground: #000;
   --foreground: #dadada;
+
+  /* LAYOUT CONSTANTS */
   --content-padding: 0px;
   @media (min-width: 768px) {
     --content-padding: 12px;
   }
   --content-inner-padding: 24px;
   --header-height: 50px;
+  --content-padding: 0px;
+  @media (min-width: 768px) {
+    --content-padding: 12px;
+  }
+  --content-collapsed-sidebar-height: 40px;
+  --inner-content-height: calc(100vh - var(--header-height) - var(--content-collapsed-sidebar-height));
+  @media (min-width: 768px) {
+    --inner-content-height: calc(100vh - var(--header-height) - (var(--content-padding) * 2));
+  }
 }
 
 @layer base {

@@ -24,7 +24,7 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from '@mui/material'
 import { IconPencil } from '@tabler/icons-react'
 import dayjs from 'dayjs'
@@ -48,27 +48,16 @@ export default function DiaryList({ list }: any) {
   const [comments, setComments] = useState<any>([])
   const [comment, setComment] = useState<string>('')
   const [loadingContent, setLoadingContent] = useState(false)
-  const [confirmDeleteDiaryModalOpen, setConfirmDeleteDiaryModalOpen] =
-    useState(false)
-  const [selectedComment, setSelectedComment] = useState<CommentType | null>(
-    null
-  )
-  const [modifyingComment, setModifyingComment] = useState<CommentType | null>(
-    null
-  )
+  const [confirmDeleteDiaryModalOpen, setConfirmDeleteDiaryModalOpen] = useState(false)
+  const [selectedComment, setSelectedComment] = useState<CommentType | null>(null)
+  const [modifyingComment, setModifyingComment] = useState<CommentType | null>(null)
 
   const formatDiaryList = useCallback((list: any[]) => {
     let _diaryList: any = [...list]
     _diaryList.forEach((_: any, i: number) => {
       if (i > 0) {
-        _diaryList[i].isNewYear = !dayjs(_diaryList[i - 1].date).isSame(
-          dayjs(_diaryList[i].date),
-          'year'
-        )
-        _diaryList[i].isNewMonth = !dayjs(_diaryList[i - 1].date).isSame(
-          dayjs(_diaryList[i].date),
-          'month'
-        )
+        _diaryList[i].isNewYear = !dayjs(_diaryList[i - 1].date).isSame(dayjs(_diaryList[i].date), 'year')
+        _diaryList[i].isNewMonth = !dayjs(_diaryList[i - 1].date).isSame(dayjs(_diaryList[i].date), 'month')
       } else {
         _diaryList[i].isNewYear = true
         _diaryList[i].isNewMonth = true
@@ -93,11 +82,11 @@ export default function DiaryList({ list }: any) {
       if (!currentDiary) return
       setSelectedDiary({
         date: currentDiary.date,
-        title: currentDiary.title
+        title: currentDiary.title,
       })
       setLoadingContent(true)
     },
-    [diaryList]
+    [diaryList],
   )
 
   const handleClickDiary = useCallback(
@@ -108,21 +97,21 @@ export default function DiaryList({ list }: any) {
         const parser = new DOMParser()
         const doc = parser.parseFromString(diary?.content ?? '', 'text/html')
         const images = doc.querySelectorAll('img')
-        images.forEach(img => {
+        images.forEach((img) => {
           img.style.maxHeight = '300px'
           img.style.objectFit = 'cover'
         })
         const modifiedHtml = doc.body.innerHTML
         setSelectedDiary({
           ...diary,
-          content: modifiedHtml
+          content: modifiedHtml,
         })
         setComments(diary?.comments)
         setComment('')
         setLoadingContent(false)
       })
     },
-    [diaryList]
+    [diaryList],
   )
 
   const handleClickModify = useCallback(() => {
@@ -136,9 +125,7 @@ export default function DiaryList({ list }: any) {
       return
     } else toast.success('게시물 삭제 성공')
     let _diaryList = [...diaryList]
-    const idx = _diaryList.findIndex(
-      (item: DiaryType) => item.pk === selectedDiary.pk
-    )
+    const idx = _diaryList.findIndex((item: DiaryType) => item.pk === selectedDiary.pk)
     if (idx !== -1) {
       _diaryList.splice(idx, 1)
       if (_diaryList[0].pk !== undefined) handleClickDiary(_diaryList[0].pk)
@@ -154,7 +141,7 @@ export default function DiaryList({ list }: any) {
   const handleCreateComment = useCallback(async () => {
     const rowCount = await createComment({
       content: comment,
-      diaryPk: selectedDiary.pk
+      diaryPk: selectedDiary.pk,
     })
     if (rowCount) {
       toast.success('작성 완료')
@@ -174,7 +161,7 @@ export default function DiaryList({ list }: any) {
 
     const result = await modifyComment({
       content: comment,
-      commentPk: selectedComment.pk
+      commentPk: selectedComment.pk,
     })
     if (result) {
       toast.success('수정 완료')
@@ -194,28 +181,15 @@ export default function DiaryList({ list }: any) {
     }
   }, [selectedComment])
 
-  const renderedContent = useMemo(() => {
-    if (!selectedDiary?.content) return
-
-    return (
-      <Column dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
-    )
-  }, [selectedDiary?.content])
-
   return (
     <>
       <DiaryListPortal diaryList={diaryList} onDiaryClick={handleClickDiary} handleClickAdd={handleClickAdd} />
-      
-      <Box sx={{ display: 'flex', width: '100%' }}>
-        {/* {renderedDiaryList} */}
 
+      <Box sx={{ display: 'flex', width: '100%' }}>
         <Column gap={10} fullWidth>
           {selectedDiary && (
             <Column fullWidth gap={4}>
-              <Row
-                fullWidth
-                className={'rounded-lg bg-[var(--color-foreground)] px-4 py-2'}
-              >
+              <Row fullWidth className={'rounded-lg bg-[var(--color-foreground)] px-4 py-2'}>
                 <Typography className={'text-[var(--color-background)]'}>
                   {dayjs(selectedDiary.date).format('YYYY. M. D ddd A h:mm')}
                 </Typography>
@@ -224,58 +198,32 @@ export default function DiaryList({ list }: any) {
                 <Row className={'justify-between'}>
                   <Typography variant={'h5'}>{selectedDiary.title}</Typography>
                   <ModifyPopper
-                    handleClickDelete={() =>
-                      setConfirmDeleteDiaryModalOpen(true)
-                    }
+                    handleClickDelete={() => setConfirmDeleteDiaryModalOpen(true)}
                     handleClickModify={handleClickModify}
                   />
                 </Row>
-                {
-                  renderedContent ? renderedContent : <></>
-                  //   TODO: skeleton
-                }
+                {!selectedDiary?.content ? (
+                  <Column dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
+                ) : (
+                  <></>
+                )}
               </Column>
             </Column>
           )}
           {loadingContent ? (
             <Column gap={1} fullWidth className={'mt-[-50px]'}>
-              <Skeleton
-                variant='rounded'
-                className={'w-[88%] min-h-[20px]'}
-              />
-              <Skeleton
-                variant='rounded'
-                className={'w-[95%] min-h-[20px]'}
-              />
-              <Skeleton
-                variant='rounded'
-                className={'w-[90%] min-h-[20px]'}
-              />
-              <Skeleton
-                variant='rounded'
-                className={'w-[93%] min-h-[20px]'}
-              />
-              <Skeleton
-                variant='rounded'
-                className={'w-[86%] min-h-[20px]'}
-              />
+              <Skeleton variant="rounded" className={'w-[88%] min-h-[20px]'} />
+              <Skeleton variant="rounded" className={'w-[95%] min-h-[20px]'} />
+              <Skeleton variant="rounded" className={'w-[90%] min-h-[20px]'} />
+              <Skeleton variant="rounded" className={'w-[93%] min-h-[20px]'} />
+              <Skeleton variant="rounded" className={'w-[86%] min-h-[20px]'} />
             </Column>
           ) : (
             <Row fullWidth className={'relative'}>
-              <TextField
-                fullWidth
-                multiline
-                variant={'standard'}
-                value={comment}
-                onChange={handleChangeComment}
-              />
+              <TextField fullWidth multiline variant={'standard'} value={comment} onChange={handleChangeComment} />
               <Box>
                 <IconButton
-                  onClick={
-                    !modifyingComment
-                      ? handleCreateComment
-                      : submitModifiedComment
-                  }
+                  onClick={!modifyingComment ? handleCreateComment : submitModifiedComment}
                   disabled={comment === ''}
                 >
                   <IconPencil />
@@ -286,24 +234,17 @@ export default function DiaryList({ list }: any) {
           <Column fullWidth gap={4}>
             {comments.map((commentItem: CommentType, i: number) => {
               // 수정 중인 항목 가리기
-              if (modifyingComment && modifyingComment.pk === commentItem.pk)
-                return
+              if (modifyingComment && modifyingComment.pk === commentItem.pk) return
 
               return (
                 <Row key={i} fullWidth className={'justify-between'}>
                   <Column
                     fullWidth
                     gap={1}
-                    className={
-                      'min-h-[50px] border-l-[1px] px-6 py-2 border-[var(--color-foreground)]'
-                    }
+                    className={'min-h-[50px] border-l-[1px] px-6 py-2 border-[var(--color-foreground)]'}
                   >
-                    <Typography variant={'subtitle2'}>
-                      {dayjs(commentItem?.createdAt).format('YYYY. M. D')}
-                    </Typography>
-                    <Typography sx={{ whiteSpace: 'pre-line' }}>
-                      {commentItem.content}
-                    </Typography>
+                    <Typography variant={'subtitle2'}>{dayjs(commentItem?.createdAt).format('YYYY. M. D')}</Typography>
+                    <Typography sx={{ whiteSpace: 'pre-line' }}>{commentItem.content}</Typography>
                   </Column>
                   <ModifyPopper
                     onOpen={() => setSelectedComment(commentItem)}
@@ -317,10 +258,7 @@ export default function DiaryList({ list }: any) {
         </Column>
       </Box>
 
-      <Dialog
-        open={confirmDeleteDiaryModalOpen}
-        onClose={() => setConfirmDeleteDiaryModalOpen(false)}
-      >
+      <Dialog open={confirmDeleteDiaryModalOpen} onClose={() => setConfirmDeleteDiaryModalOpen(false)}>
         <DialogTitle>Diary를 삭제하시겠습니까?</DialogTitle>
         <DialogContent>
           <Row gap={2} fullWidth>
@@ -332,12 +270,7 @@ export default function DiaryList({ list }: any) {
             >
               취소
             </Button>
-            <Button
-              variant={'contained'}
-              color={'error'}
-              className={'flex-[1]'}
-              onClick={handleClickDelete}
-            >
+            <Button variant={'contained'} color={'error'} className={'flex-[1]'} onClick={handleClickDelete}>
               삭제
             </Button>
           </Row>

@@ -1,10 +1,13 @@
-import { HTMLAttributes, ReactNode } from 'react'
+'use client'
+
+import React, { HTMLAttributes, ReactNode } from 'react'
 
 export interface ColumnProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode
   gap?: number
   fullWidth?: boolean
   container?: boolean
+  component?: React.ElementType
 }
 
 export default function Column({
@@ -14,15 +17,16 @@ export default function Column({
   fullWidth,
   container: _container,
   style,
+  component: Tag = 'div',
   ...rest
 }: ColumnProps) {
   return (
-    <div
+    <Tag
       className={`!flex !flex-col ${className ?? ''} ${fullWidth ? 'w-full' : ''}`.trim()}
       style={{ gap: gap ?? undefined, ...style }}
       {...rest}
     >
       {children}
-    </div>
+    </Tag>
   )
 }

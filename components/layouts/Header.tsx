@@ -9,7 +9,7 @@ export default function Header({ user }: { user: User }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   return (
-    <Row id="header" className={'w-full h-[var(--header-height)] relative justify-center'}>
+    <Row id="header" className={'w-full h-[var(--header-height)] relative justify-center items-center'}>
       <Typography variant={'h5'} className={'dune text-shadow-xl'}>
         {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
       </Typography>
