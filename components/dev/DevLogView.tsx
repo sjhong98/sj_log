@@ -675,6 +675,7 @@ export default function DevLogView({
             groupList={groupListProp}
             devLogLoading={devLogLoading}
             pinnedDevLogList={pinnedDevLogListProp ?? []}
+            recentDevLogList={recentDevLogListProp ?? []}
           />
         </Column>
       </Row>

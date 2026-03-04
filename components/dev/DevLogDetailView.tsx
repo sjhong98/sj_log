@@ -38,6 +38,7 @@ export default function DevLogDetailView({
   groupList,
   devLogLoading,
   pinnedDevLogList,
+  recentDevLogList,
 }: {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
@@ -48,6 +49,7 @@ export default function DevLogDetailView({
   groupList?: devLogGroupType[]
   devLogLoading?: boolean
   pinnedDevLogList?: devLogType[]
+  recentDevLogList?: devLogType[]
 }) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -408,7 +410,7 @@ export default function DevLogDetailView({
         <Column className="w-full relative">
           {!selectedDevLog ? (
             // 선택된 로그 없을 경우 -> 핀 목록 표시
-            <>
+            <Column gap={60}>
               <div className="flex flex-col w-full gap-4 md:px-10">
                 <div className="w-full">
                   <p className="text-xl font-bold">Pinned Logs</p>
@@ -432,7 +434,30 @@ export default function DevLogDetailView({
                     ))}
                 </div>
               </div>
-            </>
+              <div className="flex flex-col w-full gap-4 md:px-10">
+                <div className="w-full">
+                  <p className="text-xl font-bold">Recent Logs</p>
+                </div>
+                <div
+                  className={cn(
+                    `w-full h-fit grid gap-4`,
+                    selectedDevLog ? 'flex-[0.4]' : '',
+                    selectedDevLog
+                      ? 'md:grid-cols-2 sm:grid-cols-1 grid-cols-1'
+                      : 'md:grid-cols-4 sm:grid-cols-3 grid-cols-2',
+                  )}
+                >
+                  {Array.isArray(recentDevLogList) &&
+                    recentDevLogList.map((devLog: devLogType) => (
+                      <DevLogDashboardItem
+                        key={devLog.pk ?? 0}
+                        devLog={devLog}
+                        onClick={() => handleClickDevLog(devLog)}
+                      />
+                    ))}
+                </div>
+              </div>
+            </Column>
           ) : (
             // 선택된 로그 있을 경우 -> 선택된 로그 상세 표시
             <>
