@@ -33,6 +33,7 @@ export default function DevLogView({
   currentPostListProp,
   selectedDevLogProp,
   pinnedDevLogListProp,
+  recentDevLogListProp,
 }: {
   list: BoardType
   groupTreeProp: GroupTreeType[]
@@ -40,6 +41,7 @@ export default function DevLogView({
   currentPostListProp: simpleDevLogType[] | null
   selectedDevLogProp: devLogType | null
   pinnedDevLogListProp: devLogType[] | null
+  recentDevLogListProp: devLogType[] | null
 }) {
   const { addQueryString, clearQueryString } = useQueryString()
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)

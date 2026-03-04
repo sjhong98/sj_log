@@ -5,6 +5,7 @@ import getGroupTreeAndPostsByPk from '@/actions/dev/group/getGroupTreeAndPostsBy
 import getPostListByGroupPk, { simpleDevLogType } from '@/actions/dev/group/getPostListByGroupPk'
 import getDevLogByPk from '@/actions/dev/log/getDevLogByPk'
 import getPinnedDevLogList from '@/actions/dev/log/getPinnedDevLogList'
+import getRecentDevLogList from '@/actions/dev/log/getRecentDevLogList'
 import DevLogView from '@/components/dev/DevLogView'
 import BoardType from '@/types/dev/BoardType'
 import { devLogType } from '@/types/schemaType'
@@ -28,6 +29,7 @@ export default async function Page({
   let devLogList: simpleDevLogType[] = []
   let devLog: devLogType | null = null
   let pinnedDevLogList: devLogType[] = []
+  let recentDevLogList: devLogType[] = []
 
   if (devLogGroupPk) {
     devLogList = await getPostListByGroupPk(Number(devLogGroupPk))
@@ -39,7 +41,7 @@ export default async function Page({
 
   if (!devLogPk && decodedEmail) {
     pinnedDevLogList = await getPinnedDevLogList(decodedEmail)
-    console.log('pinnedDevLogList: ', pinnedDevLogList)
+    recentDevLogList = await getRecentDevLogList(decodedEmail)
   }
 
   if (!boardList || !groupTree) return
@@ -52,6 +54,7 @@ export default async function Page({
         currentPostListProp={devLogList}
         selectedDevLogProp={devLog}
         pinnedDevLogListProp={pinnedDevLogList}
+        recentDevLogListProp={recentDevLogList}
       />
     </>
   )

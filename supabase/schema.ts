@@ -135,16 +135,12 @@ export const devLog = pgTable("dev_log", {
 	text: text(),
 	isPrivate: boolean("is_private").default(false),
 	isPinned: boolean("is_pinned").default(false),
+	address: text(),
 }, (table) => [
 	foreignKey({
 			columns: [table.groupPk],
 			foreignColumns: [devLogGroup.pk],
 			name: "dev_log_group_pk_fkey"
-		}),
-	foreignKey({
-			columns: [table.uid],
-			foreignColumns: [users.id],
-			name: "dev_log_uid_fkey"
 		}),
 	foreignKey({
 			columns: [table.uid],
@@ -236,4 +232,5 @@ export const user = pgTable("user", {
 		}),
 	primaryKey({ columns: [table.pk, table.uid], name: "user_pkey"}),
 	unique("user_uid_key").on(table.uid),
+	pgPolicy("user_role", { as: "permissive", for: "select", to: ["public"], using: sql`true` }),
 ]);

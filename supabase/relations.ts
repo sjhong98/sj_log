@@ -16,7 +16,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	financeLogs: many(financeLog),
 	comments: many(comment),
 	financeAccounts: many(financeAccount),
-	devLogs: many(devLog),
 	devLogGroups: many(devLogGroup),
 	users: many(user),
 }));
@@ -67,10 +66,6 @@ export const devLogRelations = relations(devLog, ({one, many}) => ({
 	devLogGroup: one(devLogGroup, {
 		fields: [devLog.groupPk],
 		references: [devLogGroup.pk]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [devLog.uid],
-		references: [usersInAuth.id]
 	}),
 	user: one(user, {
 		fields: [devLog.uid],

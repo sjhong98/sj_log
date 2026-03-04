@@ -61,6 +61,7 @@ export default function DevLogDetailView({
     text: null,
     isPrivate: false,
     isPinned: false,
+    address: '',
   }
   const { user } = useUser()
   const { addQueryString } = useQueryString()

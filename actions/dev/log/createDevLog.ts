@@ -1,14 +1,17 @@
 'use server'
 
+import { getUser } from '@/actions/session/getUser'
 import db from '@/supabase'
 import { devLog } from '@/supabase/schema'
-import { getUser } from '@/actions/session/getUser'
 import { devLogType } from '@/types/schemaType'
 import { revalidateTag } from 'next/cache'
+import getDevLogAddress from './getDevLogAddress'
 
 export default async function createDevLog(devLogItem: devLogType) {
   let user: any = await getUser()
   if (!user) return null
+
+  const addressArray: string[] = devLogItem.groupPk ? await getDevLogAddress(devLogItem.groupPk) : []
 
   try {
     const [inserted] = await db
@@ -18,7 +21,8 @@ export default async function createDevLog(devLogItem: devLogType) {
         content: devLogItem.content,
         groupPk: devLogItem.groupPk,
         date: new Date().toISOString(),
-        uid: user.id
+        uid: user.id,
+        address: addressArray.join(' > '),
       })
       .returning()
 
