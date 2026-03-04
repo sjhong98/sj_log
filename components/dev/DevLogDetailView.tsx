@@ -399,7 +399,7 @@ export default function DevLogDetailView({
     >
       <Column className={'w-full rounded-sm'}>
         {/*  새로운 dev log 생성 버튼  */}
-        <div className="fixed bottom-20 right-20 z-[100]">
+        <div className="fixed bottom-20 right-20 z-[200]">
           <button
             onClick={handleCreateNewDevLog}
             className="bg-[#ddd] rounded-full p-1 shadow-lg cursor-pointer z-[9999] mr-2 pointer-events-auto aspect-square size-8"
