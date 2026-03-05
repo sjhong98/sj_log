@@ -211,7 +211,7 @@ export default function DiaryList({ list }: any) {
             </Column>
           )}
           {loadingContent ? (
-            <Column gap={1} fullWidth className={'mt-[-50px]'}>
+            <Column gap={4} fullWidth className={'mt-[-50px]'}>
               <Skeleton variant="rounded" className={'w-[88%] min-h-[20px]'} />
               <Skeleton variant="rounded" className={'w-[95%] min-h-[20px]'} />
               <Skeleton variant="rounded" className={'w-[90%] min-h-[20px]'} />
@@ -240,7 +240,7 @@ export default function DiaryList({ list }: any) {
                 <Row key={i} fullWidth className={'justify-between'}>
                   <Column
                     fullWidth
-                    gap={1}
+                    gap={4}
                     className={'min-h-[50px] border-l-[1px] px-6 py-2 border-[var(--color-foreground)]'}
                   >
                     <Typography variant={'subtitle2'}>{dayjs(commentItem?.createdAt).format('YYYY. M. D')}</Typography>
@@ -261,7 +261,7 @@ export default function DiaryList({ list }: any) {
       <Dialog open={confirmDeleteDiaryModalOpen} onClose={() => setConfirmDeleteDiaryModalOpen(false)}>
         <DialogTitle>Diary를 삭제하시겠습니까?</DialogTitle>
         <DialogContent>
-          <Row gap={2} fullWidth>
+          <Row gap={8} fullWidth>
             <Button
               variant={'outlined'}
               color={'info'}

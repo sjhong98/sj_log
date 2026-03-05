@@ -13,26 +13,20 @@ import getAccounts from '@/actions/finance/account/getAccounts'
 import Row from '@/components/flexBox/row'
 import CalibrateAccount from '@/components/finance/CalibarateAccount'
 
-export default function FinanceDashboard({
-  initialData
-}: {
-  initialData: { accounts: FinanceAccountType[] }
-}) {
+export default function FinanceDashboard({ initialData }: { initialData: { accounts: FinanceAccountType[] } }) {
   const monthlyLogsDisplayRef = useRef<any>(null)
   const createLogDialogRef = useRef<any>(null)
   const createAccountDialogRef = useRef<any>(null)
 
   const [accounts, setAccounts] = useState<FinanceAccountType[]>(
-    initialData.accounts.map(account => {
+    initialData.accounts.map((account) => {
       return {
         ...account,
-        amount: 0
+        amount: 0,
       }
-    })
+    }),
   )
-  const [_accounts, _setAccounts] = useState<FinanceAccountType[]>(
-    initialData.accounts
-  )
+  const [_accounts, _setAccounts] = useState<FinanceAccountType[]>(initialData.accounts)
 
   const handleRefreshLogsData = useCallback(async () => {
     if (!monthlyLogsDisplayRef.current) return
@@ -57,17 +51,12 @@ export default function FinanceDashboard({
           refreshAccountData={handleRefreshAccountData}
         />
       ),
-      name: 'Add Log'
+      name: 'Add Log',
     },
     {
-      icon: (
-        <CreateFinanceAccountDialog
-          ref={createAccountDialogRef}
-          refreshData={handleRefreshAccountData}
-        />
-      ),
-      name: 'Add Account'
-    }
+      icon: <CreateFinanceAccountDialog ref={createAccountDialogRef} refreshData={handleRefreshAccountData} />,
+      name: 'Add Account',
+    },
   ]
 
   useEffect(() => {
@@ -78,21 +67,18 @@ export default function FinanceDashboard({
           tempAccount[i].amount = _accounts[i].amount
           setAccounts(tempAccount)
         },
-        100 * Number(i)
+        100 * Number(i),
       )
     }
   }, [_accounts])
 
   return (
     <>
-      <Column gap={2} fullWidth className={''}>
+      <Column gap={8} fullWidth className={''}>
         <AccountDisplay accounts={accounts} />
         <MonthlyLogsDisplay ref={monthlyLogsDisplayRef} />
       </Column>
-      <Row
-        gap={2}
-        className={'w-full justify-end items-end fixed bottom-4 right-4'}
-      >
+      <Row gap={8} className={'w-full justify-end items-end fixed bottom-4 right-4'}>
         <CalibrateAccount
           accounts={accounts}
           refresh={async () => {
@@ -101,20 +87,16 @@ export default function FinanceDashboard({
           }}
         />
         <SpeedDial
-          ariaLabel='Add'
+          ariaLabel="Add"
           sx={{
             '& .MuiButtonBase-root': {
-              backgroundColor: '#dadada !important'
-            }
+              backgroundColor: '#dadada !important',
+            },
           }}
           icon={<IconPlus />}
         >
-          {actions.map(action => (
-            <SpeedDialAction
-              key={action.name}
-              icon={action.icon}
-              tooltipTitle={action.name}
-            />
+          {actions.map((action) => (
+            <SpeedDialAction key={action.name} icon={action.icon} tooltipTitle={action.name} />
           ))}
         </SpeedDial>
       </Row>

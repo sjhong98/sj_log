@@ -2,14 +2,10 @@
 
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
-import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
-import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"
-import { Button as StatefulButton } from "@/components/ui/stateful-button"
-import {
-  Typography,
-  useMediaQuery,
-  useTheme
-} from '@mui/material'
+import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation'
+import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input'
+import { Button as StatefulButton } from '@/components/ui/stateful-button'
+import { Typography, useMediaQuery, useTheme } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -65,21 +61,21 @@ export default function Page() {
         setLoginClicked(false)
       }
     },
-    [email, password]
+    [email, password],
   )
 
   return (
     <>
-      <Column gap={3} className='w-screen max-h-screen overflow-hidden p-6'>
-        <Row gap={4} className='h-[calc(100vh-40px)]'>
-
-          <Row
-            id='background-gradient-animation'
-            className='w-full h-full rounded-2xl overflow-hidden z-[2]'
-          >
-            <BackgroundGradientAnimation >
+      <Column gap={12} className="w-screen max-h-screen overflow-hidden p-6">
+        <Row gap={16} className="h-[calc(100vh-40px)]">
+          <Row id="background-gradient-animation" className="w-full h-full rounded-2xl overflow-hidden z-[2]">
+            <BackgroundGradientAnimation>
               <div className="absolute z-50 inset-0 flex items-center justify-center text-white font-bold px-4 pointer-events-none text-3xl text-center md:text-4xl lg:text-7xl">
-                <Typography id='background-gradient-animation-text' variant={'h4'} className="!font-dune dune bg-clip-text text-transparent drop-shadow-2xl bg-gradient-to-b from-white/80 to-white/20 opacity-0">
+                <Typography
+                  id="background-gradient-animation-text"
+                  variant={'h4'}
+                  className="!font-dune dune bg-clip-text text-transparent drop-shadow-2xl bg-gradient-to-b from-white/80 to-white/20 opacity-0"
+                >
                   {!isMobile ? 'LIFE MANAGEMENT SYSTEM' : 'LMS'}
                 </Typography>
               </div>
@@ -87,36 +83,33 @@ export default function Page() {
           </Row>
 
           {/* <LampContainer className='max-w-[300px] w-full mt-[-50px]'> */}
-            <Column
-              id='login-form'
-              fullWidth
-              component={'form'}
-              gap={4}
-              onSubmit={handleSignIn}
-              className={'max-w-[300px] w-full items-center justify-center'}
-            >
-              <Typography variant='h4' className='text-[#DDD]'>LOGIN</Typography>
-              <Column fullWidth gap={2}>
-                <PlaceholdersAndVanishInput
-                  placeholders={['Email']}
-                  onChange={e => setEmail(e.target.value)}
-                />
-                <PlaceholdersAndVanishInput
-                  placeholders={['Password']}
-                  onChange={e => setPassword(e.target.value)}
-                  type={'password'}
-                />
-              </Column>
-              <StatefulButton type='submit' className='z-[9999] w-full' onClick={handleSignIn}>
-                Sign In
-              </StatefulButton>
+          <Column
+            id="login-form"
+            fullWidth
+            component={'form'}
+            gap={16}
+            onSubmit={handleSignIn}
+            className={'max-w-[300px] w-full items-center justify-center'}
+          >
+            <Typography variant="h4" className="text-[#DDD]">
+              LOGIN
+            </Typography>
+            <Column fullWidth gap={8}>
+              <PlaceholdersAndVanishInput placeholders={['Email']} onChange={(e) => setEmail(e.target.value)} />
+              <PlaceholdersAndVanishInput
+                placeholders={['Password']}
+                onChange={(e) => setPassword(e.target.value)}
+                type={'password'}
+              />
             </Column>
+            <StatefulButton type="submit" className="z-[9999] w-full" onClick={handleSignIn}>
+              Sign In
+            </StatefulButton>
+          </Column>
           {/* </LampContainer> */}
         </Row>
-        <Column>
-        </Column>
+        <Column></Column>
       </Column>
     </>
   )
 }
-

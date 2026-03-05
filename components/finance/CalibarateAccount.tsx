@@ -10,18 +10,10 @@ import calibrateAccounts from '@/components/finance/calibrateAccounts'
 import { toast } from 'react-toastify'
 import cloneDeep from 'lodash/cloneDeep'
 
-export default function CalibrateAccount({
-  accounts,
-  refresh
-}: {
-  accounts: FinanceAccountType[]
-  refresh: any
-}) {
+export default function CalibrateAccount({ accounts, refresh }: { accounts: FinanceAccountType[]; refresh: any }) {
   const [open, setOpen] = useState<boolean>(false)
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false)
-  const [calibratedAccounts, setCalibratedAccounts] = useState<
-    FinanceAccountType[]
-  >([])
+  const [calibratedAccounts, setCalibratedAccounts] = useState<FinanceAccountType[]>([])
 
   useEffect(() => {
     setCalibratedAccounts(cloneDeep(accounts))
@@ -31,7 +23,7 @@ export default function CalibrateAccount({
     setButtonDisabled(true)
     const rowCount = await calibrateAccounts({
       accounts: calibratedAccounts,
-      prevAccounts: accounts
+      prevAccounts: accounts,
     })
     if (rowCount) {
       setOpen(false)
@@ -44,9 +36,7 @@ export default function CalibrateAccount({
     <>
       <Tooltip title={'Calibrate Account'}>
         <button
-          className={
-            'rounded-full bg-[#dadada] p-2 mb-[6px] cursor-pointer scale-0 scale-up-appear'
-          }
+          className={'rounded-full bg-[#dadada] p-2 mb-[6px] cursor-pointer scale-0 scale-up-appear'}
           onClick={() => setOpen(true)}
         >
           <IconAdjustmentsAlt color={'#050505'} />
@@ -58,55 +48,45 @@ export default function CalibrateAccount({
         sx={{
           '& .MuiDialogContent-root': {
             backgroundColor: 'var(--color-sub-background)',
-            overflow: 'hidden'
-          }
+            overflow: 'hidden',
+          },
         }}
       >
         <DialogContent>
           <Column className={'max-h-[80vh] overflow-y-auto custom-scrollbar'}>
-            {calibratedAccounts.map(
-              (account: FinanceAccountType, i: number) => {
-                return (
-                  <Column
-                    key={i}
-                    className={' focus-within:text-green-500 text-[#222]'}
+            {calibratedAccounts.map((account: FinanceAccountType, i: number) => {
+              return (
+                <Column key={i} className={' focus-within:text-green-500 text-[#222]'}>
+                  <HyperText className={'text-sm text-right'} animateOnHover={false}>
+                    {account.title}
+                  </HyperText>
+                  <Row
+                    className={
+                      'relative rounded-md border-[2px] border-[#222] px-4 py-2 group focus-within:border-green-500 duration-75 mt-[-8px]'
+                    }
                   >
-                    <HyperText
-                      className={'text-sm text-right'}
-                      animateOnHover={false}
-                    >
-                      {account.title}
-                    </HyperText>
-                    <Row
-                      className={
-                        'relative rounded-md border-[2px] border-[#222] px-4 py-2 group focus-within:border-green-500 duration-75 mt-[-8px]'
-                      }
-                    >
-                      <input
-                        name={'amount'}
-                        placeholder={'0'}
-                        className={
-                          'w-full outline-none !text-2xl text-end font2'
-                        }
-                        value={formatInputNumber(account.amount ?? 0)}
-                        onChange={e => {
-                          const raw = e.target.value
-                          const number = convertToNumber(raw)
+                    <input
+                      name={'amount'}
+                      placeholder={'0'}
+                      className={'w-full outline-none !text-2xl text-end font2'}
+                      value={formatInputNumber(account.amount ?? 0)}
+                      onChange={(e) => {
+                        const raw = e.target.value
+                        const number = convertToNumber(raw)
 
-                          let _calibratedAccount = [...calibratedAccounts]
-                          _calibratedAccount[i].amount = number
-                          setCalibratedAccounts(_calibratedAccount)
-                        }}
-                        autoComplete='off'
-                      />
-                      <IconCurrencyWon className={'mt-[4px]'} />
-                    </Row>
-                  </Column>
-                )
-              }
-            )}
+                        let _calibratedAccount = [...calibratedAccounts]
+                        _calibratedAccount[i].amount = number
+                        setCalibratedAccounts(_calibratedAccount)
+                      }}
+                      autoComplete="off"
+                    />
+                    <IconCurrencyWon className={'mt-[4px]'} />
+                  </Row>
+                </Column>
+              )
+            })}
           </Column>
-          <Row gap={1} className={'w-full justify-end'}>
+          <Row gap={4} className={'w-full justify-end'}>
             <button
               onClick={() => setOpen(false)}
               className={`cursor-pointer border-[2px] border-[#dadada] px-1 py-1 mt-2 rounded-md text-[#dadada] font-bold`}

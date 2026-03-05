@@ -1,30 +1,11 @@
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState
-} from 'react'
+import { Fragment, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import FinanceLogType from '@/types/finance/FinanceLogType'
 import dayjs from 'dayjs'
 import DashboardContainer from '@/components/layouts/DashboardContainer'
 import Row from '@/components/flexBox/row'
 import NumberFlow from '@number-flow/react'
-import {
-  IconButton,
-  SpeedDial,
-  SpeedDialAction,
-  Typography,
-  Skeleton
-} from '@mui/material'
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconCurrencyWon,
-  IconFilter,
-  IconX
-} from '@tabler/icons-react'
+import { IconButton, SpeedDial, SpeedDialAction, Typography, Skeleton } from '@mui/material'
+import { IconChevronLeft, IconChevronRight, IconCurrencyWon, IconFilter, IconX } from '@tabler/icons-react'
 import Column from '@/components/flexBox/column'
 import FinanceCategories from '@/types/finance/FinanceCategories'
 import financeCategories from '@/types/finance/FinanceCategories'
@@ -40,8 +21,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
   const [trend, setTrend] = useState<any>(1)
-  const [monthNumberFlowTiming, setMonthNumberFlowTiming] =
-    useState<number>(1500)
+  const [monthNumberFlowTiming, setMonthNumberFlowTiming] = useState<number>(1500)
   const [totalIncomes, setTotalIncomes] = useState<number>(0)
   const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [options, setOptions] = useState<any>()
@@ -54,10 +34,8 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
   useEffect(() => {
     let _totalIncomes = 0
     let _totalExpenses = 0
-    logs.forEach(log => {
-      log.type === 'income'
-        ? (_totalIncomes += log.amount ?? 0)
-        : (_totalExpenses += log.amount ?? 0)
+    logs.forEach((log) => {
+      log.type === 'income' ? (_totalIncomes += log.amount ?? 0) : (_totalExpenses += log.amount ?? 0)
     })
     setTotalIncomes(_totalIncomes)
     setTotalExpenses(_totalExpenses)
@@ -80,11 +58,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(async () => {
-      const monthlyLogs = await getMonthlyLogs(
-        changedYear,
-        changedMonth,
-        options
-      )
+      const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
       if (monthlyLogs) setLogs(monthlyLogs)
       setIsLoading(false)
     }, 300)
@@ -107,11 +81,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(async () => {
-      const monthlyLogs = await getMonthlyLogs(
-        changedYear,
-        changedMonth,
-        options
-      )
+      const monthlyLogs = await getMonthlyLogs(changedYear, changedMonth, options)
       if (monthlyLogs) setLogs(monthlyLogs)
       setIsLoading(false)
     }, 300)
@@ -134,7 +104,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
       if (monthlyLogs) setLogs(monthlyLogs)
       setIsLoading(false)
     },
-    [month, year, options]
+    [month, year, options],
   )
 
   useEffect(() => {
@@ -157,7 +127,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
 
   useImperativeHandle(ref, () => {
     return {
-      refreshData
+      refreshData,
     }
   })
 
@@ -165,9 +135,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
     return {
       icon: (
         <div
-          className={
-            'p-[9px] rounded-full cursor-pointer hover:scale-[1.2] duration-75 shadow-2xl'
-          }
+          className={'p-[9px] rounded-full cursor-pointer hover:scale-[1.2] duration-75 shadow-2xl'}
           style={{ backgroundColor: category.color }}
           onClick={async () => {
             await handleChangeFilter(i)
@@ -177,32 +145,23 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
         </div>
       ),
       name: category.text,
-      color: category.color
+      color: category.color,
     }
   })
 
   // Skeleton 컴포넌트들
   const renderLogSkeleton = () => (
-    <Row
-      className={
-        'px-4 py-3 bg-[#141414] rounded-xl justify-between'
-      }
-    >
-      <Row gap={2}>
-        <Row gap={2}>
-          <Skeleton
-            variant="rounded"
-            width={40}
-            height={40}
-            className="rounded-xl"
-          />
+    <Row className={'px-4 py-3 bg-[#141414] rounded-xl justify-between'}>
+      <Row gap={8}>
+        <Row gap={8}>
+          <Skeleton variant="rounded" width={40} height={40} className="rounded-xl" />
         </Row>
-        <Column className='flex justify-center'>
+        <Column className="flex justify-center">
           <Skeleton variant="text" width={80} height={24} />
           <Skeleton variant="text" width={60} height={16} />
         </Column>
       </Row>
-      <Row gap={1} className={'items-center'}>
+      <Row gap={4} className={'items-center'}>
         <Skeleton variant="text" width={40} height={16} />
         <Row className={'items-center'}>
           <Skeleton variant="text" width={60} height={24} />
@@ -222,15 +181,13 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
       <DashboardContainer
         title={'monthly logs'}
         action={
-          <Row gap={1} className={'items-start absolute right-0'}>
+          <Row gap={4} className={'items-start absolute right-0'}>
             {options?.filter !== null && options?.filter !== undefined && (
               <Column className={'relative group'}>
                 <div
-                  className={
-                    'p-[9px] rounded-full cursor-pointer duration-75 shadow-2xl'
-                  }
+                  className={'p-[9px] rounded-full cursor-pointer duration-75 shadow-2xl'}
                   style={{
-                    backgroundColor: financeCategories[options.filter].color
+                    backgroundColor: financeCategories[options.filter].color,
                   }}
                   onClick={() => {
                     handleChangeFilter()
@@ -252,37 +209,31 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
             )}
             <SpeedDial
               direction={'down'}
-              ariaLabel='Filter'
+              ariaLabel="Filter"
               sx={{
                 '& .MuiButtonBase-root': {
                   backgroundColor: '#dadada !important',
                   maxWidth: '41px !important',
-                  height: '40px !important'
-                }
+                  height: '40px !important',
+                },
               }}
               icon={<IconFilter />}
             >
-              {actions.map(action => (
-                <SpeedDialAction
-                  key={action.name}
-                  icon={action.icon}
-                  tooltipTitle={action.name}
-                />
+              {actions.map((action) => (
+                <SpeedDialAction key={action.name} icon={action.icon} tooltipTitle={action.name} />
               ))}
             </SpeedDial>
           </Row>
         }
       >
-        <Column gap={1}>
-          <Row fullWidth gap={1} className={'justify-center items-center'}>
+        <Column gap={4}>
+          <Row fullWidth gap={4} className={'justify-center items-center'}>
             {/*  previous month  */}
             <IconButton onClick={handleSubtractMonth}>
               <IconChevronLeft />
             </IconButton>
             {/*  current month display  */}
-            <Row
-              className={'justify-center items-center w-[120px] gap-[2px] mt-1'}
-            >
+            <Row className={'justify-center items-center w-[120px] gap-[2px] mt-1'}>
               <NumberFlow
                 value={year}
                 format={{ useGrouping: false }}
@@ -290,7 +241,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                 trend={trend}
                 spinTiming={{
                   duration: monthNumberFlowTiming,
-                  easing: 'cubic-bezier(.74,.23,.16,1.02)'
+                  easing: 'cubic-bezier(.74,.23,.16,1.02)',
                 }}
               />
               <p className={'text-xl mt-2'}>.</p>
@@ -302,7 +253,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                   trend={trend}
                   spinTiming={{
                     duration: monthNumberFlowTiming,
-                    easing: 'cubic-bezier(.74,.23,.16,1.02)'
+                    easing: 'cubic-bezier(.74,.23,.16,1.02)',
                   }}
                 />
               </Row>
@@ -316,29 +267,20 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
             <Column className={'items-end'}>
               <Row className={'items-center text-green-500'}>
                 <Typography className={'font2'}>+</Typography>
-                <NumberFlow
-                  value={totalIncomes}
-                  className={'font2 !text-2xl'}
-                />
+                <NumberFlow value={totalIncomes} className={'font2 !text-2xl'} />
                 <IconCurrencyWon />
               </Row>
               <Row className={'items-center text-red-500 mt-[-8px]'}>
                 <Typography className={'font2'}>-</Typography>
-                <NumberFlow
-                  value={totalExpenses}
-                  className={'font2 !text-2xl'}
-                />
+                <NumberFlow value={totalExpenses} className={'font2 !text-2xl'} />
                 <IconCurrencyWon />
               </Row>
             </Column>
           </Row>
         </Column>
-        <Column gap={1} className={'pb-4'}>
+        <Column gap={4} className={'pb-4'}>
           {isLoading ? (
-            <Column
-              gap={1}
-              className={'min-h-[300px]'}
-            >
+            <Column gap={4} className={'min-h-[300px]'}>
               {Array.from({ length: 8 }).map((_, i) => (
                 <Fragment key={i}>
                   {i % 3 === 0 && renderDateSkeleton()}
@@ -347,10 +289,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
               ))}
             </Column>
           ) : logs.length > 0 ? (
-            <Column
-              gap={1}
-              className={'min-h-[300px] opacity-0 opacity-up-appear'}
-            >
+            <Column gap={4} className={'min-h-[300px] opacity-0 opacity-up-appear'}>
               {logs.map((log: FinanceLogType, i) => {
                 return (
                   <Fragment key={i}>
@@ -364,54 +303,29 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
                         'px-4 py-3 bg-[#141414] rounded-xl justify-between hover:scale-[1.008] duration-100 group'
                       }
                     >
-                      <Row gap={2}>
-                        <Row gap={2}>
+                      <Row gap={8}>
+                        <Row gap={8}>
                           <Row
-                            className={
-                              'p-2 rounded-xl group-hover:scale-[1.05] duration-100 w-[40px] h-[40px]'
-                            }
+                            className={'p-2 rounded-xl group-hover:scale-[1.05] duration-100 w-[40px] h-[40px]'}
                             style={{
-                              backgroundColor: FinanceCategories.find(
-                                c => c.title === log.category
-                              )?.color ?? '#00c951'
+                              backgroundColor:
+                                FinanceCategories.find((c) => c.title === log.category)?.color ?? '#00c951',
                             }}
                           >
-                            {
-                              FinanceCategories.find(
-                                c => c.title === log.category
-                              )?.icon ?? <PlusIcon />
-                            }
+                            {FinanceCategories.find((c) => c.title === log.category)?.icon ?? <PlusIcon />}
                           </Row>
                         </Row>
-                        <Column className='flex justify-center'>
-                          <p
-                            className={
-                              'uppercase text-[18px] font-bold text-[#dadada]'
-                            }
-                          >
-                            {
-                              FinanceCategories.find(
-                                c => c.title === log.category
-                              )?.text ?? log.category
-                            }
+                        <Column className="flex justify-center">
+                          <p className={'uppercase text-[18px] font-bold text-[#dadada]'}>
+                            {FinanceCategories.find((c) => c.title === log.category)?.text ?? log.category}
                           </p>
                           {log.title !== '' && (
-                            <p
-                              className={
-                                'uppercase !mt-[-2px] text-sm text-[#aaa]'
-                              }
-                            >
-                              {log.title}
-                            </p>
+                            <p className={'uppercase !mt-[-2px] text-sm text-[#aaa]'}>{log.title}</p>
                           )}
                         </Column>
                       </Row>
-                      <Row gap={1} className={'items-center text-[#dadada]'}>
-                        <Typography
-                          variant={'subtitle2'}
-                          color={'#555'}
-                          className={'!mr-1 font2 !text-[12px]'}
-                        >
+                      <Row gap={4} className={'items-center text-[#dadada]'}>
+                        <Typography variant={'subtitle2'} color={'#555'} className={'!mr-1 font2 !text-[12px]'}>
                           {dayjs(log.date).format('HH:mm')}
                         </Typography>
                         <Row className={'items-center'}>
@@ -437,10 +351,7 @@ export default function MonthlyLogsDisplay({ ref }: { ref: any }) {
               })}
             </Column>
           ) : (
-            <Column
-              fullWidth
-              className={'h-[300px] items-center justify-center'}
-            >
+            <Column fullWidth className={'h-[300px] items-center justify-center'}>
               <Typography className={'font2'}>No logs yet.</Typography>
             </Column>
           )}

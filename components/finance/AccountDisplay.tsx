@@ -162,7 +162,7 @@ export default function AccountDisplay({
               {/* 헤더 */}
               <Row className="justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">{selectedAccount.title}</h2>
-                <Row gap={2} className="items-center">
+                <Row gap={8} className="items-center">
                   {/* 삭제 버튼 */}
                   <button
                     onClick={openDeleteConfirm}

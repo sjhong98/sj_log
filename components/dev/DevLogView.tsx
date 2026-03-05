@@ -458,13 +458,13 @@ export default function DevLogView({
             value={searchKeyword}
             onChange={handleSearch}
           />
-          <Column gap={2} className="pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <Column gap={8} className="pt-2 pb-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
             {searchLoading ? (
               // 검색 로딩 skeleton
-              <Column gap={2} className={'fade-in'}>
+              <Column gap={8} className={'fade-in'}>
                 {[1, 2, 3].map((i) => (
                   <Column key={i} fullWidth className="rounded-sm pr-1 pl-2 mb-[-5px]">
-                    <Row gap={1} className={'items-center mb-2'}>
+                    <Row gap={4} className={'items-center mb-2'}>
                       <Skeleton variant="circular" className={'size-4'} />
                       <Skeleton variant="rounded" className={'h-4 flex-1'} />
                     </Row>
@@ -483,7 +483,7 @@ export default function DevLogView({
                     className=" cursor-pointer rounded-sm pr-1 pl-2 hover:bg-stone-800 group/item mb-[-5px]"
                     onClick={() => handleClickResultItem(resultItem)}
                   >
-                    <Row gap={1} className={'items-center'}>
+                    <Row gap={4} className={'items-center'}>
                       <FileIcon className="size-4 mt-[1px]" />
                       {`${resultItem.group?.name ?? ''} > ${resultItem.title}`}
                     </Row>
@@ -512,7 +512,7 @@ export default function DevLogView({
       >
         <Row className={'relative group/navigation'}>
           <Column gap={20} fullWidth>
-            <Row fullWidth gap={2} className={'items-center'}>
+            <Row fullWidth gap={8} className={'items-center'}>
               <Row aria-label="search-input-area" fullWidth className={'flex-1'}>
                 <SearchInput ref={searchInputRef} dialogComponent={SearchDialog} />
               </Row>

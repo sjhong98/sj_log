@@ -4,12 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Column from '@/components/flexBox/column'
 import Row from '@/components/flexBox/row'
-import {
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Typography
-} from '@mui/material'
+import { ListItem, ListItemButton, ListItemText, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import Image from 'next/image'
 import DiaryType from '@/types/DiaryType'
@@ -23,11 +18,7 @@ type DiaryListPortalProps = {
   handleClickAdd: () => void | Promise<void>
 }
 
-export default function DiaryListPortal({
-  diaryList,
-  onDiaryClick,
-  handleClickAdd
-}: DiaryListPortalProps) {
+export default function DiaryListPortal({ diaryList, onDiaryClick, handleClickAdd }: DiaryListPortalProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -38,25 +29,17 @@ export default function DiaryListPortal({
     if (!diaryList || !Array.isArray(diaryList)) return null
 
     return (
-      <Column className='md:w-[240px] w-[60px] h-[calc(100vh-16px)] bg-neutral-950 overflow-y-auto custom-scrollbar relative'>
-        <Column className='w-full flex-shrink-0'>
+      <Column className="md:w-[240px] w-[60px] h-[calc(100vh-16px)] bg-neutral-950 overflow-y-auto custom-scrollbar relative">
+        <Column className="w-full flex-shrink-0">
           {diaryList.map((diary: DiaryType, index: number) => (
             <Fragment key={index}>
               {diary.isNewMonth && (
                 <Column
                   fullWidth
-                  className={
-                    'justify-center items-center mt-4 py-1 gap-2 bg-[var(--color-background)]'
-                  }
+                  className={'justify-center items-center mt-4 py-1 gap-2 bg-[var(--color-background)]'}
                 >
-                  {diary.isNewYear && (
-                    <Typography variant={'body1'}>
-                      {dayjs(diary.date).format('YYYY')}
-                    </Typography>
-                  )}
-                  <Typography variant={'body2'}>
-                    {dayjs(diary.date).format('M월')}
-                  </Typography>
+                  {diary.isNewYear && <Typography variant={'body1'}>{dayjs(diary.date).format('YYYY')}</Typography>}
+                  <Typography variant={'body2'}>{dayjs(diary.date).format('M월')}</Typography>
                 </Column>
               )}
               <ListItem disablePadding>
@@ -66,14 +49,8 @@ export default function DiaryListPortal({
                     await onDiaryClick(diary.pk)
                   }}
                 >
-                  <Row
-                    fullWidth
-                    gap={1}
-                    className={'md:justify-between justify-center items-center h-[50px]'}
-                  >
-                    <Typography variant={'subtitle2'}>
-                      {dayjs(diary.date).get('date')}
-                    </Typography>
+                  <Row fullWidth gap={4} className={'md:justify-between justify-center items-center h-[50px]'}>
+                    <Typography variant={'subtitle2'}>{dayjs(diary.date).get('date')}</Typography>
                     <ListItemText
                       color={'var(--color-foreground)'}
                       className={'!line-clamp-1 md:block hidden'}
@@ -85,9 +62,7 @@ export default function DiaryListPortal({
                         alt={diary.title}
                         width={35}
                         height={35}
-                        className={
-                          'object-cover rounded-md aspect-square md:block hidden'
-                        }
+                        className={'object-cover rounded-md aspect-square md:block hidden'}
                       />
                     )}
                   </Row>
@@ -96,8 +71,11 @@ export default function DiaryListPortal({
             </Fragment>
           ))}
         </Column>
-        <button onClick={handleClickAdd} className='absolute bottom-3 right-3 rounded-full cursor-pointer p-1 hover:bg-neutral-300 duration-100'>
-          <IconPlus className='hover:text-neutral-700 duration-100' />
+        <button
+          onClick={handleClickAdd}
+          className="absolute bottom-3 right-3 rounded-full cursor-pointer p-1 hover:bg-neutral-300 duration-100"
+        >
+          <IconPlus className="hover:text-neutral-700 duration-100" />
         </button>
       </Column>
     )

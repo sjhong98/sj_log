@@ -9,7 +9,7 @@ export default function DashboardContainer({
   xs,
   md,
   mh,
-  action
+  action,
 }: {
   children?: ReactNode
   title?: string
@@ -24,7 +24,7 @@ export default function DashboardContainer({
       className={'rounded-lg bg-[#111] px-6 py-3'}
       sx={{ minHeight: `${mh ?? 0}px`, paddingBottom: '40px' }}
     >
-      <Column gap={2}>
+      <Column gap={8}>
         {(title || action) && (
           <Row className={'w-full justify-between relative'}>
             {title && <Typography className={'font2'}>{title}</Typography>}
