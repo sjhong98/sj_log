@@ -181,82 +181,82 @@ export default function DiaryList({ list }: any) {
     }
   }, [selectedComment])
 
+  console.log('selectedDiary', selectedDiary)
+
   return (
     <>
       <DiaryListPortal diaryList={diaryList} onDiaryClick={handleClickDiary} handleClickAdd={handleClickAdd} />
 
-      <Box sx={{ display: 'flex', width: '100%' }}>
-        <Column gap={10} fullWidth>
-          {selectedDiary && (
-            <Column fullWidth gap={4}>
-              <Row fullWidth className={'rounded-lg bg-[var(--color-foreground)] px-4 py-2'}>
-                <Typography className={'text-[var(--color-background)]'}>
-                  {dayjs(selectedDiary.date).format('YYYY. M. D ddd A h:mm')}
-                </Typography>
-              </Row>
-              <Column gap={4}>
-                <Row className={'justify-between'}>
-                  <Typography variant={'h5'}>{selectedDiary.title}</Typography>
-                  <ModifyPopper
-                    handleClickDelete={() => setConfirmDeleteDiaryModalOpen(true)}
-                    handleClickModify={handleClickModify}
-                  />
-                </Row>
-                {!selectedDiary?.content ? (
-                  <Column dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
-                ) : (
-                  <></>
-                )}
-              </Column>
-            </Column>
-          )}
-          {loadingContent ? (
-            <Column gap={4} fullWidth className={'mt-[-50px]'}>
-              <Skeleton variant="rounded" className={'w-[88%] min-h-[20px]'} />
-              <Skeleton variant="rounded" className={'w-[95%] min-h-[20px]'} />
-              <Skeleton variant="rounded" className={'w-[90%] min-h-[20px]'} />
-              <Skeleton variant="rounded" className={'w-[93%] min-h-[20px]'} />
-              <Skeleton variant="rounded" className={'w-[86%] min-h-[20px]'} />
-            </Column>
-          ) : (
-            <Row fullWidth className={'relative'}>
-              <TextField fullWidth multiline variant={'standard'} value={comment} onChange={handleChangeComment} />
-              <Box>
-                <IconButton
-                  onClick={!modifyingComment ? handleCreateComment : submitModifiedComment}
-                  disabled={comment === ''}
-                >
-                  <IconPencil />
-                </IconButton>
-              </Box>
+      <Column gap={40} fullWidth>
+        {selectedDiary && (
+          <Column fullWidth gap={16}>
+            <Row fullWidth className={'rounded-lg bg-[var(--color-foreground)] px-4 py-2'}>
+              <Typography className={'text-[var(--color-background)]'}>
+                {dayjs(selectedDiary.date).format('YYYY. M. D ddd A h:mm')}
+              </Typography>
             </Row>
-          )}
-          <Column fullWidth gap={4}>
-            {comments.map((commentItem: CommentType, i: number) => {
-              // 수정 중인 항목 가리기
-              if (modifyingComment && modifyingComment.pk === commentItem.pk) return
-
-              return (
-                <Row key={i} fullWidth className={'justify-between'}>
-                  <Column
-                    fullWidth
-                    gap={4}
-                    className={'min-h-[50px] border-l-[1px] px-6 py-2 border-[var(--color-foreground)]'}
-                  >
-                    <Typography variant={'subtitle2'}>{dayjs(commentItem?.createdAt).format('YYYY. M. D')}</Typography>
-                    <Typography sx={{ whiteSpace: 'pre-line' }}>{commentItem.content}</Typography>
-                  </Column>
-                  <ModifyPopper
-                    onOpen={() => setSelectedComment(commentItem)}
-                    handleClickDelete={handleDeleteComment}
-                    handleClickModify={handleModifyComment}
-                  />
-                </Row>
-              )
-            })}
+            <Column gap={16}>
+              <Row className={'justify-between'}>
+                <Typography variant={'h5'}>{selectedDiary.title}</Typography>
+                <ModifyPopper
+                  handleClickDelete={() => setConfirmDeleteDiaryModalOpen(true)}
+                  handleClickModify={handleClickModify}
+                />
+              </Row>
+              {selectedDiary?.content ? (
+                <Column className="min-h-[300px]" dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
+              ) : (
+                <></>
+              )}
+            </Column>
           </Column>
+        )}
+        {loadingContent ? (
+          <Column gap={16} fullWidth className={'mt-[-50px]'}>
+            <Skeleton variant="rounded" className={'w-[88%] min-h-[20px]'} />
+            <Skeleton variant="rounded" className={'w-[95%] min-h-[20px]'} />
+            <Skeleton variant="rounded" className={'w-[90%] min-h-[20px]'} />
+            <Skeleton variant="rounded" className={'w-[93%] min-h-[20px]'} />
+            <Skeleton variant="rounded" className={'w-[86%] min-h-[20px]'} />
+          </Column>
+        ) : (
+          <Row fullWidth className={'relative'}>
+            <TextField fullWidth multiline variant={'standard'} value={comment} onChange={handleChangeComment} />
+            <Box>
+              <IconButton
+                onClick={!modifyingComment ? handleCreateComment : submitModifiedComment}
+                disabled={comment === ''}
+              >
+                <IconPencil />
+              </IconButton>
+            </Box>
+          </Row>
+        )}
+        <Column fullWidth gap={4}>
+          {comments.map((commentItem: CommentType, i: number) => {
+            // 수정 중인 항목 가리기
+            if (modifyingComment && modifyingComment.pk === commentItem.pk) return
+
+            return (
+              <Row key={i} fullWidth className={'justify-between'}>
+                <Column
+                  fullWidth
+                  gap={16}
+                  className={'min-h-[50px] border-l-[1px] px-6 py-2 border-[var(--color-foreground)]'}
+                >
+                  <Typography variant={'subtitle2'}>{dayjs(commentItem?.createdAt).format('YYYY. M. D')}</Typography>
+                  <Typography sx={{ whiteSpace: 'pre-line' }}>{commentItem.content}</Typography>
+                </Column>
+                <ModifyPopper
+                  onOpen={() => setSelectedComment(commentItem)}
+                  handleClickDelete={handleDeleteComment}
+                  handleClickModify={handleModifyComment}
+                />
+              </Row>
+            )
+          })}
         </Column>
-      </Box>
+      </Column>
 
       <Dialog open={confirmDeleteDiaryModalOpen} onClose={() => setConfirmDeleteDiaryModalOpen(false)}>
         <DialogTitle>Diary를 삭제하시겠습니까?</DialogTitle>

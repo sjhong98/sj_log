@@ -71,12 +71,15 @@ export default function DiaryListPortal({ diaryList, onDiaryClick, handleClickAd
             </Fragment>
           ))}
         </Column>
-        <button
-          onClick={handleClickAdd}
-          className="absolute bottom-3 right-3 rounded-full cursor-pointer p-1 hover:bg-neutral-300 duration-100"
-        >
-          <IconPlus className="hover:text-neutral-700 duration-100" />
-        </button>
+
+        <div className="sticky bottom-3 mr-3">
+          <button
+            onClick={handleClickAdd}
+            className="absolute bottom-3 right-0 rounded-full cursor-pointer p-1 hover:bg-neutral-300 duration-100"
+          >
+            <IconPlus className="hover:text-neutral-700 duration-100" />
+          </button>
+        </div>
       </Column>
     )
   }, [diaryList, onDiaryClick])
