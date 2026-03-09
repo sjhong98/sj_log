@@ -204,7 +204,10 @@ export default function DiaryList({ list }: any) {
                 />
               </Row>
               {selectedDiary?.content ? (
-                <Column className="min-h-[300px]" dangerouslySetInnerHTML={{ __html: selectedDiary.content }} />
+                <Column
+                  className="h-[var(--inner-content-height)] pb-[300px] overflow-y-auto custom-scrollbar"
+                  dangerouslySetInnerHTML={{ __html: selectedDiary.content }}
+                />
               ) : (
                 <></>
               )}
