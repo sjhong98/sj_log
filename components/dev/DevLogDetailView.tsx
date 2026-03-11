@@ -559,7 +559,7 @@ export default function DevLogDetailView({
                   </Column>
                 ) : selectedDevLog ? (
                   <>
-                    <Column gap={4} className={isMobile ? 'mt-2' : 'mt-[0px]'}>
+                    <Column gap={24} className={isMobile ? 'mt-2' : 'mt-[0px]'}>
                       {/*  목차 */}
                       <Column className={'sm:block hidden pl-[55px] cursor-pointer font-bold'}>
                         {overview.map((block: any) => {
