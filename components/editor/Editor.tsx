@@ -8,7 +8,7 @@ import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
 import { useMediaQuery, useTheme } from '@mui/material'
 import { useEffect } from 'react'
-import { createHighlighter } from "../../shiki.bundle"
+import { createHighlighter } from '../../shiki.bundle'
 
 export default function Editor({
   id,
@@ -16,7 +16,7 @@ export default function Editor({
   blocks,
   setBlocks,
   disabled,
-  setBlockInitializing
+  setBlockInitializing,
 }: {
   id: number
   selectedDevLog: devLogType | null
@@ -30,20 +30,20 @@ export default function Editor({
       blockSpecs: {
         codeBlock: createCodeBlockSpec({
           indentLineWithTab: true,
-          defaultLanguage: "typescript",
+          defaultLanguage: 'typescript',
           supportedLanguages: {
             typescript: {
-              name: "TypeScript",
-              aliases: ["ts"],
+              name: 'TypeScript',
+              aliases: ['ts'],
             },
             bash: {
-              name: "Bash",
-              aliases: ["sh"],
+              name: 'Bash',
+              aliases: ['sh'],
             },
           },
           createHighlighter: () =>
             createHighlighter({
-              themes: ["dark-plus", "light-plus"],
+              themes: ['dark-plus', 'light-plus'],
               langs: [],
             }) as any,
         }),
@@ -60,32 +60,32 @@ export default function Editor({
     colors: {
       editor: {
         text: '#ddd',
-        background: '#000'
+        background: '#000',
       },
       menu: {
         text: '#ddd',
-        background: '#151515'
+        background: '#151515',
       },
       tooltip: {
         text: '#ddd',
-        background: '#151515'
+        background: '#151515',
       },
       hovered: {
         text: '#ddd',
-        background: '#222'
+        background: '#222',
       },
       selected: {
         text: '#ddd',
-        background: '#151515'
+        background: '#151515',
       },
       disabled: {
         text: '#999',
-        background: '#151515'
+        background: '#151515',
       },
       shadow: '#252525',
       border: '#151515',
       sideMenu: '#bababa',
-      highlights: '#111'
+      highlights: '#111',
     },
     borderRadius: 4,
     fontFamily: 'Helvetica Neue, sans-serif',
@@ -95,6 +95,8 @@ export default function Editor({
   // 선택된 log 가 바뀌는 경우 -> block 갱신
   useEffect(() => {
     if (!selectedDevLog) return
+
+    console.log('selectedDevLog changed', selectedDevLog)
 
     // setBlockInitializing(true)
 
@@ -132,7 +134,7 @@ export default function Editor({
         // @ts-ignore
         light: currentTheme,
         // @ts-ignore
-        dark: currentTheme
+        dark: currentTheme,
       }}
     />
   )
