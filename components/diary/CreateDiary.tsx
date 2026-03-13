@@ -70,7 +70,7 @@ const CreateDiary = () => {
       title,
       content,
       contentText,
-      date
+      date,
     }
 
     let rowCount: any = 0
@@ -97,7 +97,7 @@ const CreateDiary = () => {
           startVelocity: 60,
           origin: { x: 0, y: 0.5 },
           colors: colors,
-          zIndex: 9999
+          zIndex: 9999,
         })
         confetti({
           particleCount: 50,
@@ -106,7 +106,7 @@ const CreateDiary = () => {
           startVelocity: 60,
           origin: { x: 1, y: 0.5 },
           colors: colors,
-          zIndex: 9999
+          zIndex: 9999,
         })
         requestAnimationFrame(frame)
       }
@@ -131,7 +131,7 @@ const CreateDiary = () => {
       title,
       content,
       contentText,
-      date
+      date,
     }
 
     const rowCount = await updateDiary(diaryData)
@@ -148,27 +148,19 @@ const CreateDiary = () => {
   useEffect(() => {
     if (!quill) return
 
-    quill.on(
-      'text-change',
-      (delta: Delta, oldDelta: Delta, source: EmitterSource) => {
-        setContentText(quill.getText())
-        setContent(quill.root.innerHTML)
-      }
-    )
+    quill.on('text-change', (delta: Delta, oldDelta: Delta, source: EmitterSource) => {
+      setContentText(quill.getText())
+      setContent(quill.root.innerHTML)
+    })
   }, [quill])
 
   return (
     <>
-      <>
+      <Column fullWidth style={{ height: 'var(--inner-content-height)' }} className="overflow-y-auto custom-scrollbar">
         <Row fullWidth className={'justify-between'}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={['DatePicker']}>
-              <DatePicker
-                label='Date'
-                onChange={handleChangeDate}
-                value={dayjs(date)}
-                format={'YYYY.MM.DD'}
-              />
+              <DatePicker label="Date" onChange={handleChangeDate} value={dayjs(date)} format={'YYYY.MM.DD'} />
             </DemoContainer>
           </LocalizationProvider>
           <Column className={'justify-end'}>
@@ -202,8 +194,8 @@ const CreateDiary = () => {
           className={'w-full h-auto'}
           sx={{
             '& .ql-toolbar': {
-              border: 'solid 0px #444 !important'
-            }
+              border: 'solid 0px #444 !important',
+            },
           }}
         >
           <Box
@@ -214,15 +206,15 @@ const CreateDiary = () => {
               border: 'solid 0px #444 !important',
               '& img': {
                 maxHeight: '300px',
-                objectFit: 'cover'
+                objectFit: 'cover',
               },
               '& p': {
-                fontSize: '16px'
-              }
+                fontSize: '16px',
+              },
             }}
           />
         </Box>
-      </>
+      </Column>
     </>
   )
 }
