@@ -43,7 +43,7 @@ export default function DevLogView({
   pinnedDevLogListProp: devLogType[] | null
   recentDevLogListProp: devLogType[] | null
 }) {
-  const { addQueryString, clearQueryString } = useQueryString()
+  const { addQueryString, removeQueryString } = useQueryString()
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -301,6 +301,7 @@ export default function DevLogView({
 
           // 선택된 포스트 초기화
           setSelectedDevLog(null)
+          removeQueryString('devLogPk')
         } else toast.error('Failed to delete group')
       } catch (e) {
         console.error(e)
