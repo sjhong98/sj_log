@@ -11,19 +11,15 @@ import { useEffect } from 'react'
 import { createHighlighter } from '../../shiki.bundle'
 
 export default function Editor({
-  id,
   selectedDevLog,
   blocks,
   setBlocks,
   disabled,
-  setBlockInitializing,
 }: {
-  id: number
   selectedDevLog: devLogType | null
   blocks: any
   setBlocks: any
   disabled: boolean
-  setBlockInitializing: any
 }) {
   const blockNoteEditorOption = {
     schema: BlockNoteSchema.create().extend({

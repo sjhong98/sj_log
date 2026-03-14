@@ -394,7 +394,7 @@ export default function DevLogDetailView({
         'h-full',
         isMobile
           ? 'w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative'
-          : 'max-w-[100%] w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative',
+          : 'max-w-[100%] w-full overflow-y-scroll overflow-x-hidden custom-scrollbar z-[1] relative pb-[200px]',
       )}
     >
       <Column className={'w-full rounded-sm'}>
@@ -412,29 +412,6 @@ export default function DevLogDetailView({
           {!selectedDevLog ? (
             // 선택된 로그 없을 경우 -> 핀 목록 표시
             <Column gap={60}>
-              <div className="flex flex-col w-full gap-4 md:px-10">
-                <div className="w-full">
-                  <p className="text-xl font-bold">Pinned Logs</p>
-                </div>
-                <div
-                  className={cn(
-                    `w-full h-fit grid gap-4`,
-                    selectedDevLog ? 'flex-[0.4]' : '',
-                    selectedDevLog
-                      ? 'md:grid-cols-2 sm:grid-cols-1 grid-cols-1'
-                      : 'md:grid-cols-4 sm:grid-cols-3 grid-cols-2',
-                  )}
-                >
-                  {Array.isArray(pinnedDevLogList) &&
-                    pinnedDevLogList.map((devLog: devLogType) => (
-                      <DevLogDashboardItem
-                        key={devLog.pk ?? 0}
-                        devLog={devLog}
-                        onClick={() => handleClickDevLog(devLog)}
-                      />
-                    ))}
-                </div>
-              </div>
               <div className="flex flex-col w-full gap-4 md:px-10">
                 <div className="w-full">
                   <p className="text-xl font-bold">Recent Logs</p>
@@ -585,12 +562,10 @@ export default function DevLogDetailView({
                       {/*  editor  */}
                       {/*  block 상태를 별도로 만든 이유는 prev => {} 형태의 함수를 사용하기 위함 (클로저)  */}
                       <Editor
-                        id={selectedDevLog?.pk ?? 0}
                         selectedDevLog={selectedDevLog}
                         blocks={blocks}
                         setBlocks={setBlocks}
                         disabled={!Boolean(user)}
-                        setBlockInitializing={setBlockInitializing}
                       />
                     </Column>
                   </>
