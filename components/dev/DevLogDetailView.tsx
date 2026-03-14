@@ -15,42 +15,42 @@ import { devLogGroupType, devLogType } from '@/types/schemaType'
 import { Skeleton, useMediaQuery, useTheme } from '@mui/material'
 import { IconPlus } from '@tabler/icons-react'
 import { CheckIcon, LockIcon, LockOpenIcon } from 'lucide-react'
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
 import { cn } from '@/lib/utils'
 import { DevLogDashboardItem } from './DevLogDashboard'
 import useQueryString from '@/hooks/useQueryString'
 import PushPinIcon from '@mui/icons-material/PushPin'
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
+import { Block } from '@blocknote/core'
+import revalidateDevLog from '@/actions/dev/log/revalidateDevLog'
 
 interface editableDevLogType extends devLogType {
   blocks: any
   text: string | null
 }
 
-export default function DevLogDetailView({
-  selectedDevLog,
-  setSelectedDevLog,
-  selectedGroup,
-  currentPostList,
-  setCurrentPostList,
-  groupTree,
-  groupList,
-  devLogLoading,
-  pinnedDevLogList,
-  recentDevLogList,
-}: {
+interface DevLogDetailViewProps {
   selectedDevLog: devLogType | null
   setSelectedDevLog: any
   selectedGroup?: devLogGroupType | null
   currentPostList?: { pk: number; title: string }[]
   setCurrentPostList?: any
-  groupTree?: GroupTreeType[]
   groupList?: devLogGroupType[]
   devLogLoading?: boolean
-  pinnedDevLogList?: devLogType[]
   recentDevLogList?: devLogType[]
-}) {
+}
+
+function DevLogDetailView({
+  selectedDevLog,
+  setSelectedDevLog,
+  selectedGroup,
+  currentPostList,
+  setCurrentPostList,
+  groupList,
+  devLogLoading,
+  recentDevLogList,
+}: DevLogDetailViewProps) {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const timerRef = useRef<any>(null)
@@ -68,7 +68,9 @@ export default function DevLogDetailView({
   const { user } = useUser()
   const { addQueryString } = useQueryString()
 
-  const [blocks, setBlocks] = useState<any>([])
+  const [blocks, setBlocks] = useState<Block[]>(
+    selectedDevLog?.content ? JSON.parse(selectedDevLog.content) : ([] as Block[]),
+  )
   const [blockInitializing, setBlockInitializing] = useState(false)
   // 0-수정사항 있음 | 1-저장 중 | 2-수정사항 없음
   const [editorStatus, setEditorStatus] = useState(0)
@@ -93,6 +95,7 @@ export default function DevLogDetailView({
   const titleHeightRef = useRef(TITLE_HEIGHT_EXPANDED)
   /** 스크롤이 실제로 동작 중일 때만 true. 콘텐츠 변경 등으로 인한 단발성 scroll 이벤트에서는 height를 바꾸지 않기 위함 */
   const lastScrollEventTimeRef = useRef(0)
+  const titleChangeTimerRef = useRef<any>(null)
   const SCROLL_ACTIVE_MS = 120
 
   useEffect(() => {
@@ -137,7 +140,18 @@ export default function DevLogDetailView({
     setBlocks(JSON.parse(selectedDevLog.content))
   }, [selectedDevLog])
 
-  const handleChange = useCallback(
+  // 선택된 devLog가 변경될 때 기존 타이머 제거
+  useEffect(() => {
+    if (!timerRef.current) return
+
+    clearTimeout(timerRef.current)
+  }, [selectedDevLog])
+
+  useEffect(() => {
+    setBlockInitializing(true)
+  }, [selectedDevLog])
+
+  const handleTitleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       if (!selectedDevLog?.pk || !currentPostList) return
 
@@ -146,9 +160,10 @@ export default function DevLogDetailView({
       _devLogForm[e.target.name as keyof editableDevLogType] = e.target.value
       setDevLogForm(_devLogForm)
 
+      // Optimistic update
       let _currentPostList = [...currentPostList]
       const idx = _currentPostList.findIndex((devLog) => devLog.pk === selectedDevLog.pk)
-      _currentPostList[idx].title = e.target.value
+      if (_currentPostList[idx]) _currentPostList[idx].title = e.target.value
       setCurrentPostList(_currentPostList)
     },
     [devLogForm, currentPostList, selectedDevLog],
@@ -177,48 +192,41 @@ export default function DevLogDetailView({
     })()
   }, [devLogForm, blocks])
 
-  // 선택된 devLog가 변경될 때 기존 타이머 제거
-  useEffect(() => {
-    if (!timerRef.current) return
-
-    clearTimeout(timerRef.current)
-  }, [selectedDevLog])
-
-  useEffect(() => {
-    setBlockInitializing(true)
-  }, [selectedDevLog])
-
   const autoSave = useCallback(async () => {
-    if (timerRef.current) clearTimeout(timerRef.current)
+    try {
+      if (timerRef.current) clearTimeout(timerRef.current)
 
-    let _devLogForm: any = { ...devLogForm }
-    _devLogForm.content = JSON.stringify(blocks)
+      let _devLogForm: any = { ...devLogForm }
+      _devLogForm.content = JSON.stringify(blocks)
 
-    const onlyText = blocks
-      .map((block: any) => block.content.map((content: any) => content.text))
-      .flat()
-      .join(' ')
-    _devLogForm.text = onlyText
+      const onlyText = blocks
+        .map((block: any) => block.content.map((content: any) => content.text))
+        .flat()
+        .join(' ')
+      _devLogForm.text = onlyText
 
-    let isEmpty = _devLogForm.content === '[]'
+      let isEmpty = _devLogForm.content === '[]'
 
-    if (isEmpty) {
-      console.log('문서 초기화를 차단하였습니다.')
+      if (isEmpty) {
+        console.log('문서 초기화를 차단하였습니다.')
+        return
+      }
+
+      const updated = await updateDevLog(_devLogForm)
+
+      // 업데이트 종료
+      setEditorStatus(2)
+
+      if (!updated) throw new Error('Failed to update dev log')
+
+      await fetch('/api/revalidate/devlog', {
+        method: 'POST',
+      })
       return
-      _devLogForm.content = undefined
-      _devLogForm.text = undefined
-    }
-
-    const updated = await updateDevLog(_devLogForm)
-
-    // 업데이트 종료
-    setEditorStatus(2)
-
-    if (updated) {
-      return true
-    } else {
-      toast.error('자동 저장 실패')
-      return false
+    } catch (e) {
+      if (e instanceof Error) {
+        toast.error(e.message)
+      }
     }
   }, [devLogForm, blocks, timerRef, blockInitializing])
 
@@ -510,7 +518,7 @@ export default function DevLogDetailView({
                     <input
                       name={'title'}
                       value={devLogForm.title}
-                      onChange={handleChange}
+                      onChange={handleTitleChange}
                       placeholder={'New Title'}
                       autoComplete={'off'}
                       disabled={!Boolean(user)}
@@ -578,3 +586,26 @@ export default function DevLogDetailView({
     </div>
   )
 }
+
+export default React.memo(DevLogDetailView, (prev, next) => {
+  const diffArr = [
+    { condition: prev.selectedDevLog?.pk === next.selectedDevLog?.pk, title: 'selectedDevLog.pk' },
+    { condition: prev.selectedGroup?.pk === next.selectedGroup?.pk, title: 'selectedGroup.pk' },
+    { condition: prev.currentPostList?.length === next.currentPostList?.length, title: 'currentPostList.length' },
+    { condition: prev.groupList?.length === next.groupList?.length, title: 'groupList.length' },
+    { condition: prev.devLogLoading === next.devLogLoading, title: 'devLogLoading' },
+    { condition: prev.recentDevLogList?.length === next.recentDevLogList?.length, title: 'recentDevLogList.length' },
+  ]
+  console.log(
+    'diff: ',
+    diffArr.filter((diff) => !diff.condition).map((diff) => diff.title),
+  )
+  return (
+    prev.selectedDevLog?.pk === next.selectedDevLog?.pk &&
+    prev.selectedGroup?.pk === next.selectedGroup?.pk &&
+    prev.currentPostList?.length === next.currentPostList?.length &&
+    prev.groupList?.length === next.groupList?.length &&
+    prev.devLogLoading === next.devLogLoading &&
+    prev.recentDevLogList?.length === next.recentDevLogList?.length
+  )
+})

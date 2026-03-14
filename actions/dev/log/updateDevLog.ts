@@ -18,12 +18,10 @@ export default async function updateDevLog(devLogItem: devLogType) {
         title: devLogItem.title,
         content: devLogItem.content,
         text: devLogItem.text,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(devLog.pk, devLogItem.pk))
       .returning()
-
-      revalidateTag('dev-log')
     return result
   } catch (e) {
     console.error(e)

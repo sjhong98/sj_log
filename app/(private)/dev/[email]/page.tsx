@@ -28,7 +28,6 @@ export default async function Page({
   // url query string 로부터 devLogGroupPk / devLogPk 조회하여 패치
   let devLogList: simpleDevLogType[] = []
   let devLog: devLogType | null = null
-  let pinnedDevLogList: devLogType[] = []
   let recentDevLogList: devLogType[] = []
 
   if (devLogGroupPk) {
@@ -40,7 +39,6 @@ export default async function Page({
   }
 
   if (!devLogPk && decodedEmail) {
-    pinnedDevLogList = await getPinnedDevLogList(decodedEmail)
     recentDevLogList = await getRecentDevLogList(decodedEmail)
   }
 
@@ -53,7 +51,6 @@ export default async function Page({
         groupListProp={groupTree.groupList}
         currentPostListProp={devLogList}
         selectedDevLogProp={devLog}
-        pinnedDevLogListProp={pinnedDevLogList}
         recentDevLogListProp={recentDevLogList}
       />
     </>

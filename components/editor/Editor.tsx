@@ -1,26 +1,22 @@
 'use client'
 
 import { devLogType } from '@/types/schemaType'
-import { BlockNoteSchema, createCodeBlockSpec } from '@blocknote/core'
+import { BlockNoteEditor, BlockNoteSchema, createCodeBlockSpec } from '@blocknote/core'
 import '@blocknote/core/fonts/inter.css'
 import { BlockNoteView } from '@blocknote/mantine'
 import '@blocknote/mantine/style.css'
 import { useCreateBlockNote } from '@blocknote/react'
-import { useMediaQuery, useTheme } from '@mui/material'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { createHighlighter } from '../../shiki.bundle'
 
-export default function Editor({
-  selectedDevLog,
-  blocks,
-  setBlocks,
-  disabled,
-}: {
+interface EditorProps {
   selectedDevLog: devLogType | null
   blocks: any
   setBlocks: any
   disabled: boolean
-}) {
+}
+
+function Editor({ selectedDevLog, blocks, setBlocks, disabled }: EditorProps) {
   const blockNoteEditorOption = {
     schema: BlockNoteSchema.create().extend({
       blockSpecs: {
@@ -48,9 +44,6 @@ export default function Editor({
   }
 
   const editor = useCreateBlockNote(blockNoteEditorOption)
-
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const currentTheme = {
     colors: {
@@ -92,10 +85,6 @@ export default function Editor({
   useEffect(() => {
     if (!selectedDevLog) return
 
-    console.log('selectedDevLog changed', selectedDevLog)
-
-    // setBlockInitializing(true)
-
     const _blocks = JSON.parse(selectedDevLog?.content ?? '')
     if (!_blocks || _blocks.length === 0) return
 
@@ -112,7 +101,7 @@ export default function Editor({
   useEffect(() => {
     if (!editor) return
 
-    editor.onChange((editor: any, { getChanges }: any) => {
+    editor.onChange((editor: BlockNoteEditor, { getChanges }: any) => {
       const blocks = editor.document
       setBlocks((prev: any) => {
         const isEqual = JSON.stringify(prev) === JSON.stringify(blocks)
@@ -135,3 +124,11 @@ export default function Editor({
     />
   )
 }
+
+export default React.memo(Editor, (prev, next) => {
+  return (
+    prev.selectedDevLog?.pk === next.selectedDevLog?.pk &&
+    JSON.stringify(prev.blocks) === JSON.stringify(next.blocks) &&
+    prev.disabled === next.disabled
+  )
+})

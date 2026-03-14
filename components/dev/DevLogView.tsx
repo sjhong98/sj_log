@@ -26,23 +26,23 @@ import { cn } from '@/lib/utils'
 
 const DRAWER_WIDTH = 380
 
-export default function DevLogView({
-  list,
-  groupTreeProp,
-  groupListProp,
-  currentPostListProp,
-  selectedDevLogProp,
-  pinnedDevLogListProp,
-  recentDevLogListProp,
-}: {
+interface DevLogViewProps {
   list: BoardType
   groupTreeProp: GroupTreeType[]
   groupListProp: devLogGroupType[]
   currentPostListProp: simpleDevLogType[] | null
   selectedDevLogProp: devLogType | null
-  pinnedDevLogListProp: devLogType[] | null
   recentDevLogListProp: devLogType[] | null
-}) {
+}
+
+function DevLogView({
+  list,
+  groupTreeProp,
+  groupListProp,
+  currentPostListProp,
+  selectedDevLogProp,
+  recentDevLogListProp,
+}: DevLogViewProps) {
   const { addQueryString, removeQueryString } = useQueryString()
   const treeRef = useRef<{ expandSpecificTargetedElements: (elements?: any[], selectId?: string) => void }>(null)
   const theme = useTheme()
@@ -507,10 +507,11 @@ export default function DevLogView({
     return (
       <Column
         area-label="navigation-area"
-        gap={4}
+        gap={20}
         fullWidth
         className={'w-full h-full min-w-[300px] p-4 pb-[200px] !pt-0 overflow-auto scrollbar-thin scrollbar-left'}
       >
+        {/* GROUP LIST AREA */}
         <Row className={'relative group/navigation'}>
           <Column gap={20} fullWidth>
             <Row fullWidth gap={8} className={'items-center'}>
@@ -549,8 +550,10 @@ export default function DevLogView({
           )}
         </Row>
 
+        <div className="h-[1px] w-full bg-[#DDD] flex-shrink-0" />
+
+        {/* FILE LIST AREA */}
         <Column fullWidth gap={4} className={'flex-shrink-0'}>
-          {/*  File List  */}
           {isMounted && (
             <Column fullWidth>
               {!postListLoading ? (
@@ -672,10 +675,8 @@ export default function DevLogView({
             selectedGroup={selectedGroup}
             currentPostList={currentPostList}
             setCurrentPostList={setCurrentPostList}
-            groupTree={currentGroupTree}
             groupList={groupListProp}
             devLogLoading={devLogLoading}
-            pinnedDevLogList={pinnedDevLogListProp ?? []}
             recentDevLogList={recentDevLogListProp ?? []}
           />
         </Column>
@@ -721,3 +722,5 @@ export default function DevLogView({
     </>
   )
 }
+
+export default React.memo(DevLogView)
