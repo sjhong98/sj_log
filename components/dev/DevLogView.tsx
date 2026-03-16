@@ -35,7 +35,7 @@ interface DevLogViewProps {
   recentDevLogListProp: devLogType[] | null
 }
 
-function DevLogView({
+export default function DevLogView({
   list,
   groupTreeProp,
   groupListProp,
@@ -723,4 +723,4 @@ function DevLogView({
   )
 }
 
-export default React.memo(DevLogView)
+// export default React.memo(DevLogView)
