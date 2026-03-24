@@ -5,6 +5,8 @@ import DiaryList from '@/components/diary/DiaryList'
 import { getUser } from '@/actions/session/getUser'
 import dayjs from 'dayjs'
 import { dbCallback } from '@/supabase/getDbInstance'
+import db from '@/supabase'
+import getDiaryList from '@/actions/diary/getDiaryList'
 
 export default async function Page() {
   try {
@@ -13,32 +15,7 @@ export default async function Page() {
       return <div>로그인이 필요합니다.</div>
     }
 
-    // withDb 래퍼를 사용해서 자동으로 커넥션 관리
-    const diaryList = await dbCallback(async (db) => {
-      let list: any = await db
-        .select({
-          pk: diary.pk,
-          title: diary.title,
-          date: diary.date,
-          thumbnail: diary.thumbnail,
-        })
-        .from(diary)
-        .where(eq(diary.uid, user.id))
-        .orderBy(desc(diary.date))
-
-      list.forEach((_: any, i: number) => {
-        if (i > 0) {
-          list[i].isNewYear = !dayjs(list[i - 1].date).isSame(dayjs(list[i].date), 'year')
-          list[i].isNewMonth = !dayjs(list[i - 1].date).isSame(dayjs(list[i].date), 'month')
-        } else {
-          list[i].isNewYear = true
-          list[i].isNewMonth = true
-        }
-      })
-
-      return list
-    })
-
+    const diaryList = await getDiaryList()
     return <DiaryList list={diaryList} />
   } catch (error) {
     console.error('페이지 로딩 에러:', error)

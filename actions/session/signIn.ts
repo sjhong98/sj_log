@@ -7,13 +7,13 @@ import AuthProps from '@/types/AuthProps'
 export default async function signIn({ email, password }: AuthProps) {
   const SUPABASE_KEY = process.env.SUPABASE_KEY ?? ''
   const SUPABASE_URL = 'https://hydhqrohhpgwybhlhwun.supabase.co'
-  
+
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     })
 
     if (error) {
@@ -27,18 +27,18 @@ export default async function signIn({ email, password }: AuthProps) {
         maxAge: 60 * 60 * 24 * 30,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
       })
       cookieStore.set('refreshToken', data.session.refresh_token, {
         maxAge: 60 * 60 * 24 * 30,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
       })
 
-      return { 
-        success: true, 
-        user: data.user 
+      return {
+        success: true,
+        user: data.user,
       }
     }
 

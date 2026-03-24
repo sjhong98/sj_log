@@ -1,22 +1,17 @@
 'use server'
 
 import { getUser } from '@/actions/session/getUser'
-import db from '@/supabase'
-import { devLog, devLogGroup, user } from '@/supabase/schema'
-import { devLogGroupType } from '@/types/schemaType'
+import { devLog } from '@/supabase/schema'
 import { postgrestQuery } from '@/utils/postgrestQuery'
 import snakeToCamel from '@/utils/snakeToCamel'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 export default async function getDevLogByPk(pk: number) {
-
-  console.log('\n\n\ngetDevLogByPk: ', pk)
-
   const user = await getUser()
 
-  let whereLogConditions: any[] = [eq(devLog.pk, pk)];
+  let whereLogConditions: any[] = [eq(devLog.pk, pk)]
 
-  if (!user) whereLogConditions.push(eq(devLog.isPrivate, false));
+  if (!user) whereLogConditions.push(eq(devLog.isPrivate, false))
 
   const params = new URLSearchParams()
   params.set('pk', `eq.${pk}`)
@@ -25,13 +20,13 @@ export default async function getDevLogByPk(pk: number) {
 
   const result = await fetch(`${process.env.SUPABASE_REST_URL}/dev_log?${params.toString()}`, {
     headers: {
-      'apikey': process.env.SUPABASE_KEY ?? '',
-      'Authorization': `Bearer ${process.env.SUPABASE_KEY ?? ''}`
+      apikey: process.env.SUPABASE_KEY ?? '',
+      Authorization: `Bearer ${process.env.SUPABASE_KEY ?? ''}`,
     },
     cache: 'force-cache',
     next: {
-      tags: ['dev-log']
-    }
+      tags: ['dev-log'],
+    },
   })
 
   let devLogData = await result.json()
@@ -60,13 +55,13 @@ export default async function getDevLogByPk(pk: number) {
 
     const result = await fetch(`${process.env.SUPABASE_REST_URL}/dev_log_group?${params.toString()}`, {
       headers: {
-        'apikey': process.env.SUPABASE_KEY ?? '',
-        'Authorization': `Bearer ${process.env.SUPABASE_KEY ?? ''}`
+        apikey: process.env.SUPABASE_KEY ?? '',
+        Authorization: `Bearer ${process.env.SUPABASE_KEY ?? ''}`,
       },
       cache: 'force-cache',
       next: {
-        tags: ['dev-log-group']
-      }
+        tags: ['dev-log-group'],
+      },
     })
 
     let parentGroupList = await result.json()
@@ -81,4 +76,4 @@ export default async function getDevLogByPk(pk: number) {
   console.log('devLogData', devLogData)
 
   return devLogData || null
-} 
+}
