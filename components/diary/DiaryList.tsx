@@ -48,6 +48,7 @@ export default function DiaryList({ list }: any) {
   const [comments, setComments] = useState<any>([])
   const [comment, setComment] = useState<string>('')
   const [loadingContent, setLoadingContent] = useState(false)
+  const [deletingDiary, setDeletingDiary] = useState(false)
   const [confirmDeleteDiaryModalOpen, setConfirmDeleteDiaryModalOpen] = useState(false)
   const [selectedComment, setSelectedComment] = useState<CommentType | null>(null)
   const [modifyingComment, setModifyingComment] = useState<CommentType | null>(null)
@@ -119,20 +120,32 @@ export default function DiaryList({ list }: any) {
   }, [selectedDiary])
 
   const handleClickDelete = useCallback(async () => {
-    const rowCount = await deleteDiary(selectedDiary)
-    if (!rowCount) {
-      toast.error('게시물 삭제 실패')
-      return
-    } else toast.success('게시물 삭제 성공')
-    let _diaryList = [...diaryList]
-    const idx = _diaryList.findIndex((item: DiaryType) => item.pk === selectedDiary.pk)
-    if (idx !== -1) {
-      _diaryList.splice(idx, 1)
-      if (_diaryList[0].pk !== undefined) handleClickDiary(_diaryList[0].pk)
+    if (!selectedDiary?.pk) return
+
+    setDeletingDiary(true)
+    try {
+      const rowCount = await deleteDiary(selectedDiary)
+      if (!rowCount) {
+        toast.error('게시물 삭제 실패')
+        return
+      }
+
+      toast.success('게시물 삭제 성공')
+      let _diaryList = [...diaryList]
+      const idx = _diaryList.findIndex((item: DiaryType) => item.pk === selectedDiary.pk)
+      if (idx !== -1) {
+        _diaryList.splice(idx, 1)
+        if (_diaryList[0]?.pk !== undefined) handleClickDiary(_diaryList[0].pk)
+        setDiaryList(formatDiaryList(_diaryList))
+      }
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '게시물 삭제 중 오류가 발생했습니다.'
+      toast.error(message)
+    } finally {
       setConfirmDeleteDiaryModalOpen(false)
-      setDiaryList(formatDiaryList(_diaryList))
+      setDeletingDiary(false)
     }
-  }, [selectedDiary, diaryList])
+  }, [selectedDiary, diaryList, formatDiaryList, handleClickDiary])
 
   const handleChangeComment = useCallback((e: any) => {
     setComment(e.target.value)
@@ -270,10 +283,17 @@ export default function DiaryList({ list }: any) {
               color={'info'}
               className={'flex-[2]'}
               onClick={() => setConfirmDeleteDiaryModalOpen(false)}
+              disabled={deletingDiary}
             >
               취소
             </Button>
-            <Button variant={'contained'} color={'error'} className={'flex-[1]'} onClick={handleClickDelete}>
+            <Button
+              variant={'contained'}
+              color={'error'}
+              className={'flex-[1]'}
+              onClick={handleClickDelete}
+              disabled={deletingDiary}
+            >
               삭제
             </Button>
           </Row>
