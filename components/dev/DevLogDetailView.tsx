@@ -262,6 +262,7 @@ function DevLogDetailView({
     if (!inserted) return
 
     setSelectedDevLog(inserted)
+    addQueryString('devLogPk', inserted.pk.toString())
     let _currentPostList: { pk: number; title: string }[] = [...currentPostList]
     _currentPostList.push({
       pk: inserted.pk,
