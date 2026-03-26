@@ -489,7 +489,7 @@ function DevLogDetailView({
               <div
                 aria-label="title-area"
                 className={
-                  'sticky md:top-[0px] top-[-2px] left-[0px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out md:px-0 px-10'
+                  'sticky md:top-[0px] top-[-2px] left-[0px] md:ml-0 ml-[55px] z-[90] bg-black overflow-hidden transition-[height] duration-200 ease-out md:px-0 px-10'
                 }
                 style={{
                   height: `${titleHeight}px`,
