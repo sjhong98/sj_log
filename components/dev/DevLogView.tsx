@@ -200,7 +200,6 @@ export default function DevLogView({
             onClick={(e) => {
               e.stopPropagation()
               if (!group?.pk) return
-
               setTemporarySelectedGroup(group)
             }}
             isSelectable
