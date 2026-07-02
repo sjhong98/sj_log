@@ -5,6 +5,7 @@ import { diary } from '@/supabase/schema'
 import DiaryType from '@/types/DiaryType'
 import { getUser } from '@/actions/session/getUser'
 import { createClient } from '@supabase/supabase-js'
+import { revalidateTag } from 'next/cache'
 
 function base64ToBlob(base64: string, mime = 'image/png'): Blob {
   const byteCharacters = atob(base64.split(',')[1])
@@ -22,23 +23,14 @@ function base64ToBlob(base64: string, mime = 'image/png'): Blob {
   return new Blob(byteArrays, { type: mime })
 }
 
-function replaceBase64Images(
-  content: string,
-  sources: { url: string }[]
-): string {
+function replaceBase64Images(content: string, sources: { url: string }[]): string {
   let i = 0
 
-  return content.replace(
-    /<img\s+[^>]*src="data:image\/[^"]+"[^>]*>/gi,
-    match => {
-      const replacement = match.replace(
-        /src="data:image\/[^"]+"/i,
-        `src="${sources[i]?.url ?? ''}"`
-      )
-      i++
-      return replacement
-    }
-  )
+  return content.replace(/<img\s+[^>]*src="data:image\/[^"]+"[^>]*>/gi, (match) => {
+    const replacement = match.replace(/src="data:image\/[^"]+"/i, `src="${sources[i]?.url ?? ''}"`)
+    i++
+    return replacement
+  })
 }
 
 export default async function createDiary(diaryData: DiaryType) {
@@ -65,8 +57,7 @@ export default async function createDiary(diaryData: DiaryType) {
     await Promise.all(
       sources.map(async (source: any, i: number) => {
         // create random string
-        const chars =
-          'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         let result = ''
         for (let i = 0; i < 10; i++) {
           result += chars.charAt(Math.floor(Math.random() * chars.length))
@@ -79,10 +70,7 @@ export default async function createDiary(diaryData: DiaryType) {
         }
         const { data, error } = await supabase.storage
           .from('sjlog')
-          .upload(
-            `/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`,
-            newBlob
-          )
+          .upload(`/public/diaryImages/${user.id}/${date.toISOString()}_${result}.png`, newBlob)
 
         if (error) {
           console.log('\n\n\n에러발생 \n\n\n')
@@ -91,15 +79,13 @@ export default async function createDiary(diaryData: DiaryType) {
 
         const { path, id, fullPath } = data
 
-        const getPublicUrlResult = await supabase.storage
-          .from('sjlog')
-          .getPublicUrl(`${path}`)
+        const getPublicUrlResult = await supabase.storage.from('sjlog').getPublicUrl(`${path}`)
 
         sources[i] = {
           source,
-          url: getPublicUrlResult.data.publicUrl
+          url: getPublicUrlResult.data.publicUrl,
         }
-      })
+      }),
     )
   } catch (e) {
     console.log('\n\n\n에러발생\n\n\n')
@@ -114,8 +100,10 @@ export default async function createDiary(diaryData: DiaryType) {
     contentText,
     date: date.toISOString(),
     uid: user.id,
-    thumbnail: sources?.[0]?.url ?? ''
+    thumbnail: sources?.[0]?.url ?? '',
   })
+
+  revalidateTag('diary')
 
   return result.rowCount
 }
